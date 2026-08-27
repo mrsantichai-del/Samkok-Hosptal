@@ -159,10 +159,10 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
         <div className="text-center py-20 text-gray-500">ไม่พบรายการเงินเดือน</div>
       ) : (
         <div className="border rounded-none overflow-x-auto overflow-y-auto shadow-sm bg-white" style={{ maxWidth: 'calc(100vw - 300px)', maxHeight: 'calc(100vh - 180px)' }}>
-          <Table className="min-w-max border-collapse table-fixed">
+          <Table className="border-collapse" style={{ width: 'max-content' }}>
             <TableHeader>
               <TableRow className="bg-gray-100 hover:bg-gray-100">
-                <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-0 top-0 z-30 bg-gray-200 w-[160px] shadow-[1px_0_0_0_#d1d5db]">
+                <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-0 top-0 z-30 bg-gray-200 min-w-[180px] w-[180px] shadow-[1px_0_0_0_#d1d5db]">
                   รหัส - ชื่อพนักงาน
                 </TableHead>
                 {incomeItems.length > 0 && (
@@ -175,18 +175,18 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                     รายจ่ายและภาษี (-)
                   </TableHead>
                 )}
-                <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky right-0 top-0 z-30 bg-gray-200 w-[100px] shadow-[-1px_0_0_0_#d1d5db] font-bold">
+                <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky right-0 top-0 z-30 bg-gray-200 min-w-[100px] w-[100px] shadow-[-1px_0_0_0_#d1d5db] font-bold">
                   รับสุทธิ
                 </TableHead>
               </TableRow>
               <TableRow className="bg-gray-50 hover:bg-gray-50">
                 {incomeItems.map(item => (
-                  <TableHead key={item.id} className="border border-gray-300 p-1 text-center leading-tight text-[11px] bg-green-50 sticky top-[28px] z-20 w-[85px]">
+                  <TableHead key={item.id} className="border border-gray-300 p-1 text-center leading-tight text-[11px] bg-green-50 sticky top-[28px] z-20 min-w-[95px] w-[95px]">
                     <div className="truncate" title={item.name}>{item.name}</div>
                   </TableHead>
                 ))}
                 {deductionItems.map(item => (
-                  <TableHead key={item.id} className="border border-gray-300 p-1 text-center leading-tight text-[11px] bg-red-50 sticky top-[28px] z-20 w-[85px]">
+                  <TableHead key={item.id} className="border border-gray-300 p-1 text-center leading-tight text-[11px] bg-red-50 sticky top-[28px] z-20 min-w-[95px] w-[95px]">
                     <div className="truncate" title={item.name}>{item.name}</div>
                   </TableHead>
                 ))}
@@ -203,12 +203,12 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
 
                 return (
                   <TableRow key={emp.employeeId} className={`hover:bg-blue-50/50 group ${isModified ? "bg-yellow-50/30" : ""}`}>
-                    <TableCell className="border border-gray-300 p-1 sticky left-0 z-10 bg-white group-hover:bg-blue-50/50 font-medium shadow-[1px_0_0_0_#e5e7eb] truncate w-[160px] text-[11px]" title={`${emp.employeeCode} ${emp.firstName} ${emp.lastName}`}>
+                    <TableCell className="border border-gray-300 p-1 sticky left-0 z-10 bg-white group-hover:bg-blue-50/50 font-medium shadow-[1px_0_0_0_#e5e7eb] truncate min-w-[180px] w-[180px] text-[11px]" title={`${emp.employeeCode} ${emp.firstName} ${emp.lastName}`}>
                       <span className="text-[#1877f2]">{emp.employeeCode}</span> {emp.firstName} {emp.lastName}
                     </TableCell>
                     
                     {incomeItems.map(item => (
-                      <TableCell key={item.id} className="border border-gray-300 p-0 bg-white">
+                      <TableCell key={item.id} className="border border-gray-300 p-0 bg-white min-w-[95px] w-[95px]">
                         <Input 
                           type="number"
                           className="h-7 w-full text-right border-0 rounded-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-green-500 text-green-800 bg-transparent text-[11px] px-1"
@@ -222,7 +222,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                     ))}
                     
                     {deductionItems.map(item => (
-                      <TableCell key={item.id} className="border border-gray-300 p-0 bg-white">
+                      <TableCell key={item.id} className="border border-gray-300 p-0 bg-white min-w-[95px] w-[95px]">
                         <Input 
                           type="number"
                           className="h-7 w-full text-right border-0 rounded-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-red-500 text-red-800 bg-transparent text-[11px] px-1"
@@ -235,7 +235,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                       </TableCell>
                     ))}
                     
-                    <TableCell className="border border-gray-300 p-1 text-right font-bold text-gray-800 sticky right-0 z-10 bg-gray-100 group-hover:bg-gray-200 shadow-[-1px_0_0_0_#e5e7eb] text-[11px]">
+                    <TableCell className="border border-gray-300 p-1 text-right font-bold text-gray-800 sticky right-0 z-10 bg-gray-100 group-hover:bg-gray-200 shadow-[-1px_0_0_0_#e5e7eb] text-[11px] min-w-[100px] w-[100px]">
                       {net.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                     </TableCell>
                   </TableRow>
