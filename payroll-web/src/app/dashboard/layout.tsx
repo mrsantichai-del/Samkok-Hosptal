@@ -47,6 +47,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navItems = [
     { name: "แดชบอร์ด", href: "/dashboard", icon: LayoutDashboard },
     { name: "พนักงาน", href: "/dashboard/employees", icon: Users },
+    { name: "ประเภทพนักงาน", href: "/dashboard/employee-types", icon: Users },
     { name: "ตั้งค่ารายรับ/รายจ่าย", href: "/dashboard/pay-items", icon: Settings },
     { name: "ประมวลผลเงินเดือน", href: "/dashboard/payroll", icon: Calculator },
     { name: "ตั้งค่าระบบ (อัปโหลดภาพ)", href: "/dashboard/settings", icon: Settings },
