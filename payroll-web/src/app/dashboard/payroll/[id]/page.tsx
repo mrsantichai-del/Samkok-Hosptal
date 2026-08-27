@@ -158,36 +158,36 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
       ) : employeeList.length === 0 ? (
         <div className="text-center py-20 text-gray-500">ไม่พบรายการเงินเดือน</div>
       ) : (
-        <div className="border rounded-md overflow-x-auto shadow-sm bg-white" style={{ maxWidth: 'calc(100vw - 280px)' }}>
-          <Table className="min-w-max border-collapse">
+        <div className="border rounded-none overflow-x-auto overflow-y-auto shadow-sm bg-white" style={{ maxWidth: 'calc(100vw - 300px)', maxHeight: 'calc(100vh - 180px)' }}>
+          <Table className="min-w-max border-collapse table-fixed">
             <TableHeader>
               <TableRow className="bg-gray-100 hover:bg-gray-100">
-                <TableHead rowSpan={2} className="border p-2 text-center sticky left-0 z-20 bg-gray-200 min-w-[220px] shadow-[1px_0_0_0_#d1d5db]">
+                <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-0 top-0 z-30 bg-gray-200 w-[160px] shadow-[1px_0_0_0_#d1d5db]">
                   รหัส - ชื่อพนักงาน
                 </TableHead>
                 {incomeItems.length > 0 && (
-                  <TableHead colSpan={incomeItems.length} className="border p-2 text-center text-green-700 bg-green-100/80 font-bold">
+                  <TableHead colSpan={incomeItems.length} className="border border-gray-300 p-1 text-center text-green-800 bg-green-200/80 font-bold sticky top-0 z-20 text-xs">
                     รายรับ (+)
                   </TableHead>
                 )}
                 {deductionItems.length > 0 && (
-                  <TableHead colSpan={deductionItems.length} className="border p-2 text-center text-red-700 bg-red-100/80 font-bold">
+                  <TableHead colSpan={deductionItems.length} className="border border-gray-300 p-1 text-center text-red-800 bg-red-200/80 font-bold sticky top-0 z-20 text-xs">
                     รายจ่ายและภาษี (-)
                   </TableHead>
                 )}
-                <TableHead rowSpan={2} className="border p-2 text-center sticky right-0 z-20 bg-gray-200 min-w-[120px] shadow-[-1px_0_0_0_#d1d5db] font-bold">
+                <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky right-0 top-0 z-30 bg-gray-200 w-[100px] shadow-[-1px_0_0_0_#d1d5db] font-bold">
                   รับสุทธิ
                 </TableHead>
               </TableRow>
               <TableRow className="bg-gray-50 hover:bg-gray-50">
                 {incomeItems.map(item => (
-                  <TableHead key={item.id} className="border p-2 text-center whitespace-nowrap min-w-[100px] text-xs bg-green-50">
-                    {item.name}
+                  <TableHead key={item.id} className="border border-gray-300 p-1 text-center leading-tight text-[11px] bg-green-50 sticky top-[28px] z-20 w-[85px]">
+                    <div className="truncate" title={item.name}>{item.name}</div>
                   </TableHead>
                 ))}
                 {deductionItems.map(item => (
-                  <TableHead key={item.id} className="border p-2 text-center whitespace-nowrap min-w-[100px] text-xs bg-red-50">
-                    {item.name}
+                  <TableHead key={item.id} className="border border-gray-300 p-1 text-center leading-tight text-[11px] bg-red-50 sticky top-[28px] z-20 w-[85px]">
+                    <div className="truncate" title={item.name}>{item.name}</div>
                   </TableHead>
                 ))}
               </TableRow>
@@ -202,17 +202,16 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                 const isModified = modifiedRows.has(emp.employeeId);
 
                 return (
-                  <TableRow key={emp.employeeId} className={`hover:bg-blue-50 ${isModified ? "bg-yellow-50/50" : ""}`}>
-                    <TableCell className="border p-2 sticky left-0 z-10 bg-white font-medium shadow-[1px_0_0_0_#e5e7eb] truncate max-w-[220px]">
-                      <span className="text-[#1877f2]">{emp.employeeCode}</span> <br/> 
-                      <span className="text-xs text-gray-500">{emp.firstName} {emp.lastName}</span>
+                  <TableRow key={emp.employeeId} className={`hover:bg-blue-50/50 group ${isModified ? "bg-yellow-50/30" : ""}`}>
+                    <TableCell className="border border-gray-300 p-1 sticky left-0 z-10 bg-white group-hover:bg-blue-50/50 font-medium shadow-[1px_0_0_0_#e5e7eb] truncate w-[160px] text-[11px]" title={`${emp.employeeCode} ${emp.firstName} ${emp.lastName}`}>
+                      <span className="text-[#1877f2]">{emp.employeeCode}</span> {emp.firstName} {emp.lastName}
                     </TableCell>
                     
                     {incomeItems.map(item => (
-                      <TableCell key={item.id} className="border p-0 bg-white">
+                      <TableCell key={item.id} className="border border-gray-300 p-0 bg-white">
                         <Input 
                           type="number"
-                          className="h-12 w-full text-right border-0 rounded-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-green-500 text-green-700 bg-transparent"
+                          className="h-7 w-full text-right border-0 rounded-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-green-500 text-green-800 bg-transparent text-[11px] px-1"
                           value={gridData[emp.employeeId]?.[item.id] || ''}
                           onChange={(e) => {
                             setGridData(prev => ({...prev, [emp.employeeId]: {...(prev[emp.employeeId]||{}), [item.id]: e.target.value}}));
@@ -223,10 +222,10 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                     ))}
                     
                     {deductionItems.map(item => (
-                      <TableCell key={item.id} className="border p-0 bg-white">
+                      <TableCell key={item.id} className="border border-gray-300 p-0 bg-white">
                         <Input 
                           type="number"
-                          className="h-12 w-full text-right border-0 rounded-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-500 text-red-600 bg-transparent"
+                          className="h-7 w-full text-right border-0 rounded-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-red-500 text-red-800 bg-transparent text-[11px] px-1"
                           value={gridData[emp.employeeId]?.[item.id] || ''}
                           onChange={(e) => {
                             setGridData(prev => ({...prev, [emp.employeeId]: {...(prev[emp.employeeId]||{}), [item.id]: e.target.value}}));
@@ -236,8 +235,8 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                       </TableCell>
                     ))}
                     
-                    <TableCell className="border p-2 text-right font-bold text-gray-800 sticky right-0 z-10 bg-gray-50 shadow-[-1px_0_0_0_#e5e7eb]">
-                      ฿{net.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    <TableCell className="border border-gray-300 p-1 text-right font-bold text-gray-800 sticky right-0 z-10 bg-gray-100 group-hover:bg-gray-200 shadow-[-1px_0_0_0_#e5e7eb] text-[11px]">
+                      {net.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                     </TableCell>
                   </TableRow>
                 )
