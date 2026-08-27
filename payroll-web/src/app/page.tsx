@@ -9,7 +9,7 @@ import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://samkok-hospital.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://samkok-hosptal.onrender.com";
 
 export default function Home() {
   const [username, setUsername] = useState("");
