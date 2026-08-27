@@ -20,6 +20,10 @@ export declare class PayrollController {
         deletedAt: Date | null;
     }[]>;
     getTransactions(id: string, employeeId?: string): Promise<({
+        payItem: {
+            name: string;
+            type: import("@prisma/client").$Enums.PayItemType;
+        };
         employee: {
             employeeCode: string;
             firstName: string;
@@ -27,10 +31,6 @@ export declare class PayrollController {
             position: {
                 name: string;
             } | null;
-        };
-        payItem: {
-            name: string;
-            type: import("@prisma/client").$Enums.PayItemType;
         };
     } & {
         id: string;

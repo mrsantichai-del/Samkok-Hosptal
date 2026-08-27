@@ -1,11 +1,11 @@
-import { Controller, Post, UseInterceptors, UploadedFile, UseGuards, Get, Res } from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFile, UseGuards, Get, Res, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Response } from 'express';
+import type { Response } from 'express';
 import * as fs from 'fs';
 
 @Controller('settings')
