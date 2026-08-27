@@ -154,7 +154,7 @@ export default function PayrollPage() {
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label>เดือน</Label>
-              <Select value={month} onValueChange={setMonth}>
+              <Select value={month} onValueChange={(val) => setMonth(val as string)}>
                 <SelectTrigger>
                   <SelectValue placeholder="เลือกเดือน" />
                 </SelectTrigger>
