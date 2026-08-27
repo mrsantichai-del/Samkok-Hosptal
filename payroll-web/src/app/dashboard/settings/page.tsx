@@ -1,4 +1,5 @@
 "use client";
+import { API_URL } from "@/lib/config";
 
 import { useState } from "react";
 import axios from "axios";
@@ -23,7 +24,7 @@ export default function SettingsPage() {
 
     try {
       const token = Cookies.get("token");
-      await axios.post(`http://localhost:3000/settings/upload-${type}`, formData, {
+      await axios.post(`${API_URL}/settings/upload-${type}`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -62,7 +63,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <p className="text-sm font-bold mb-2">โลโก้ปัจจุบัน:</p>
-            <img src="http://localhost:3000/settings/logo" alt="Logo" className="h-20 object-contain border p-2 rounded" onError={(e) => (e.currentTarget.style.display = 'none')} />
+            <img src={`${API_URL}/settings/logo`} alt="Logo" className="h-20 object-contain border p-2 rounded" onError={(e) => (e.currentTarget.style.display = 'none')} />
           </div>
         </CardContent>
       </Card>
@@ -83,7 +84,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <p className="text-sm font-bold mb-2">ลายเซ็นปัจจุบัน:</p>
-            <img src="http://localhost:3000/settings/signature" alt="Signature" className="h-20 object-contain border p-2 rounded" onError={(e) => (e.currentTarget.style.display = 'none')} />
+            <img src={`${API_URL}/settings/signature`} alt="Signature" className="h-20 object-contain border p-2 rounded" onError={(e) => (e.currentTarget.style.display = 'none')} />
           </div>
         </CardContent>
       </Card>

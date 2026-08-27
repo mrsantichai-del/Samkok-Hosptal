@@ -1,4 +1,5 @@
 "use client";
+import { API_URL } from "@/lib/config";
 
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -36,7 +37,7 @@ export default function PayItemsPage() {
     setLoading(true);
     try {
       const token = Cookies.get("token");
-      const res = await axios.get("http://localhost:3000/pay-items", {
+      const res = await axios.get(`${API_URL}/pay-items`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPayItems(res.data);
@@ -78,11 +79,11 @@ export default function PayItemsPage() {
       };
 
       if (editingItem) {
-        await axios.patch(`http://localhost:3000/pay-items/${editingItem.id}`, payload, {
+        await axios.patch(`${API_URL}/pay-items/${editingItem.id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        await axios.post("http://localhost:3000/pay-items", payload, {
+        await axios.post(`${API_URL}/pay-items`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -99,7 +100,7 @@ export default function PayItemsPage() {
     if (!confirm("คุณแน่ใจหรือไม่ที่จะลบรายการนี้?")) return;
     try {
       const token = Cookies.get("token");
-      await axios.delete(`http://localhost:3000/pay-items/${id}`, {
+      await axios.delete(`${API_URL}/pay-items/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchPayItems();

@@ -5,14 +5,18 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import Cookies from "js-cookie";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://samkok-hospital.onrender.com";
 
 export default function Home() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -21,7 +25,7 @@ export default function Home() {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:3000/auth/login", {
+      const response = await axios.post(`${API_URL}/auth/login`, {
         username,
         password,
       });
@@ -66,14 +70,25 @@ export default function Home() {
                   onChange={(e) => setUsername(e.target.value)}
                   required
                 />
-                <Input 
-                  type="password" 
-                  placeholder="รหัสผ่าน" 
-                  className="h-[52px] text-lg focus-visible:ring-[#1877f2]"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                
+                <div className="relative">
+                  <Input 
+                    type={showPassword ? "text" : "password"} 
+                    placeholder="รหัสผ่าน" 
+                    className="h-[52px] text-lg focus-visible:ring-[#1877f2] pr-12"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
+                  </button>
+                </div>
+                
                 <Button 
                   type="submit" 
                   className="w-full h-[48px] text-xl font-bold bg-[#1877f2] hover:bg-[#166fe5] text-white"

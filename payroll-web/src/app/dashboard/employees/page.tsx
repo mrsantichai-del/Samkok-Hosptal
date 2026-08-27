@@ -1,4 +1,5 @@
 "use client";
+import { API_URL } from "@/lib/config";
 
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -24,7 +25,7 @@ export default function EmployeesPage() {
     const fetchEmployees = async () => {
       try {
         const token = Cookies.get("token");
-        const res = await axios.get("http://localhost:3000/employees", {
+        const res = await axios.get(`${API_URL}/employees`, {
           headers: {
             Authorization: `Bearer ${token}`
           }

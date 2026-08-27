@@ -1,4 +1,5 @@
 "use client";
+import { API_URL } from "@/lib/config";
 
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -35,7 +36,7 @@ export default function PayrollPage() {
     setLoading(true);
     try {
       const token = Cookies.get("token");
-      const res = await axios.get("http://localhost:3000/payroll/records", {
+      const res = await axios.get(`${API_URL}/payroll/records`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRecords(res.data);
@@ -54,7 +55,7 @@ export default function PayrollPage() {
     setProcessing(true);
     try {
       const token = Cookies.get("token");
-      await axios.post("http://localhost:3000/payroll/process", {
+      await axios.post(`${API_URL}/payroll/process`, {
         month: parseInt(month),
         year: parseInt(year)
       }, {
@@ -73,7 +74,7 @@ export default function PayrollPage() {
     if (!confirm("คุณต้องการอนุมัติรายการเงินเดือนนี้ใช่หรือไม่? หลังจากอนุมัติแล้วจะไม่สามารถแก้ไขได้อีก")) return;
     try {
       const token = Cookies.get("token");
-      await axios.patch(`http://localhost:3000/payroll/records/${id}/approve`, {}, {
+      await axios.patch(`${API_URL}/payroll/records/${id}/approve`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchRecords();

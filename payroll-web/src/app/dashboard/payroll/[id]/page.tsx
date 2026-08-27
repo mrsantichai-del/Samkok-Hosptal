@@ -1,4 +1,5 @@
 "use client";
+import { API_URL } from "@/lib/config";
 
 import { useEffect, useState, use } from "react";
 import axios from "axios";
@@ -30,10 +31,10 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
     try {
       const token = Cookies.get("token");
       const [txRes, itemsRes] = await Promise.all([
-        axios.get(`http://localhost:3000/payroll/records/${resolvedParams.id}/transactions`, {
+        axios.get(`${API_URL}/payroll/records/${resolvedParams.id}/transactions`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get(`http://localhost:3000/pay-items`, {
+        axios.get(`${API_URL}/pay-items`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -99,7 +100,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
           amount: Number(editForm[key])
         }));
 
-      await axios.patch(`http://localhost:3000/payroll/records/${resolvedParams.id}/employee/${editingEmp.id}`, {
+      await axios.patch(`${API_URL}/payroll/records/${resolvedParams.id}/employee/${editingEmp.id}`, {
         transactions: txToSave
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -117,7 +118,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   const handleExportExcel = async () => {
     try {
       const token = Cookies.get("token");
-      const res = await axios.get(`http://localhost:3000/payroll/records/${resolvedParams.id}/export/excel`, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
+      const res = await axios.get(`${API_URL}/payroll/records/${resolvedParams.id}/export/excel`, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -130,7 +131,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   const handleExportPdf = async () => {
     try {
       const token = Cookies.get("token");
-      const res = await axios.get(`http://localhost:3000/payroll/records/${resolvedParams.id}/export/pdf`, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
+      const res = await axios.get(`${API_URL}/payroll/records/${resolvedParams.id}/export/pdf`, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
       window.open(url);
     } catch (e) { alert("ไม่สามารถดาวน์โหลดไฟล์ PDF ได้"); }
