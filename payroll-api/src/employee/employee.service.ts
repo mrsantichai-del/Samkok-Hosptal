@@ -76,4 +76,31 @@ export class EmployeeService {
 
     return { message: 'Employee deleted successfully' };
   }
+
+  async getTypes() {
+    return this.prisma.employeeType.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: 'asc' }
+    });
+  }
+
+  async createType(name: string, description?: string) {
+    return this.prisma.employeeType.create({
+      data: { name, description }
+    });
+  }
+
+  async updateType(id: string, data: { name?: string; description?: string }) {
+    return this.prisma.employeeType.update({
+      where: { id },
+      data
+    });
+  }
+
+  async removeType(id: string) {
+    return this.prisma.employeeType.update({
+      where: { id },
+      data: { deletedAt: new Date() }
+    });
+  }
 }
