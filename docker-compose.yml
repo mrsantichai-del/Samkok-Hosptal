@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  payroll-api:
+    build: 
+      context: ./payroll-api
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - DIRECT_URL=${DIRECT_URL}
+      - JWT_SECRET=${JWT_SECRET}
+    restart: unless-stopped
+
+  payroll-web:
+    build: 
+      context: ./payroll-web
+    ports:
+      - "3001:3001"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+    depends_on:
+      - payroll-api
+    restart: unless-stopped

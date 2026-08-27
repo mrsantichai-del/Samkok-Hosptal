@@ -1,0 +1,79 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { UpdateEmployeeDto } from './dto/update-employee.dto';
+
+@Injectable()
+export class EmployeeService {
+  constructor(private prisma: PrismaService) {}
+
+  async findAll(skip?: number, take?: number) {
+    return this.prisma.employee.findMany({
+      skip: skip ? Number(skip) : 0,
+      take: take ? Number(take) : 50,
+      where: { deletedAt: null },
+      include: {
+        position: true,
+        department: true,
+        employeeType: true,
+      },
+    });
+  }
+
+  async findOne(id: string) {
+    const employee = await this.prisma.employee.findFirst({
+      where: { id, deletedAt: null },
+      include: {
+        position: true,
+        department: true,
+        employeeType: true,
+      },
+    });
+
+    if (!employee) throw new NotFoundException('Employee not found');
+    return employee;
+  }
+
+  async create(createEmployeeDto: CreateEmployeeDto) {
+    // Generate simple employee code if not provided
+    const employeeCode = `EMP-${Date.now().toString().slice(-6)}`;
+    
+    return this.prisma.employee.create({
+      data: {
+        employeeCode,
+        ...createEmployeeDto,
+      },
+    });
+  }
+
+  async update(id: string, updateEmployeeDto: UpdateEmployeeDto) {
+    await this.findOne(id); // ensure exists
+    return this.prisma.employee.update({
+      where: { id },
+      data: updateEmployeeDto,
+    });
+  }
+
+  async remove(id: string, userId: string) {
+    await this.findOne(id); // ensure exists
+    
+    // Soft delete
+    const deleted = await this.prisma.employee.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+
+    // Audit Log
+    await this.prisma.auditLog.create({
+      data: {
+        action: 'SOFT_DELETE',
+        tableName: 'Employee',
+        recordId: id,
+        userId: userId,
+        reason: 'Deleted by user request via API',
+      }
+    });
+
+    return { message: 'Employee deleted successfully' };
+  }
+}

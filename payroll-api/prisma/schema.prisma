@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+// ------------------------------------------------------
+// User & Auth & RBAC
+// ------------------------------------------------------
+model User {
+  id           String    @id @default(uuid())
+  username     String    @unique
+  passwordHash String
+  email        String?   @unique
+  isActive     Boolean   @default(true)
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  employeeId   String?   @unique
+  employee     Employee? @relation(fields: [employeeId], references: [id])
+
+  roles        UserRole[]
+  auditLogs    AuditLog[]
+}
+
+model Role {
+  id          String     @id @default(uuid())
+  name        String     @unique // e.g. "Admin", "HR", "Employee"
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  deletedAt   DateTime?
+  users       UserRole[]
+}
+
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String
+  user      User     @relation(fields: [userId], references: [id])
+  role      Role     @relation(fields: [roleId], references: [id])
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+
+  @@unique([userId, roleId])
+}
+
+// ------------------------------------------------------
+// Organization & Employees
+// ------------------------------------------------------
+model Department {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  deletedAt   DateTime?
+  employees   Employee[]
+}
+
+model Position {
+  id          String     @id @default(uuid())
+  name        String     @unique // e.g. "นายแพทย์", "พยาบาล"
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  deletedAt   DateTime?
+  employees   Employee[]
+}
+
+model EmployeeType {
+  id          String     @id @default(uuid())
+  name        String     @unique // e.g. "ข้าราชการ", "ลจ.ประจำ", "พนักงาน" (from sheet names)
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  deletedAt   DateTime?
+  employees   Employee[]
+}
+
+model Employee {
+  id           String     @id @default(uuid())
+  employeeCode String     @unique
+  firstName    String
+  lastName     String
+  idCard       String?    @unique
+  bankAccount  String?
+  bankName     String?
+  
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  
+  positionId   String?
+  position     Position?   @relation(fields: [positionId], references: [id])
+
+  employeeTypeId String?
+  employeeType   EmployeeType? @relation(fields: [employeeTypeId], references: [id])
+
+  user         User?
+  
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  deletedAt    DateTime?
+
+  payrollTransactions PayrollTransaction[]
+}
+
+// ------------------------------------------------------
+// Payroll & Formulas (Dynamic calculation)
+// ------------------------------------------------------
+enum PayItemType {
+  INCOME
+  DEDUCTION
+}
+
+model PayItem {
+  id             String      @id @default(uuid())
+  name           String      @unique // e.g. "เงินเดือน", "ภาษี"
+  type           PayItemType
+  description    String?
+  isDefault      Boolean     @default(false)
+  defaultFormula String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  deletedAt      DateTime?
+
+  transactions PayrollTransaction[]
+}
+
+model PayrollRecord {
+  id          String      @id @default(uuid())
+  month       Int
+  year        Int
+  status      String      @default("DRAFT") // DRAFT, APPROVED, PAID
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?
+
+  transactions PayrollTransaction[]
+
+  @@unique([month, year])
+}
+
+model PayrollTransaction {
+  id              String         @id @default(uuid())
+  payrollRecordId String
+  payrollRecord   PayrollRecord  @relation(fields: [payrollRecordId], references: [id])
+  
+  employeeId      String
+  employee        Employee       @relation(fields: [employeeId], references: [id])
+
+  payItemId       String
+  payItem         PayItem        @relation(fields: [payItemId], references: [id])
+  
+  amount          Decimal        @db.Decimal(12, 2)
+  formulaUsed     String?
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  deletedAt       DateTime?
+
+  @@unique([payrollRecordId, employeeId, payItemId])
+}
+
+// ------------------------------------------------------
+// Audit Logging
+// ------------------------------------------------------
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  action      String
+  tableName   String
+  recordId    String
+  oldData     Json?
+  newData     Json?
+  reason      String?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+}

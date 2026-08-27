@@ -1,0 +1,53 @@
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req } from '@nestjs/common';
+import { EmployeeService } from './employee.service';
+import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+
+@ApiTags('Employees')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Controller('employees')
+export class EmployeeController {
+  constructor(private readonly employeeService: EmployeeService) {}
+
+  @Roles('System Administrator', 'Finance Officer')
+  @Post()
+  @ApiOperation({ summary: 'Create a new employee' })
+  create(@Body() createEmployeeDto: CreateEmployeeDto) {
+    return this.employeeService.create(createEmployeeDto);
+  }
+
+  @Roles('System Administrator', 'Finance Officer', 'Executive')
+  @Get()
+  @ApiOperation({ summary: 'Get all active employees' })
+  @ApiQuery({ name: 'skip', required: false, type: Number })
+  @ApiQuery({ name: 'take', required: false, type: Number })
+  findAll(@Query('skip') skip?: number, @Query('take') take?: number) {
+    return this.employeeService.findAll(skip, take);
+  }
+
+  @Roles('System Administrator', 'Finance Officer', 'Executive')
+  @Get(':id')
+  @ApiOperation({ summary: 'Get an employee by ID' })
+  findOne(@Param('id') id: string) {
+    return this.employeeService.findOne(id);
+  }
+
+  @Roles('System Administrator', 'Finance Officer')
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update an employee' })
+  update(@Param('id') id: string, @Body() updateEmployeeDto: UpdateEmployeeDto) {
+    return this.employeeService.update(id, updateEmployeeDto);
+  }
+
+  @Roles('System Administrator', 'Finance Officer')
+  @Delete(':id')
+  @ApiOperation({ summary: 'Soft delete an employee' })
+  remove(@Param('id') id: string, @Req() req: any) {
+    return this.employeeService.remove(id, req.user.userId);
+  }
+}
