@@ -135,7 +135,19 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
       link.click();
       toast.success("ดาวน์โหลดไฟล์ Excel สำเร็จ", { id: toastId });
     } catch (e: any) {
-      toast.error(`ไม่สามารถดาวน์โหลดไฟล์ Excel ได้: ${e.response?.data?.message || e.message}`, { id: toastId });
+      let errorMessage = e.message;
+      if (e.response?.data instanceof Blob) {
+        try {
+          const text = await e.response.data.text();
+          const json = JSON.parse(text);
+          errorMessage = json.message || text;
+        } catch (err) {
+          try { errorMessage = await e.response.data.text(); } catch (err2) {}
+        }
+      } else if (e.response?.data?.message) {
+        errorMessage = e.response.data.message;
+      }
+      toast.error(`ไม่สามารถดาวน์โหลดไฟล์ Excel ได้: ${errorMessage}`, { id: toastId });
     } finally {
       setIsExportingExcel(false);
     }
@@ -151,7 +163,19 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
       window.open(url);
       toast.success("สร้างสลิปเงินเดือนสำเร็จ", { id: toastId });
     } catch (e: any) {
-      toast.error(`ไม่สามารถดาวน์โหลดไฟล์ PDF ได้: ${e.response?.data?.message || e.message}`, { id: toastId });
+      let errorMessage = e.message;
+      if (e.response?.data instanceof Blob) {
+        try {
+          const text = await e.response.data.text();
+          const json = JSON.parse(text);
+          errorMessage = json.message || text;
+        } catch (err) {
+          try { errorMessage = await e.response.data.text(); } catch (err2) {}
+        }
+      } else if (e.response?.data?.message) {
+        errorMessage = e.response.data.message;
+      }
+      toast.error(`ไม่สามารถดาวน์โหลดไฟล์ PDF ได้: ${errorMessage}`, { id: toastId });
     } finally {
       setIsExportingPdf(false);
     }
