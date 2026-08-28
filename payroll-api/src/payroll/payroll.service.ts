@@ -184,6 +184,8 @@ export class PayrollService {
 
     const empData = new Map<string, any>();
     for (const tx of transactions) {
+      if (!tx.employee || !tx.payItem) continue;
+      
       if (!empData.has(tx.employeeId)) {
         empData.set(tx.employeeId, { employee: tx.employee, txMap: new Map<string, number>(), totalInc: 0, totalDed: 0, net: 0 });
       }
@@ -215,7 +217,11 @@ export class PayrollService {
       doc.lineWidth(1).rect(40, 40, 515, endY - 40 + 50).stroke();
 
       if (logoPath) {
-        doc.image(logoPath, 50, 45, { height: 40 });
+        try {
+          doc.image(logoPath, 50, 45, { height: 40 });
+        } catch (err) {
+          console.error("Failed to load logo image:", err);
+        }
       }
 
       doc.font('ThaiBold').fontSize(16).text(`โรงพยาบาลสามโคก ประจำเดือน ${monthStr}`, 40, 50, { align: 'center' });
@@ -283,7 +289,11 @@ export class PayrollService {
       doc.fontSize(12).font('ThaiRegular').text(`(${bahttext(e.net)})`, 40, endY + 30, { align: 'center' });
 
       if (signaturePath) {
-        doc.image(signaturePath, 300, endY + 50, { height: 40 });
+        try {
+          doc.image(signaturePath, 300, endY + 50, { height: 40 });
+        } catch (err) {
+          console.error("Failed to load signature image:", err);
+        }
       }
 
       i++;
