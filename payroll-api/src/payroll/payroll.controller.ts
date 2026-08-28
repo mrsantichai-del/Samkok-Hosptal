@@ -61,6 +61,13 @@ export class PayrollController {
   @Get('records/:id/export/pdf')
   @ApiOperation({ summary: 'Export Payslips to PDF' })
   async exportPdf(@Param('id') id: string, @Res() res: Response) {
-    await this.payrollService.exportPdf(id, res);
+    try {
+      await this.payrollService.exportPdf(id, res);
+    } catch (error: any) {
+      console.error('PDF Export Error:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ message: 'PDF Error: ' + (error.message || 'Unknown error'), stack: error.stack });
+      }
+    }
   }
 }
