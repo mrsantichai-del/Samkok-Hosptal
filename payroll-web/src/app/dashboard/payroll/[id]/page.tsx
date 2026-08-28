@@ -343,7 +343,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] px-2 pb-2">
+    <div className="fixed top-14 left-0 lg:left-[280px] right-0 bottom-0 bg-[#f0f2f5] flex flex-col p-2 lg:p-4 z-30">
       <div className="flex justify-between items-center mb-2 flex-shrink-0">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/payroll')} className="h-8 w-8">
@@ -431,12 +431,12 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                 </TableRow>
                 <TableRow>
                   {incomeItems.map(item => (
-                    <TableHead key={item.id} className="border border-gray-300 p-1 text-center leading-tight text-[11px] bg-green-50 z-40 min-w-[95px] w-[95px] sticky top-[28px]">
+                    <TableHead key={item.id} className="border border-gray-300 p-1 text-center leading-tight text-[11px] bg-green-50 z-40 min-w-[95px] w-[95px] sticky top-[25px]">
                       <div className="truncate" title={item.name}>{item.name}</div>
                     </TableHead>
                   ))}
                   {deductionItems.map(item => (
-                    <TableHead key={item.id} className="border border-gray-300 p-1 text-center leading-tight text-[11px] bg-red-50 z-40 min-w-[95px] w-[95px] sticky top-[28px]">
+                    <TableHead key={item.id} className="border border-gray-300 p-1 text-center leading-tight text-[11px] bg-red-50 z-40 min-w-[95px] w-[95px] sticky top-[25px]">
                       <div className="truncate" title={item.name}>{item.name}</div>
                     </TableHead>
                   ))}
