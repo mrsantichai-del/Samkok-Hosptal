@@ -96,6 +96,8 @@ export class PayrollService {
     const deductionHeaders = new Set<string>();
 
     for (const tx of transactions) {
+      if (!tx.employee || !tx.payItem) continue;
+
       if (!empData.has(tx.employeeId)) {
         empData.set(tx.employeeId, { employee: tx.employee, incomes: {}, deductions: {}, totalIncome: 0, totalDeduction: 0 });
       }
@@ -127,8 +129,8 @@ export class PayrollService {
     for (const e of empData.values()) {
        const row = [
          seq++,
-         e.employee.employeeCode,
-         `${e.employee.firstName} ${e.employee.lastName}`,
+         e.employee.employeeCode || '-',
+         `${e.employee.firstName || ''} ${e.employee.lastName || ''}`.trim(),
          e.employee.position?.name || 'ไม่ระบุ',
          e.employee.employeeType?.name || 'ไม่ระบุ',
          ...incArr.map(h => e.incomes[h] || 0),

@@ -53,14 +53,14 @@ export class PayrollController {
   @Roles('System Administrator', 'Finance Officer', 'Executive')
   @Get('records/:id/export/excel')
   @ApiOperation({ summary: 'Export Payroll to Excel' })
-  exportExcel(@Param('id') id: string, @Res() res: Response) {
-    return this.payrollService.exportExcel(id, res);
+  async exportExcel(@Param('id') id: string, @Res() res: Response) {
+    await this.payrollService.exportExcel(id, res);
   }
 
   @Roles('System Administrator', 'Finance Officer', 'Executive', 'Employee')
   @Get('records/:id/export/pdf')
   @ApiOperation({ summary: 'Export Payslips to PDF' })
-  exportPdf(@Param('id') id: string, @Res() res: Response) {
-    return this.payrollService.exportPdf(id, res);
+  async exportPdf(@Param('id') id: string, @Res() res: Response) {
+    await this.payrollService.exportPdf(id, res);
   }
 }
