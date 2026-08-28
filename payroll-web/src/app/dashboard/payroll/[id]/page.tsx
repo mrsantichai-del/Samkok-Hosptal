@@ -387,8 +387,8 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
         <div className="text-center py-20 text-gray-500 bg-white rounded-md flex-1">ไม่พบรายการเงินเดือน</div>
       ) : (
         <div className="border rounded-md shadow-sm bg-white flex flex-col flex-1 overflow-hidden relative">
-          <div className="overflow-auto flex-1 pb-4">
-            <Table className="border-collapse h-max" style={{ width: 'max-content' }}>
+          <div className="overflow-auto flex-1 relative">
+            <table className="border-collapse h-max w-full text-sm" style={{ width: 'max-content' }}>
               <TableHeader className="sticky top-0 z-40 bg-gray-200">
                 <TableRow>
                   <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-0 top-0 z-50 bg-gray-200 min-w-[30px] w-[30px]">ที่</TableHead>
@@ -482,7 +482,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                 )}
               </TableBody>
               
-              <TableFooter className="sticky bottom-[-1px] z-40 bg-gray-200 font-bold shadow-[0_-1px_0_0_#d1d5db]">
+              <TableFooter className="sticky bottom-0 z-40 bg-gray-200 font-bold shadow-[0_-1px_0_0_#d1d5db]">
                  <TableRow>
                    <TableCell colSpan={4} className="border border-gray-300 p-1 pr-4 text-right sticky left-0 z-50 bg-gray-200 w-[340px] shadow-[1px_0_0_0_#d1d5db] text-xs">รวมทั้งหมด ({filteredEmployees.length} คน):</TableCell>
                    {incomeItems.map(item => (
@@ -501,7 +501,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                  </TableRow>
               </TableFooter>
 
-            </Table>
+            </table>
           </div>
         </div>
       )}
