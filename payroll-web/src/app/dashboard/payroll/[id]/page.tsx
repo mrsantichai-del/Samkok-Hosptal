@@ -126,7 +126,8 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
     const toastId = toast.loading("กำลังสร้างไฟล์ Excel...");
     try {
       const token = Cookies.get("token");
-      const res = await axios.get(`${API_URL}/payroll/records/${resolvedParams.id}/export/excel`, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
+      const employeeIds = filteredEmployees.map(e => e.employeeId);
+        const res = await axios.post(`${API_URL}/payroll/records/${resolvedParams.id}/export/excel`, { employeeIds }, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -158,7 +159,8 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
     const toastId = toast.loading("กำลังสร้างสลิปเงินเดือน (PDF)...");
     try {
       const token = Cookies.get("token");
-      const res = await axios.get(`${API_URL}/payroll/records/${resolvedParams.id}/export/pdf`, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
+      const employeeIds = filteredEmployees.map(e => e.employeeId);
+        const res = await axios.post(`${API_URL}/payroll/records/${resolvedParams.id}/export/pdf`, { employeeIds }, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
       window.open(url);
       toast.success("สร้างสลิปเงินเดือนสำเร็จ", { id: toastId });
