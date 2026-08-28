@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [employeeTypes, setEmployeeTypes] = useState<any[]>([]);
+  const [positions, setPositions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Dialog State
@@ -27,18 +28,21 @@ export default function EmployeesPage() {
   const [lastName, setLastName] = useState("");
   const [idCard, setIdCard] = useState("");
   const [employeeTypeId, setEmployeeTypeId] = useState("unassigned");
+  const [positionId, setPositionId] = useState("unassigned");
   const [saving, setSaving] = useState(false);
 
   const fetchEmployees = async () => {
     setLoading(true);
     try {
       const token = Cookies.get("token");
-      const [empRes, typeRes] = await Promise.all([
+      const [empRes, typeRes, posRes] = await Promise.all([
         axios.get(`${API_URL}/employees`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/employees/types`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_URL}/employees/types`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/employees/positions`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setEmployees(empRes.data);
       setEmployeeTypes(typeRes.data);
+      setPositions(posRes.data);
     } catch (e) {
       console.error(e);
     } finally {
@@ -56,6 +60,7 @@ export default function EmployeesPage() {
     setLastName("");
     setIdCard("");
     setEmployeeTypeId("unassigned");
+    setPositionId("unassigned");
     setIsDialogOpen(true);
   };
 
@@ -65,6 +70,7 @@ export default function EmployeesPage() {
     setLastName(item.lastName);
     setIdCard(item.idCard || "");
     setEmployeeTypeId(item.employeeTypeId || "unassigned");
+    setPositionId(item.positionId || "unassigned");
     setIsDialogOpen(true);
   };
 
@@ -76,7 +82,8 @@ export default function EmployeesPage() {
         firstName,
         lastName,
         idCard: idCard || undefined,
-        employeeTypeId: employeeTypeId === "unassigned" ? null : employeeTypeId
+        employeeTypeId: employeeTypeId === "unassigned" ? null : employeeTypeId,
+        positionId: positionId === "unassigned" ? null : positionId
       };
 
       if (editingItem) {
@@ -137,7 +144,8 @@ export default function EmployeesPage() {
             <TableRow>
               <TableHead>รหัสพนักงาน</TableHead>
               <TableHead>ชื่อ - นามสกุล</TableHead>
-              <TableHead>ประเภทพนักงาน</TableHead>
+              <TableHead>ตำแหน่ง</TableHead>
+                <TableHead>ประเภทพนักงาน</TableHead>
               <TableHead>สถานะ</TableHead>
               <TableHead className="w-[120px]">จัดการ</TableHead>
             </TableRow>
@@ -210,6 +218,21 @@ export default function EmployeesPage() {
             <div className="space-y-2">
               <Label htmlFor="idCard">เลขบัตรประชาชน (ไม่บังคับ)</Label>
               <Input id="idCard" value={idCard} onChange={(e) => setIdCard(e.target.value)} placeholder="เลข 13 หลัก" />
+            </div>
+
+            <div className="space-y-2">
+              <Label>ตำแหน่ง</Label>
+              <Select value={positionId} onValueChange={setPositionId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกตำแหน่ง" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unassigned">ไม่ระบุ</SelectItem>
+                  {positions.map(pos => (
+                    <SelectItem key={pos.id} value={pos.id}>{pos.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

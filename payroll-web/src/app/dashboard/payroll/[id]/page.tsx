@@ -30,8 +30,15 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
 
   // Filters & Sorting
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterType, setFilterType] = useState("ALL");
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc'|'desc' }>({ key: 'code', direction: 'asc' });
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Import Preview State
   const [importPreviewOpen, setImportPreviewOpen] = useState(false);
@@ -233,8 +240,8 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
 
   let filteredEmployees = employeeList.filter(emp => {
     if (filterType !== "ALL" && emp.employeeType?.id !== filterType) return false;
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
+    if (debouncedSearch) {
+      const searchLower = debouncedSearch.toLowerCase();
       return emp.firstName.toLowerCase().includes(searchLower) || 
              emp.lastName.toLowerCase().includes(searchLower) || 
              emp.employeeCode.toLowerCase().includes(searchLower);
@@ -250,6 +257,8 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
        aValue = a.firstName; bValue = b.firstName;
     } else if (sortConfig.key === 'type') {
        aValue = a.employeeType?.name || ''; bValue = b.employeeType?.name || '';
+    } else if (sortConfig.key === 'position') {
+       aValue = a.position?.name || ''; bValue = b.position?.name || '';
     } else if (sortConfig.key === 'net') {
        let aInc=0, aDed=0, bInc=0, bDed=0;
        incomeItems.forEach(i => aInc += Number(gridData[a.employeeId]?.[i.id] || 0));
@@ -258,6 +267,11 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
        deductionItems.forEach(i => bDed += Number(gridData[b.employeeId]?.[i.id] || 0));
        aValue = aInc - aDed;
        bValue = bInc - bDed;
+    }
+
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+       const cmp = aValue.localeCompare(bValue, 'th');
+       return sortConfig.direction === 'asc' ? cmp : -cmp;
     }
 
     if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
@@ -334,6 +348,8 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
             }}>
                <option value="code|asc">รหัสพนักงาน (A-Z)</option>
                <option value="name|asc">ชื่อ (ก-ฮ)</option>
+               <option value="type|asc">ประเภทพนักงาน (ก-ฮ)</option>
+               <option value="position|asc">ตำแหน่ง (ก-ฮ)</option>
                <option value="net|desc">รับสุทธิ (มากไปน้อย)</option>
                <option value="net|asc">รับสุทธิ (น้อยไปมาก)</option>
             </select>
@@ -357,7 +373,8 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                 <TableRow>
                   <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-0 z-50 bg-gray-200 min-w-[30px] w-[30px]">ที่</TableHead>
                   <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-[30px] z-50 bg-gray-200 min-w-[150px] w-[150px]">รหัส - ชื่อพนักงาน</TableHead>
-                  <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-[180px] z-50 bg-gray-200 min-w-[80px] w-[80px] shadow-[1px_0_0_0_#d1d5db]">ประเภท</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-[180px] z-50 bg-gray-200 min-w-[80px] w-[80px]">ตำแหน่ง</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-[260px] z-50 bg-gray-200 min-w-[80px] w-[80px] shadow-[1px_0_0_0_#d1d5db]">ประเภท</TableHead>
                   
                   {incomeItems.length > 0 && (
                     <TableHead colSpan={incomeItems.length} className="border border-gray-300 p-1 text-center text-green-900 bg-green-200/90 font-bold z-40 text-xs">รายรับ (+)</TableHead>
@@ -401,7 +418,10 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                          <TableCell className="border border-gray-300 p-1 sticky left-[30px] z-10 bg-white group-hover:bg-blue-50/50 font-medium truncate min-w-[150px] w-[150px] text-[11px]" title={`${emp.employeeCode} ${emp.firstName} ${emp.lastName}`}>
                            <span className="text-[#1877f2] font-semibold">{emp.employeeCode}</span> {emp.firstName} {emp.lastName}
                          </TableCell>
-                         <TableCell className="border border-gray-300 p-1 text-center sticky left-[180px] z-10 bg-white group-hover:bg-blue-50/50 truncate min-w-[80px] w-[80px] text-[10px] text-gray-600 shadow-[1px_0_0_0_#e5e7eb]" title={emp.employeeType?.name || '-'}>
+                         <TableCell className="border border-gray-300 p-1 text-center sticky left-[180px] z-10 bg-white group-hover:bg-blue-50/50 truncate min-w-[80px] w-[80px] text-[10px] text-gray-600" title={emp.position?.name || '-'}>
+                           {emp.position?.name || '-'}
+                         </TableCell>
+                         <TableCell className="border border-gray-300 p-1 text-center sticky left-[260px] z-10 bg-white group-hover:bg-blue-50/50 truncate min-w-[80px] w-[80px] text-[10px] text-gray-600 shadow-[1px_0_0_0_#e5e7eb]" title={emp.employeeType?.name || '-'}>
                            {emp.employeeType?.name || '-'}
                          </TableCell>
                          
@@ -444,7 +464,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
               
               <TableFooter className="sticky bottom-[-1px] z-40 bg-gray-200 font-bold shadow-[0_-1px_0_0_#d1d5db]">
                  <TableRow>
-                   <TableCell colSpan={3} className="border border-gray-300 p-1 pr-4 text-right sticky left-0 z-50 bg-gray-200 w-[260px] shadow-[1px_0_0_0_#d1d5db] text-xs">รวมทั้งหมด ({filteredEmployees.length} คน):</TableCell>
+                   <TableCell colSpan={4} className="border border-gray-300 p-1 pr-4 text-right sticky left-0 z-50 bg-gray-200 w-[340px] shadow-[1px_0_0_0_#d1d5db] text-xs">รวมทั้งหมด ({filteredEmployees.length} คน):</TableCell>
                    {incomeItems.map(item => (
                       <TableCell key={item.id} className="border border-gray-300 p-1 text-right text-green-900 bg-green-100 z-40 min-w-[95px] w-[95px] text-[11px]">
                          {computeColTotal(item.id).toLocaleString(undefined, {minimumFractionDigits:2})}
