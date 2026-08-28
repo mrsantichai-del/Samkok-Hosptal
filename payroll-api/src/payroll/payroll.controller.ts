@@ -51,18 +51,18 @@ export class PayrollController {
   }
 
   @Roles('System Administrator', 'Finance Officer', 'Executive')
-  @Get('records/:id/export/excel')
+  @Post('records/:id/export/excel')
   @ApiOperation({ summary: 'Export Payroll to Excel' })
-  async exportExcel(@Param('id') id: string, @Res() res: Response) {
-    await this.payrollService.exportExcel(id, res);
+  async exportExcel(@Param('id') id: string, @Body() body: { employeeIds?: string[] }, @Res() res: Response) {
+    await this.payrollService.exportExcel(id, res, body.employeeIds);
   }
 
   @Roles('System Administrator', 'Finance Officer', 'Executive', 'Employee')
-  @Get('records/:id/export/pdf')
+  @Post('records/:id/export/pdf')
   @ApiOperation({ summary: 'Export Payslips to PDF' })
-  async exportPdf(@Param('id') id: string, @Res() res: Response) {
+  async exportPdf(@Param('id') id: string, @Body() body: { employeeIds?: string[] }, @Res() res: Response) {
     try {
-      await this.payrollService.exportPdf(id, res);
+      await this.payrollService.exportPdf(id, res, body.employeeIds);
     } catch (error: any) {
       console.error('PDF Export Error:', error);
       if (!res.headersSent) {

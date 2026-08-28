@@ -84,11 +84,15 @@ export class PayrollService {
     return { message: 'Payroll approved' };
   }
 
-  async exportExcel(recordId: string, res: Response) {
+  async exportExcel(recordId: string, res: Response, employeeIds?: string[]) {
     const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
     if (!record) throw new NotFoundException('Record not found');
 
-    const transactions = await this.getPayrollTransactions(recordId);
+    let transactions = await this.getPayrollTransactions(recordId);
+    if (employeeIds && employeeIds.length > 0) {
+      transactions = transactions.filter(tx => employeeIds.includes(tx.employeeId));
+      transactions.sort((a, b) => employeeIds.indexOf(a.employeeId) - employeeIds.indexOf(b.employeeId));
+    }
     
     // Group by Employee
     const empData = new Map<string, any>();
@@ -149,11 +153,15 @@ export class PayrollService {
     res.end();
   }
 
-  async exportPdf(recordId: string, res: Response) {
+  async exportPdf(recordId: string, res: Response, employeeIds?: string[]) {
     const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
     if (!record) throw new NotFoundException('Record not found');
 
-    const transactions = await this.getPayrollTransactions(recordId);
+    let transactions = await this.getPayrollTransactions(recordId);
+      if (employeeIds && employeeIds.length > 0) {
+        transactions = transactions.filter(tx => employeeIds.includes(tx.employeeId));
+        transactions.sort((a, b) => employeeIds.indexOf(a.employeeId) - employeeIds.indexOf(b.employeeId));
+      }
     const allPayItems = await this.prisma.payItem.findMany({ orderBy: { createdAt: 'asc' } });
     const allIncomes = allPayItems.filter(p => p.type === 'INCOME');
     const allDeductions = allPayItems.filter(p => p.type === 'DEDUCTION');
