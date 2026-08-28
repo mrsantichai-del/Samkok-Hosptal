@@ -43,7 +43,7 @@ export class PayrollService {
     if (employeeId) whereClause.employeeId = employeeId;
     return this.prisma.payrollTransaction.findMany({
       where: whereClause,
-      include: { employee: { select: { firstName: true, lastName: true, employeeCode: true, position: { select: { name: true } } } }, payItem: { select: { name: true, type: true } } }
+      include: { employee: { select: { firstName: true, lastName: true, employeeCode: true, position: { select: { name: true } }, employeeType: { select: { name: true } } } }, payItem: { select: { name: true, type: true } } }
     });
   }
 
@@ -119,14 +119,17 @@ export class PayrollService {
     const incArr = Array.from(incomeHeaders);
     const dedArr = Array.from(deductionHeaders);
     
-    const headers = ['รหัสพนักงาน', 'ชื่อ-นามสกุล', ...incArr, 'รวมรายรับ', ...dedArr, 'รวมรายจ่าย', 'รับสุทธิ'];
+    const headers = ['ลำดับที่', 'รหัสพนักงาน', 'ชื่อ-นามสกุล', 'ประเภทพนักงาน', ...incArr, 'รวมรายรับ', ...dedArr, 'รวมรายจ่าย', 'รับสุทธิ'];
     sheet.addRow(headers);
     sheet.getRow(1).font = { bold: true };
 
+    let seq = 1;
     for (const e of empData.values()) {
        const row = [
+         seq++,
          e.employee.employeeCode,
          `${e.employee.firstName} ${e.employee.lastName}`,
+         e.employee.employeeType?.name || 'ไม่ระบุ',
          ...incArr.map(h => e.incomes[h] || 0),
          e.totalIncome,
          ...dedArr.map(h => e.deductions[h] || 0),
