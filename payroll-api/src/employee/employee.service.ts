@@ -103,4 +103,31 @@ export class EmployeeService {
       data: { deletedAt: new Date() }
     });
   }
+
+  async getPositions() {
+    return this.prisma.position.findMany({
+      where: { deletedAt: null },
+      orderBy: { name: 'asc' }
+    });
+  }
+
+  async createPosition(name: string, description?: string) {
+    return this.prisma.position.create({
+      data: { name, description }
+    });
+  }
+
+  async updatePosition(id: string, data: { name?: string; description?: string }) {
+    return this.prisma.position.update({
+      where: { id },
+      data
+    });
+  }
+
+  async removePosition(id: string) {
+    return this.prisma.position.update({
+      where: { id },
+      data: { deletedAt: new Date() }
+    });
+  }
 }

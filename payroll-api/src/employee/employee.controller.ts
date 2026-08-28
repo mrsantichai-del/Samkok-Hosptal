@@ -58,6 +58,34 @@ export class EmployeeController {
     return this.employeeService.removeType(id);
   }
 
+  @Roles('System Administrator', 'Finance Officer')
+  @Post('positions')
+  @ApiOperation({ summary: 'Create position' })
+  createPosition(@Body() body: { name: string; description?: string }) {
+    return this.employeeService.createPosition(body.name, body.description);
+  }
+
+  @Roles('System Administrator', 'Finance Officer', 'Executive')
+  @Get('positions')
+  @ApiOperation({ summary: 'Get all positions' })
+  getPositions() {
+    return this.employeeService.getPositions();
+  }
+
+  @Roles('System Administrator', 'Finance Officer')
+  @Patch('positions/:id')
+  @ApiOperation({ summary: 'Update position' })
+  updatePosition(@Param('id') id: string, @Body() body: { name?: string; description?: string }) {
+    return this.employeeService.updatePosition(id, body);
+  }
+
+  @Roles('System Administrator', 'Finance Officer')
+  @Delete('positions/:id')
+  @ApiOperation({ summary: 'Delete position' })
+  removePosition(@Param('id') id: string) {
+    return this.employeeService.removePosition(id);
+  }
+
   @Roles('System Administrator', 'Finance Officer', 'Executive')
   @Get(':id')
   @ApiOperation({ summary: 'Get an employee by ID' })

@@ -14,6 +14,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   public role: PrismaClient['role'];
   public employee: PrismaClient['employee'];
   public employeeType: PrismaClient['employeeType'];
+  public position: PrismaClient['position'];
   public payItem: PrismaClient['payItem'];
   public payrollRecord: PrismaClient['payrollRecord'];
   public payrollTransaction: PrismaClient['payrollTransaction'];
@@ -28,6 +29,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     this.role = this.client.role;
     this.employee = this.client.employee;
     this.employeeType = this.client.employeeType;
+    this.position = this.client.position;
     this.payItem = this.client.payItem;
     this.payrollRecord = this.client.payrollRecord;
     this.payrollTransaction = this.client.payrollTransaction;
