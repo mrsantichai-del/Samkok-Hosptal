@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, Plus, Edit, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 export default function EmployeeTypesPage() {
@@ -35,6 +36,7 @@ export default function EmployeeTypesPage() {
       setTypes(res.data);
     } catch (e) {
       console.error(e);
+      toast.error("ดึงข้อมูลไม่สำเร็จ");
     } finally {
       setLoading(false);
     }

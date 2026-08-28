@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Download, Save, Upload, Search, FileX2 } from "lucide-react";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 
 export default function PayrollDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -27,6 +28,8 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   const [gridData, setGridData] = useState<Record<string, Record<string, string>>>({});
   const [modifiedRows, setModifiedRows] = useState<Set<string>>(new Set());
   const [savingGlobal, setSavingGlobal] = useState(false);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   // Filters & Sorting
   const [searchTerm, setSearchTerm] = useState("");
@@ -75,6 +78,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
       setModifiedRows(new Set());
     } catch (e) {
       console.error(e);
+      toast.error("ดึงข้อมูลไม่สำเร็จ");
     } finally {
       setLoading(false);
     }
@@ -87,6 +91,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   const handleSaveAll = async () => {
     if (modifiedRows.size === 0) return;
     setSavingGlobal(true);
+    const toastId = toast.loading("กำลังบันทึกข้อมูล...");
     try {
       const token = Cookies.get("token");
       const promises = Array.from(modifiedRows).map(empId => {
@@ -107,16 +112,18 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
 
       await Promise.all(promises);
       setModifiedRows(new Set());
-      alert("บันทึกข้อมูลเรียบร้อยแล้ว");
+      toast.success("บันทึกข้อมูลเรียบร้อยแล้ว", { id: toastId });
       fetchData();
     } catch (e: any) {
-      alert("เกิดข้อผิดพลาดในการบันทึก");
+      toast.error("เกิดข้อผิดพลาดในการบันทึก", { id: toastId });
     } finally {
       setSavingGlobal(false);
     }
   };
 
   const handleExportExcel = async () => {
+    setIsExportingExcel(true);
+    const toastId = toast.loading("กำลังสร้างไฟล์ Excel...");
     try {
       const token = Cookies.get("token");
       const res = await axios.get(`${API_URL}/payroll/records/${resolvedParams.id}/export/excel`, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
@@ -126,16 +133,28 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
       link.setAttribute('download', `Payroll_${resolvedParams.id}.xlsx`);
       document.body.appendChild(link);
       link.click();
-    } catch (e: any) { alert(`ไม่สามารถดาวน์โหลดไฟล์ Excel ได้: ${e.response?.data?.message || e.message}`); }
+      toast.success("ดาวน์โหลดไฟล์ Excel สำเร็จ", { id: toastId });
+    } catch (e: any) {
+      toast.error(`ไม่สามารถดาวน์โหลดไฟล์ Excel ได้: ${e.response?.data?.message || e.message}`, { id: toastId });
+    } finally {
+      setIsExportingExcel(false);
+    }
   };
 
   const handleExportPdf = async () => {
+    setIsExportingPdf(true);
+    const toastId = toast.loading("กำลังสร้างสลิปเงินเดือน (PDF)...");
     try {
       const token = Cookies.get("token");
       const res = await axios.get(`${API_URL}/payroll/records/${resolvedParams.id}/export/pdf`, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
       window.open(url);
-    } catch (e: any) { alert(`ไม่สามารถดาวน์โหลดไฟล์ PDF ได้: ${e.response?.data?.message || e.message}`); }
+      toast.success("สร้างสลิปเงินเดือนสำเร็จ", { id: toastId });
+    } catch (e: any) {
+      toast.error(`ไม่สามารถดาวน์โหลดไฟล์ PDF ได้: ${e.response?.data?.message || e.message}`, { id: toastId });
+    } finally {
+      setIsExportingPdf(false);
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -214,7 +233,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
         (window as any).__pendingModified = pendingModifiedRows;
 
       } catch (err: any) {
-        alert("เกิดข้อผิดพลาดในการอ่านไฟล์: " + err.message);
+        toast.error("เกิดข้อผิดพลาดในการอ่านไฟล์: " + err.message);
       } finally {
         if (fileInputRef.current) fileInputRef.current.value = '';
       }
@@ -232,6 +251,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
     }
     setImportPreviewOpen(false);
     setPendingGridData(null);
+    toast.success("นำเข้าตัวเลขสำเร็จ! อย่าลืมกด บันทึกทั้งหมด เพื่อยืนยัน");
   };
 
   // Computations
@@ -319,11 +339,11 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
             {savingGlobal ? "บันทึก..." : `บันทึกทั้งหมด (${modifiedRows.size})`}
           </Button>
           <div className="w-px h-8 bg-gray-300 mx-1"></div>
-          <Button className="h-8 text-xs bg-red-600 hover:bg-red-700 text-white" onClick={handleExportPdf}>
-            <Download className="mr-1 h-3 w-3" /> สลิป (PDF)
+          <Button className="h-8 text-xs bg-red-600 hover:bg-red-700 text-white" onClick={handleExportPdf} disabled={isExportingPdf}>
+            <Download className="mr-1 h-3 w-3" /> {isExportingPdf ? "กำลังสร้าง PDF..." : "สลิป (PDF)"}
           </Button>
-          <Button className="h-8 text-xs bg-green-600 hover:bg-green-700 text-white" onClick={handleExportExcel}>
-            <Download className="mr-1 h-3 w-3" /> Export Excel
+          <Button className="h-8 text-xs bg-green-600 hover:bg-green-700 text-white" onClick={handleExportExcel} disabled={isExportingExcel}>
+            <Download className="mr-1 h-3 w-3" /> {isExportingExcel ? "กำลังส่งออก..." : "Export Excel"}
           </Button>
         </div>
       </div>
