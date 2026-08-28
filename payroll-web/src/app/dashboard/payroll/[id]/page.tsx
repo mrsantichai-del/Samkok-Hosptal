@@ -126,7 +126,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
       link.setAttribute('download', `Payroll_${resolvedParams.id}.xlsx`);
       document.body.appendChild(link);
       link.click();
-    } catch (e) { alert("ไม่สามารถดาวน์โหลดไฟล์ Excel ได้"); }
+    } catch (e: any) { alert(`ไม่สามารถดาวน์โหลดไฟล์ Excel ได้: ${e.response?.data?.message || e.message}`); }
   };
 
   const handleExportPdf = async () => {
@@ -135,7 +135,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
       const res = await axios.get(`${API_URL}/payroll/records/${resolvedParams.id}/export/pdf`, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
       window.open(url);
-    } catch (e) { alert("ไม่สามารถดาวน์โหลดไฟล์ PDF ได้"); }
+    } catch (e: any) { alert(`ไม่สามารถดาวน์โหลดไฟล์ PDF ได้: ${e.response?.data?.message || e.message}`); }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
