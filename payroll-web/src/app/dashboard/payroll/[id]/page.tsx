@@ -319,7 +319,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-60px)] px-2 pb-2">
+    <div className="flex flex-col h-[calc(100vh-120px)] px-2 pb-2">
       <div className="flex justify-between items-center mb-2 flex-shrink-0">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/payroll')} className="h-8 w-8">
@@ -391,19 +391,19 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
             <Table className="border-collapse h-max" style={{ width: 'max-content' }}>
               <TableHeader className="sticky top-0 z-40 bg-gray-200">
                 <TableRow>
-                  <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-0 z-50 bg-gray-200 min-w-[30px] w-[30px]">ที่</TableHead>
-                  <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-[30px] z-50 bg-gray-200 min-w-[150px] w-[150px]">รหัส - ชื่อพนักงาน</TableHead>
-                  <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-[180px] z-50 bg-gray-200 min-w-[80px] w-[80px]">ตำแหน่ง</TableHead>
-                  <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-[260px] z-50 bg-gray-200 min-w-[80px] w-[80px] shadow-[1px_0_0_0_#d1d5db]">ประเภท</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-0 top-0 z-50 bg-gray-200 min-w-[30px] w-[30px]">ที่</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-[30px] top-0 z-50 bg-gray-200 min-w-[150px] w-[150px]">รหัส - ชื่อพนักงาน</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-[180px] top-0 z-50 bg-gray-200 min-w-[80px] w-[80px]">ตำแหน่ง</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky left-[260px] top-0 z-50 bg-gray-200 min-w-[80px] w-[80px] shadow-[1px_0_0_0_#d1d5db]">ประเภท</TableHead>
                   
                   {incomeItems.length > 0 && (
-                    <TableHead colSpan={incomeItems.length} className="border border-gray-300 p-1 text-center text-green-900 bg-green-200/90 font-bold z-40 text-xs">รายรับ (+)</TableHead>
+                    <TableHead colSpan={incomeItems.length} className="border border-gray-300 p-1 text-center text-green-900 bg-green-200/90 font-bold sticky top-0 z-40 text-xs">รายรับ (+)</TableHead>
                   )}
                   {deductionItems.length > 0 && (
-                    <TableHead colSpan={deductionItems.length} className="border border-gray-300 p-1 text-center text-red-900 bg-red-200/90 font-bold z-40 text-xs">รายจ่ายและภาษี (-)</TableHead>
+                    <TableHead colSpan={deductionItems.length} className="border border-gray-300 p-1 text-center text-red-900 bg-red-200/90 font-bold sticky top-0 z-40 text-xs">รายจ่ายและภาษี (-)</TableHead>
                   )}
                   
-                  <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky right-0 z-50 bg-gray-200 min-w-[100px] w-[100px] shadow-[-1px_0_0_0_#d1d5db] font-bold">รับสุทธิ</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky right-0 top-0 z-50 bg-gray-200 min-w-[100px] w-[100px] shadow-[-1px_0_0_0_#d1d5db] font-bold">รับสุทธิ</TableHead>
                 </TableRow>
                 <TableRow>
                   {incomeItems.map(item => (
