@@ -93,7 +93,7 @@ export default function PositionsPage() {
       setIsDialogOpen(false);
       fetchTypes();
     } catch (e: any) {
-      alert(e.response?.data?.message || "เกิดข้อผิดพลาดในการบันทึก");
+      toast.error(e.response?.data?.message || "เกิดข้อผิดพลาดในการบันทึก");
     } finally {
       setSaving(false);
     }
@@ -108,7 +108,7 @@ export default function PositionsPage() {
       });
       fetchTypes();
     } catch (e: any) {
-      alert(e.response?.data?.message || "เกิดข้อผิดพลาดในการลบ (อาจมีพนักงานใช้งานอยู่)");
+      toast.error(e.response?.data?.message || "เกิดข้อผิดพลาดในการลบ (อาจมีพนักงานใช้งานอยู่)");
     }
   };
 

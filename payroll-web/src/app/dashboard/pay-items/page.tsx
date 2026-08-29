@@ -8,6 +8,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -90,7 +91,7 @@ export default function PayItemsPage() {
       setIsDialogOpen(false);
       fetchPayItems();
     } catch (e: any) {
-      alert(e.response?.data?.message || "เกิดข้อผิดพลาดในการบันทึก");
+      toast.error();
     } finally {
       setSaving(false);
     }
@@ -105,7 +106,7 @@ export default function PayItemsPage() {
       });
       fetchPayItems();
     } catch (e: any) {
-      alert(e.response?.data?.message || "เกิดข้อผิดพลาดในการลบ");
+      toast.error();
     }
   };
 

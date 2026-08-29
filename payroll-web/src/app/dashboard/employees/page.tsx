@@ -100,7 +100,7 @@ export default function EmployeesPage() {
       setIsDialogOpen(false);
       fetchEmployees();
     } catch (e: any) {
-      alert(e.response?.data?.message || "เกิดข้อผิดพลาดในการบันทึก");
+      toast.error();
     } finally {
       setSaving(false);
     }
@@ -115,7 +115,7 @@ export default function EmployeesPage() {
       });
       fetchEmployees();
     } catch (e: any) {
-      alert("เกิดข้อผิดพลาดในการลบพนักงาน");
+      toast.error();
     }
   };
 
