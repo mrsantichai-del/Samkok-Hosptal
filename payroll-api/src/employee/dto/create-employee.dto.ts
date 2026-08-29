@@ -2,6 +2,11 @@ import { IsString, IsOptional, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateEmployeeDto {
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  employeeCode?: string;
+
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
