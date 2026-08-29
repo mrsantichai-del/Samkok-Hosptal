@@ -25,6 +25,7 @@ export default function PositionsPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deleteItem, setDeleteItem] = useState<any>(null);
   
   // Filtering & Sorting
   const [searchTerm, setSearchTerm] = useState("");
@@ -99,16 +100,25 @@ export default function PositionsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("คุณแน่ใจหรือไม่ที่จะลบตำแหน่งนี้?")) return;
+    const promptDelete = (item: any) => {
+    setDeleteItem(item);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteItem) return;
+    setSaving(true);
     try {
       const token = Cookies.get("token");
-      await axios.delete(`${API_URL}/employees/positions/${id}`, {
+      await axios.delete(`${API_URL}/employees/positions/${deleteItem.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      setDeleteItem(null);
       fetchTypes();
+      toast.success("ลบข้อมูลสำเร็จ");
     } catch (e: any) {
-      toast.error(e.response?.data?.message || "เกิดข้อผิดพลาดในการลบ (อาจมีพนักงานใช้งานอยู่)");
+      toast.error(e.response?.data?.message || "เกิดข้อผิดพลาดในการลบ");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -172,7 +182,7 @@ export default function PositionsPage() {
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:bg-blue-50" onClick={() => openEditDialog(item)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:bg-red-50" onClick={() => handleDelete(item.id)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:bg-red-50" onClick={() => promptDelete(item)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -204,6 +214,25 @@ export default function PositionsPage() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>ยกเลิก</Button>
             <Button className="bg-[#1877f2] hover:bg-[#166fe5]" onClick={handleSave} disabled={saving || !name}>
               {saving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteItem} onOpenChange={(open) => !open && setDeleteItem(null)}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">ยืนยันการลบข้อมูล</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-center text-gray-600">
+            คุณแน่ใจหรือไม่ที่จะลบ <span className="font-bold text-gray-900">{deleteItem?.name}</span>?<br/>
+            การกระทำนี้ไม่สามารถย้อนกลับได้
+          </div>
+          <DialogFooter className="sm:justify-between flex-row">
+            <Button variant="outline" onClick={() => setDeleteItem(null)}>ยกเลิก</Button>
+            <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={confirmDelete} disabled={saving}>
+              {saving ? "กำลังลบ..." : "ยืนยันการลบ"}
             </Button>
           </DialogFooter>
         </DialogContent>

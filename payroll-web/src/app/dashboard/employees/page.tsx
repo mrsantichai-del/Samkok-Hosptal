@@ -31,6 +31,7 @@ export default function EmployeesPage() {
   const [employeeTypeId, setEmployeeTypeId] = useState("unassigned");
   const [positionId, setPositionId] = useState("unassigned");
   const [saving, setSaving] = useState(false);
+  const [deleteItem, setDeleteItem] = useState<any>(null);
 
   const fetchEmployees = async () => {
     setLoading(true);
@@ -106,16 +107,25 @@ export default function EmployeesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("คุณแน่ใจหรือไม่ที่จะลบพนักงานคนนี้? (ข้อมูลจะถูกย้ายไปถังขยะ)")) return;
+    const promptDelete = (item: any) => {
+    setDeleteItem(item);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteItem) return;
+    setSaving(true);
     try {
       const token = Cookies.get("token");
-      await axios.delete(`${API_URL}/employees/${id}`, {
+      await axios.delete(`${API_URL}/employees/${deleteItem.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      setDeleteItem(null);
       fetchEmployees();
+      toast.success("ลบข้อมูลสำเร็จ");
     } catch (e: any) {
-      toast.error();
+      toast.error(e.response?.data?.message || "เกิดข้อผิดพลาดในการลบ");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -256,6 +266,25 @@ export default function EmployeesPage() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>ยกเลิก</Button>
             <Button className="bg-[#1877f2] hover:bg-[#166fe5]" onClick={handleSave} disabled={saving || !firstName || !lastName}>
               {saving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteItem} onOpenChange={(open) => !open && setDeleteItem(null)}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">ยืนยันการลบข้อมูล</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-center text-gray-600">
+            คุณแน่ใจหรือไม่ที่จะลบ <span className="font-bold text-gray-900">{deleteItem?.employeeCode}</span>?<br/>
+            การกระทำนี้ไม่สามารถย้อนกลับได้
+          </div>
+          <DialogFooter className="sm:justify-between flex-row">
+            <Button variant="outline" onClick={() => setDeleteItem(null)}>ยกเลิก</Button>
+            <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={confirmDelete} disabled={saving}>
+              {saving ? "กำลังลบ..." : "ยืนยันการลบ"}
             </Button>
           </DialogFooter>
         </DialogContent>
