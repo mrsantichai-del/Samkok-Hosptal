@@ -87,7 +87,7 @@ export default function PositionsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("คุณแน่ใจหรือไม่ที่จะลบประเภทพนักงานนี้?")) return;
+    if (!confirm("คุณแน่ใจหรือไม่ที่จะลบตำแหน่งนี้?")) return;
     try {
       const token = Cookies.get("token");
       await axios.delete(`${API_URL}/employees/positions/${id}`, {
@@ -103,11 +103,11 @@ export default function PositionsPage() {
     <div className="space-y-4 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">ประเภทพนักงาน</h1>
-          <p className="text-gray-500 text-sm mt-1">ตั้งค่าประเภทพนักงาน เช่น ข้าราชการ, ลจ.ประจำ, พนักงาน, พกส. ฯลฯ</p>
+          <h1 className="text-2xl font-bold">ตำแหน่ง</h1>
+          <p className="text-gray-500 text-sm mt-1">ตั้งค่าตำแหน่ง เช่น ผู้อำนวยการ, แพทย์, พยาบาลวิชาชีพ ฯลฯ</p>
         </div>
         <Button className="bg-[#1877f2] hover:bg-[#166fe5]" onClick={openAddDialog}>
-          <Plus className="mr-2 h-4 w-4" /> เพิ่มประเภทใหม่
+          <Plus className="mr-2 h-4 w-4" /> เพิ่มตำแหน่งใหม่
         </Button>
       </div>
 
@@ -115,13 +115,13 @@ export default function PositionsPage() {
         <div className="p-4 bg-white border-b flex items-center justify-between">
           <div className="relative w-72">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-            <Input placeholder="ค้นหาประเภท..." className="pl-9 bg-[#f0f2f5] border-none" />
+            <Input placeholder="ค้นหาตำแหน่ง..." className="pl-9 bg-[#f0f2f5] border-none" />
           </div>
         </div>
         <Table className="bg-white">
           <TableHeader>
             <TableRow>
-              <TableHead>ประเภทพนักงาน</TableHead>
+              <TableHead>ตำแหน่ง</TableHead>
               <TableHead>รายละเอียดเพิ่มเติม</TableHead>
               <TableHead className="w-[120px]">จัดการ</TableHead>
             </TableRow>
@@ -130,7 +130,7 @@ export default function PositionsPage() {
             {loading ? (
               <TableRow><TableCell colSpan={3} className="text-center py-10 text-gray-500">กำลังโหลดข้อมูล...</TableCell></TableRow>
             ) : types.length === 0 ? (
-              <TableRow><TableCell colSpan={3} className="text-center py-10 text-gray-500">ไม่พบข้อมูลประเภทพนักงาน</TableCell></TableRow>
+              <TableRow><TableCell colSpan={3} className="text-center py-10 text-gray-500">ไม่พบข้อมูลตำแหน่ง</TableCell></TableRow>
             ) : (
               types.map((item) => (
                 <TableRow key={item.id}>
@@ -157,12 +157,12 @@ export default function PositionsPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{editingItem ? "แก้ไขประเภทพนักงาน" : "เพิ่มประเภทพนักงานใหม่"}</DialogTitle>
+            <DialogTitle>{editingItem ? "แก้ไขตำแหน่ง" : "เพิ่มตำแหน่งใหม่"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">ชื่อประเภทพนักงาน (เช่น ข้าราชการ)</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="กรอกชื่อประเภท" />
+              <Label htmlFor="name">ชื่อตำแหน่ง (เช่น แพทย์)</Label>
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="กรอกชื่อตำแหน่ง" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">รายละเอียดเพิ่มเติม (ไม่บังคับ)</Label>
