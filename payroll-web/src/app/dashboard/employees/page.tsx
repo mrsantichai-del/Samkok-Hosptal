@@ -207,7 +207,8 @@ export default function EmployeesPage() {
         <Table className="bg-white">
           <TableHeader>
             <TableRow>
-              <TableHead>รหัสพนักงาน</TableHead>
+              <TableHead className="w-[60px] text-center">ลำดับ</TableHead>
+                <TableHead>รหัสพนักงาน</TableHead>
               <TableHead>ชื่อ - นามสกุล</TableHead>
               <TableHead>ตำแหน่ง</TableHead>
                 <TableHead>ประเภทพนักงาน</TableHead>
@@ -218,20 +219,21 @@ export default function EmployeesPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-10 text-gray-500">
+                <TableCell colSpan={7} className="text-center py-10 text-gray-500">
                   กำลังโหลดข้อมูล...
                 </TableCell>
               </TableRow>
             ) : filteredEmployees.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-10 text-gray-500">
+                <TableCell colSpan={7} className="text-center py-10 text-gray-500">
                   ไม่พบข้อมูลพนักงาน
                 </TableCell>
               </TableRow>
             ) : (
-              filteredEmployees.map((emp) => (
+              filteredEmployees.map((emp, index) => (
                 <TableRow key={emp.id}>
-                  <TableCell className="font-medium">{emp.employeeCode}</TableCell>
+                  <TableCell className="text-center text-gray-500">{index + 1}</TableCell>
+                    <TableCell className="font-medium">{emp.employeeCode}</TableCell>
                   <TableCell>{emp.firstName} {emp.lastName}</TableCell>
                   <TableCell className="text-gray-600">
                     {emp.position?.name || "-"}
