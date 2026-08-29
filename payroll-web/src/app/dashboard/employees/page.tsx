@@ -9,9 +9,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Plus, Edit, Trash2 } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Check, ChevronsUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function EmployeesPage() {
@@ -28,8 +31,29 @@ export default function EmployeesPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [idCard, setIdCard] = useState("");
+  const [employeeCode, setEmployeeCode] = useState("");
   const [employeeTypeId, setEmployeeTypeId] = useState("unassigned");
   const [positionId, setPositionId] = useState("unassigned");
+  
+  // Filter States
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterPositionId, setFilterPositionId] = useState("all");
+  const [filterTypeId, setFilterTypeId] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  
+  // Combobox Open States
+  const [openPos, setOpenPos] = useState(false);
+  const [openType, setOpenType] = useState(false);
+
+  // Derived filtered list
+  const filteredEmployees = employees.filter(emp => {
+    const matchSearch = emp.firstName.includes(searchTerm) || emp.lastName.includes(searchTerm) || emp.employeeCode.includes(searchTerm);
+    const matchPos = filterPositionId === "all" || emp.positionId === filterPositionId;
+    const matchType = filterTypeId === "all" || emp.employeeTypeId === filterTypeId;
+    const matchStatus = filterStatus === "all" || (filterStatus === "active" ? !emp.resignedDate : !!emp.resignedDate);
+    return matchSearch && matchPos && matchType && matchStatus;
+  });
+
   const [saving, setSaving] = useState(false);
   const [deleteItem, setDeleteItem] = useState<any>(null);
 
@@ -59,6 +83,7 @@ export default function EmployeesPage() {
 
   const openAddDialog = () => {
     setEditingItem(null);
+    setEmployeeCode("");
     setFirstName("");
     setLastName("");
     setIdCard("");
@@ -69,6 +94,7 @@ export default function EmployeesPage() {
 
   const openEditDialog = (item: any) => {
     setEditingItem(item);
+    setEmployeeCode(item.employeeCode || "");
     setFirstName(item.firstName);
     setLastName(item.lastName);
     setIdCard(item.idCard || "");
@@ -143,12 +169,39 @@ export default function EmployeesPage() {
 
       <Card className="border-none shadow-sm rounded-lg overflow-hidden">
         <div className="p-4 bg-white border-b flex items-center justify-between">
-          <div className="relative w-72">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-            <Input 
-              placeholder="ค้นหาชื่อพนักงาน..." 
-              className="pl-9 bg-[#f0f2f5] border-none"
-            />
+          <div className="flex gap-4 flex-wrap">
+            <div className="relative w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Input 
+                placeholder="ค้นหารหัส/ชื่อพนักงาน..." 
+                className="pl-9 bg-[#f0f2f5] border-none"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-semibold whitespace-nowrap">ตำแหน่ง:</Label>
+              <select className="h-9 border rounded px-2 text-sm bg-gray-50" value={filterPositionId} onChange={e => setFilterPositionId(e.target.value)}>
+                 <option value="all">ทั้งหมด (All)</option>
+                 {positions.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-semibold whitespace-nowrap">ประเภท:</Label>
+              <select className="h-9 border rounded px-2 text-sm bg-gray-50" value={filterTypeId} onChange={e => setFilterTypeId(e.target.value)}>
+                 <option value="all">ทั้งหมด (All)</option>
+                 {employeeTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-semibold whitespace-nowrap">สถานะ:</Label>
+              <select className="h-9 border rounded px-2 text-sm bg-gray-50" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                 <option value="all">ทั้งหมด (All)</option>
+                 <option value="active">ทำงาน</option>
+                 <option value="resigned">ลาออก</option>
+              </select>
+            </div>
           </div>
         </div>
         <Table className="bg-white">
@@ -169,14 +222,14 @@ export default function EmployeesPage() {
                   กำลังโหลดข้อมูล...
                 </TableCell>
               </TableRow>
-            ) : employees.length === 0 ? (
+            ) : filteredEmployees.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-10 text-gray-500">
                   ไม่พบข้อมูลพนักงาน
                 </TableCell>
               </TableRow>
             ) : (
-              employees.map((emp) => (
+              filteredEmployees.map((emp) => (
                 <TableRow key={emp.id}>
                   <TableCell className="font-medium">{emp.employeeCode}</TableCell>
                   <TableCell>{emp.firstName} {emp.lastName}</TableCell>
@@ -188,9 +241,15 @@ export default function EmployeesPage() {
                     ) : "-"}
                   </TableCell>
                   <TableCell>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      ทำงาน
-                    </span>
+                    {emp.resignedDate ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ลาออก
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ทำงาน
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -216,6 +275,10 @@ export default function EmployeesPage() {
             <DialogTitle>{editingItem ? "แก้ไขข้อมูลพนักงาน" : "เพิ่มพนักงานใหม่"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="employeeCode">รหัสพนักงาน</Label>
+              <Input id="employeeCode" value={employeeCode} onChange={(e) => setEmployeeCode(e.target.value)} placeholder="ถ้าปล่อยว่างระบบจะสร้างให้ (EMP-xxxxxx)" />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">ชื่อ</Label>
@@ -234,32 +297,66 @@ export default function EmployeesPage() {
 
             <div className="space-y-2">
               <Label>ตำแหน่ง</Label>
-              <Select value={positionId} onValueChange={setPositionId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกตำแหน่ง" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unassigned">ไม่ระบุ</SelectItem>
-                  {positions.map(pos => (
-                    <SelectItem key={pos.id} value={pos.id}>{pos.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={openPos} onOpenChange={setOpenPos}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" aria-expanded={openPos} className="w-full justify-between">
+                    {positionId === "unassigned" ? "ไม่ระบุ" : positions.find(p => p.id === positionId)?.name || "เลือกตำแหน่ง..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[380px] p-0" style={{ zIndex: 99999 }}>
+                  <Command>
+                    <CommandInput placeholder="ค้นหาตำแหน่ง..." />
+                    <CommandEmpty>ไม่พบตำแหน่ง</CommandEmpty>
+                    <CommandGroup>
+                      <CommandList>
+                        <CommandItem onSelect={() => { setPositionId("unassigned"); setOpenPos(false); }}>
+                          <Check className={cn("mr-2 h-4 w-4", positionId === "unassigned" ? "opacity-100" : "opacity-0")} />
+                          ไม่ระบุ
+                        </CommandItem>
+                        {positions.map(pos => (
+                          <CommandItem key={pos.id} onSelect={() => { setPositionId(pos.id); setOpenPos(false); }}>
+                            <Check className={cn("mr-2 h-4 w-4", positionId === pos.id ? "opacity-100" : "opacity-0")} />
+                            {pos.name}
+                          </CommandItem>
+                        ))}
+                      </CommandList>
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-2">
               <Label>ประเภทพนักงาน</Label>
-              <Select value={employeeTypeId} onValueChange={setEmployeeTypeId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกประเภทพนักงาน" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unassigned">ไม่ระบุ</SelectItem>
-                  {employeeTypes.map(type => (
-                    <SelectItem key={type.id} value={type.id}>{type.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={openType} onOpenChange={setOpenType}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" aria-expanded={openType} className="w-full justify-between">
+                    {employeeTypeId === "unassigned" ? "ไม่ระบุ" : employeeTypes.find(t => t.id === employeeTypeId)?.name || "เลือกประเภท..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[380px] p-0" style={{ zIndex: 99999 }}>
+                  <Command>
+                    <CommandInput placeholder="ค้นหาประเภทพนักงาน..." />
+                    <CommandEmpty>ไม่พบประเภทพนักงาน</CommandEmpty>
+                    <CommandGroup>
+                      <CommandList>
+                        <CommandItem onSelect={() => { setEmployeeTypeId("unassigned"); setOpenType(false); }}>
+                          <Check className={cn("mr-2 h-4 w-4", employeeTypeId === "unassigned" ? "opacity-100" : "opacity-0")} />
+                          ไม่ระบุ
+                        </CommandItem>
+                        {employeeTypes.map(type => (
+                          <CommandItem key={type.id} onSelect={() => { setEmployeeTypeId(type.id); setOpenType(false); }}>
+                            <Check className={cn("mr-2 h-4 w-4", employeeTypeId === type.id ? "opacity-100" : "opacity-0")} />
+                            {type.name}
+                          </CommandItem>
+                        ))}
+                      </CommandList>
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
           <DialogFooter>
