@@ -25,6 +25,19 @@ export default function PositionsPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
+  
+  // Filtering & Sorting
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
+
+  const filteredTypes = types.filter(item => 
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()))
+  ).sort((a, b) => {
+    if (sortOrder === "asc") return a.name.localeCompare(b.name, 'th');
+    return b.name.localeCompare(a.name, 'th');
+  });
+
 
   const fetchTypes = async () => {
     setLoading(true);
@@ -113,9 +126,27 @@ export default function PositionsPage() {
 
       <Card className="border-none shadow-sm rounded-lg overflow-hidden">
         <div className="p-4 bg-white border-b flex items-center justify-between">
-          <div className="relative w-72">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-            <Input placeholder="ค้นหาตำแหน่ง..." className="pl-9 bg-[#f0f2f5] border-none" />
+          <div className="flex gap-4">
+            <div className="relative w-72">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Input 
+                placeholder="ค้นหาตำแหน่ง..." 
+                className="pl-9 bg-[#f0f2f5] border-none" 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-semibold whitespace-nowrap">เรียงลำดับ:</Label>
+              <select 
+                className="h-10 border rounded px-3 text-sm bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" 
+                value={sortOrder} 
+                onChange={e => setSortOrder(e.target.value)}
+              >
+                <option value="asc">ชื่อ (ก-ฮ)</option>
+                <option value="desc">ชื่อ (ฮ-ก)</option>
+              </select>
+            </div>
           </div>
         </div>
         <Table className="bg-white">
@@ -129,10 +160,10 @@ export default function PositionsPage() {
           <TableBody>
             {loading ? (
               <TableRow><TableCell colSpan={3} className="text-center py-10 text-gray-500">กำลังโหลดข้อมูล...</TableCell></TableRow>
-            ) : types.length === 0 ? (
+            ) : filteredTypes.length === 0 ? (
               <TableRow><TableCell colSpan={3} className="text-center py-10 text-gray-500">ไม่พบข้อมูลตำแหน่ง</TableCell></TableRow>
             ) : (
-              types.map((item) => (
+              filteredTypes.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium text-[#1877f2]">{item.name}</TableCell>
                   <TableCell className="text-gray-600">{item.description || "-"}</TableCell>
