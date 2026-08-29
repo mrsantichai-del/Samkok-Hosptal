@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
@@ -85,12 +85,18 @@ export class EmployeeService {
   }
 
   async createType(name: string, description?: string) {
+    const existing = await this.prisma.employeeType.findFirst({ where: { name, deletedAt: null } });
+    if (existing) throw new BadRequestException('ชื่อประเภทพนักงานนี้มีอยู่ในระบบแล้ว');
     return this.prisma.employeeType.create({
       data: { name, description }
     });
   }
 
   async updateType(id: string, data: { name?: string; description?: string }) {
+    if (data.name) {
+      const existing = await this.prisma.employeeType.findFirst({ where: { name: data.name, id: { not: id }, deletedAt: null } });
+      if (existing) throw new BadRequestException('ชื่อประเภทพนักงานนี้มีอยู่ในระบบแล้ว');
+    }
     return this.prisma.employeeType.update({
       where: { id },
       data
@@ -112,12 +118,18 @@ export class EmployeeService {
   }
 
   async createPosition(name: string, description?: string) {
+    const existing = await this.prisma.position.findFirst({ where: { name, deletedAt: null } });
+    if (existing) throw new BadRequestException('ชื่อตำแหน่งนี้มีอยู่ในระบบแล้ว');
     return this.prisma.position.create({
       data: { name, description }
     });
   }
 
   async updatePosition(id: string, data: { name?: string; description?: string }) {
+    if (data.name) {
+      const existing = await this.prisma.position.findFirst({ where: { name: data.name, id: { not: id }, deletedAt: null } });
+      if (existing) throw new BadRequestException('ชื่อตำแหน่งนี้มีอยู่ในระบบแล้ว');
+    }
     return this.prisma.position.update({
       where: { id },
       data
