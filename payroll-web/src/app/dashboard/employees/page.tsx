@@ -248,7 +248,7 @@ export default function EmployeesPage() {
     setLoading(true);
     try {
       const token = Cookies.get("token");
-      const [empRes, typeRes, posRes] = await Promise.all([
+      const [empRes, typeRes, deptRes, posRes] = await Promise.all([
         axios.get(`${API_URL}/employees`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/employees/types`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/employees/departments`, { headers: { Authorization: `Bearer ${token}` } }),
