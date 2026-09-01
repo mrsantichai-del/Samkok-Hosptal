@@ -69,7 +69,7 @@ export default function DepartmentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
 
-  const filteredTypes = types.filter(item => 
+  const filteredDepartments = departments.filter(item => 
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()))
   ).sort((a, b) => {
