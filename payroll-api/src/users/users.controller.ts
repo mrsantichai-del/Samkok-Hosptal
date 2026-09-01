@@ -20,6 +20,8 @@ const supabase = createClient(
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')
 export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
   @Roles('System Administrator')
   @Post(':id/upload-image')
   @ApiOperation({ summary: 'Upload user profile image' })
@@ -29,7 +31,6 @@ export class UsersController {
     const ext = extname(file.originalname);
     const fileName = `profile_${id}${ext}`;
     
-    
     const user = await this.usersService.findOne(id);
     if (user?.imgUrl) {
       const parts = user.imgUrl.split('/');
@@ -37,15 +38,7 @@ export class UsersController {
       await supabase.storage.from('uploads').remove([oldFileName]);
     }
     
-    const user = await this.usersService.findOne(id);
-    if (user?.signatureUrl) {
-      const parts = user.signatureUrl.split('/');
-      const oldFileName = parts[parts.length - 1];
-      await supabase.storage.from('uploads').remove([oldFileName]);
-    }
     const { error } = await supabase.storage.from('uploads').upload(fileName, file.buffer, {
-
-
       upsert: true,
       contentType: file.mimetype
     });
@@ -64,6 +57,13 @@ export class UsersController {
     const ext = extname(file.originalname);
     const fileName = `sig_${id}${ext}`;
     
+    const user = await this.usersService.findOne(id);
+    if (user?.signatureUrl) {
+      const parts = user.signatureUrl.split('/');
+      const oldFileName = parts[parts.length - 1];
+      await supabase.storage.from('uploads').remove([oldFileName]);
+    }
+
     const { error } = await supabase.storage.from('uploads').upload(fileName, file.buffer, {
       upsert: true,
       contentType: file.mimetype
@@ -74,7 +74,33 @@ export class UsersController {
     return this.usersService.update(id, { signatureUrl: urlData.publicUrl } as any);
   }
 
-  constructor(private readonly usersService: UsersService) {}
+  @Roles('System Administrator')
+  @Delete(':id/image')
+  @ApiOperation({ summary: 'Delete user profile image' })
+  async deleteImage(@Param('id') id: string) {
+    const user = await this.usersService.findOne(id);
+    if (user?.imgUrl) {
+      const parts = user.imgUrl.split('/');
+      const fileName = parts[parts.length - 1];
+      await supabase.storage.from('uploads').remove([fileName]);
+      return this.usersService.update(id, { imgUrl: null } as any);
+    }
+    return { message: 'No image to delete' };
+  }
+
+  @Roles('System Administrator')
+  @Delete(':id/signature')
+  @ApiOperation({ summary: 'Delete user signature' })
+  async deleteSignature(@Param('id') id: string) {
+    const user = await this.usersService.findOne(id);
+    if (user?.signatureUrl) {
+      const parts = user.signatureUrl.split('/');
+      const fileName = parts[parts.length - 1];
+      await supabase.storage.from('uploads').remove([fileName]);
+      return this.usersService.update(id, { signatureUrl: null } as any);
+    }
+    return { message: 'No signature to delete' };
+  }
 
   @Roles('System Administrator')
   @Get('roles')
@@ -117,33 +143,4 @@ export class UsersController {
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
-
-  @Roles('System Administrator')
-  @Delete(':id/image')
-  @ApiOperation({ summary: 'Delete user profile image' })
-  async deleteImage(@Param('id') id: string) {
-    const user = await this.usersService.findOne(id);
-    if (user?.imgUrl) {
-      const parts = user.imgUrl.split('/');
-      const fileName = parts[parts.length - 1];
-      await supabase.storage.from('uploads').remove([fileName]);
-      return this.usersService.update(id, { imgUrl: null } as any);
-    }
-    return { message: 'No image to delete' };
-  }
-
-  @Roles('System Administrator')
-  @Delete(':id/signature')
-  @ApiOperation({ summary: 'Delete user signature' })
-  async deleteSignature(@Param('id') id: string) {
-    const user = await this.usersService.findOne(id);
-    if (user?.signatureUrl) {
-      const parts = user.signatureUrl.split('/');
-      const fileName = parts[parts.length - 1];
-      await supabase.storage.from('uploads').remove([fileName]);
-      return this.usersService.update(id, { signatureUrl: null } as any);
-    }
-    return { message: 'No signature to delete' };
-  }
-
 }
