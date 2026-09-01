@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,11 +8,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Plus, Edit, Trash2, Check, ChevronsUpDown } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Check, ChevronsUpDown, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { API_URL } from "@/lib/config";
 
@@ -22,7 +23,15 @@ export default function UsersPage() {
   const [employees, setEmployees] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(true);
+  
+  // Filters
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterLinkStatus, setFilterLinkStatus] = useState("ALL");
+  const [filterRole, setFilterRole] = useState("ALL");
+  const [filterActive, setFilterActive] = useState("ALL");
+
+  // Sorting
+  const [sortConfig, setSortConfig] = useState({ key: "username", direction: "asc" });
   
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -156,11 +165,60 @@ export default function UsersPage() {
     }
   };
 
-  const filteredUsers = users.filter(u => 
-    u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (u.employee?.firstName || "").includes(searchTerm) ||
-    (u.employee?.employeeCode || "").includes(searchTerm)
-  );
+  // Handle Sort
+  const requestSort = (key: string) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Filter & Sort Logic
+  let processedUsers = [...users];
+
+  // Apply Filters
+  if (filterLinkStatus !== "ALL") {
+    processedUsers = processedUsers.filter(u => filterLinkStatus === "LINKED" ? u.employeeId : !u.employeeId);
+  }
+  if (filterRole !== "ALL") {
+    processedUsers = processedUsers.filter(u => u.roles?.some((r: any) => r.roleId === filterRole));
+  }
+  if (filterActive !== "ALL") {
+    processedUsers = processedUsers.filter(u => filterActive === "ACTIVE" ? u.isActive : !u.isActive);
+  }
+  if (searchTerm) {
+    const s = searchTerm.toLowerCase();
+    processedUsers = processedUsers.filter(u => 
+      u.username.toLowerCase().includes(s) ||
+      (u.employee?.firstName || "").toLowerCase().includes(s) ||
+      (u.employee?.employeeCode || "").toLowerCase().includes(s)
+    );
+  }
+
+  // Apply Sort
+  processedUsers.sort((a, b) => {
+    let valA = "";
+    let valB = "";
+
+    if (sortConfig.key === "username") {
+      valA = a.username.toLowerCase();
+      valB = b.username.toLowerCase();
+    } else if (sortConfig.key === "employee") {
+      valA = a.employee ? `${a.employee.employeeCode} ${a.employee.firstName}`.toLowerCase() : "";
+      valB = b.employee ? `${b.employee.employeeCode} ${b.employee.firstName}`.toLowerCase() : "";
+    } else if (sortConfig.key === "roles") {
+      valA = a.roles?.[0]?.role?.name?.toLowerCase() || "";
+      valB = b.roles?.[0]?.role?.name?.toLowerCase() || "";
+    } else if (sortConfig.key === "status") {
+      valA = a.isActive ? "1" : "0";
+      valB = b.isActive ? "1" : "0";
+    }
+
+    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+    return 0;
+  });
 
   return (
     <div className="space-y-6">
@@ -172,17 +230,55 @@ export default function UsersPage() {
       </div>
 
       <Card className="bg-white shadow-sm border-gray-200">
-        <div className="p-4 border-b border-gray-100 flex items-center justify-between gap-4">
-          <div className="relative w-72">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-            <Input 
-              placeholder="ค้นหาชื่อผู้ใช้ / รหัสพนักงาน..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 bg-gray-50 border-gray-200 h-9"
-            />
+        <div className="p-4 border-b border-gray-100 flex flex-wrap gap-3 items-center justify-between">
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+              <Input 
+                placeholder="ค้นหาชื่อผู้ใช้ / รหัสพนักงาน..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 h-9"
+              />
+            </div>
+
+            <Select value={filterLinkStatus} onValueChange={setFilterLinkStatus}>
+              <SelectTrigger className="w-[150px] h-9">
+                <SelectValue placeholder="สถานะการผูก" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">การผูกทั้งหมด</SelectItem>
+                <SelectItem value="LINKED">ผูกพนักงานแล้ว</SelectItem>
+                <SelectItem value="UNLINKED">ไม่ได้ผูกพนักงาน</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterRole} onValueChange={setFilterRole}>
+              <SelectTrigger className="w-[180px] h-9">
+                <SelectValue placeholder="กลุ่มผู้ใช้งาน" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">กลุ่มผู้ใช้งานทั้งหมด</SelectItem>
+                {roles.map(r => (
+                  <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filterActive} onValueChange={setFilterActive}>
+              <SelectTrigger className="w-[150px] h-9">
+                <SelectValue placeholder="สถานะบัญชี" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">สถานะทั้งหมด</SelectItem>
+                <SelectItem value="ACTIVE">เปิดใช้งาน</SelectItem>
+                <SelectItem value="INACTIVE">ระงับ</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Button className="bg-[#1877f2] hover:bg-[#166fe5]" onClick={openAddDialog}>
+
+          <Button className="bg-[#1877f2] hover:bg-[#166fe5] h-9" onClick={openAddDialog}>
             <Plus className="mr-2 h-4 w-4" /> เพิ่มผู้ใช้งานใหม่
           </Button>
         </div>
@@ -191,10 +287,26 @@ export default function UsersPage() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[60px] text-center">ลำดับ</TableHead>
-              <TableHead>ชื่อผู้ใช้งาน (Username)</TableHead>
-              <TableHead>ผูกกับพนักงาน</TableHead>
-              <TableHead>กลุ่มผู้ใช้งาน (Roles)</TableHead>
-              <TableHead className="text-center">สถานะ</TableHead>
+              <TableHead>
+                <Button variant="ghost" onClick={() => requestSort("username")} className="font-bold p-0 h-auto hover:bg-transparent">
+                  ชื่อผู้ใช้งาน <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+              </TableHead>
+              <TableHead>
+                <Button variant="ghost" onClick={() => requestSort("employee")} className="font-bold p-0 h-auto hover:bg-transparent">
+                  ผูกกับพนักงาน <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+              </TableHead>
+              <TableHead>
+                <Button variant="ghost" onClick={() => requestSort("roles")} className="font-bold p-0 h-auto hover:bg-transparent">
+                  กลุ่มผู้ใช้งาน <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+              </TableHead>
+              <TableHead className="text-center">
+                <Button variant="ghost" onClick={() => requestSort("status")} className="font-bold p-0 h-auto hover:bg-transparent">
+                  สถานะ <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+              </TableHead>
               <TableHead className="w-[120px]">จัดการ</TableHead>
             </TableRow>
           </TableHeader>
@@ -203,12 +315,12 @@ export default function UsersPage() {
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-10 text-gray-500">กำลังโหลดข้อมูล...</TableCell>
               </TableRow>
-            ) : filteredUsers.length === 0 ? (
+            ) : processedUsers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-10 text-gray-500">ไม่พบข้อมูลผู้ใช้งาน</TableCell>
               </TableRow>
             ) : (
-              filteredUsers.map((user, idx) => (
+              processedUsers.map((user, idx) => (
                 <TableRow key={user.id}>
                   <TableCell className="text-center text-gray-500">{idx + 1}</TableCell>
                   <TableCell className="font-medium">{user.username}</TableCell>
@@ -295,7 +407,7 @@ export default function UsersPage() {
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[340px] p-0">
+                  <PopoverContent className="w-[340px] p-0" style={{ zIndex: 99999 }}>
                     <Command>
                       <CommandInput placeholder="ค้นหารหัส หรือชื่อพนักงาน..." />
                       <CommandList>
