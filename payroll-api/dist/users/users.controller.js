@@ -32,6 +32,18 @@ let UsersController = class UsersController {
             throw new common_1.BadRequestException('No file uploaded');
         const ext = (0, path_1.extname)(file.originalname);
         const fileName = `profile_${id}${ext}`;
+        const user = await this.usersService.findOne(id);
+        if (user?.imgUrl) {
+            const parts = user.imgUrl.split('/');
+            const oldFileName = parts[parts.length - 1];
+            await supabase.storage.from('uploads').remove([oldFileName]);
+        }
+        const user = await this.usersService.findOne(id);
+        if (user?.signatureUrl) {
+            const parts = user.signatureUrl.split('/');
+            const oldFileName = parts[parts.length - 1];
+            await supabase.storage.from('uploads').remove([oldFileName]);
+        }
         const { error } = await supabase.storage.from('uploads').upload(fileName, file.buffer, {
             upsert: true,
             contentType: file.mimetype
@@ -75,6 +87,26 @@ let UsersController = class UsersController {
     }
     remove(id) {
         return this.usersService.remove(id);
+    }
+    async deleteImage(id) {
+        const user = await this.usersService.findOne(id);
+        if (user?.imgUrl) {
+            const parts = user.imgUrl.split('/');
+            const fileName = parts[parts.length - 1];
+            await supabase.storage.from('uploads').remove([fileName]);
+            return this.usersService.update(id, { imgUrl: null });
+        }
+        return { message: 'No image to delete' };
+    }
+    async deleteSignature(id) {
+        const user = await this.usersService.findOne(id);
+        if (user?.signatureUrl) {
+            const parts = user.signatureUrl.split('/');
+            const fileName = parts[parts.length - 1];
+            await supabase.storage.from('uploads').remove([fileName]);
+            return this.usersService.update(id, { signatureUrl: null });
+        }
+        return { message: 'No signature to delete' };
     }
 };
 exports.UsersController = UsersController;
@@ -153,6 +185,24 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "remove", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator'),
+    (0, common_1.Delete)(':id/image'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete user profile image' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "deleteImage", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator'),
+    (0, common_1.Delete)(':id/signature'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete user signature' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "deleteSignature", null);
 exports.UsersController = UsersController = __decorate([
     (0, swagger_1.ApiTags)('Users'),
     (0, swagger_1.ApiBearerAuth)(),
