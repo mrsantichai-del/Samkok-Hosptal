@@ -9,7 +9,7 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async findAll() {
-    return this.prisma.user.findMany({
+    return this.prisma.client.user.findMany({
       where: { deletedAt: null },
       include: {
         employee: true,
@@ -22,14 +22,14 @@ export class UsersService {
   }
 
   async getRoles() {
-    return this.prisma.role.findMany({
+    return this.prisma.client.role.findMany({
       where: { deletedAt: null },
       orderBy: { name: 'asc' }
     });
   }
 
   async findOne(id: string) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.client.user.findUnique({
       where: { id, deletedAt: null },
       include: {
         employee: true,
@@ -41,11 +41,11 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto) {
-    const existing = await this.prisma.user.findUnique({ where: { username: createUserDto.username } });
+    const existing = await this.prisma.client.user.findUnique({ where: { username: createUserDto.username } });
     if (existing) throw new BadRequestException('Username already exists');
 
     if (createUserDto.employeeId) {
-      const empLinked = await this.prisma.user.findUnique({ where: { employeeId: createUserDto.employeeId } });
+      const empLinked = await this.prisma.client.user.findUnique({ where: { employeeId: createUserDto.employeeId } });
       if (empLinked) throw new BadRequestException('This employee is already linked to another user account');
     }
 
@@ -59,30 +59,30 @@ export class UsersService {
       employeeId: createUserDto.employeeId,
     };
 
-    const user = await this.prisma.user.create({ data });
+    const user = await this.prisma.client.user.create({ data });
 
     if (createUserDto.roles && createUserDto.roles.length > 0) {
       const roleData = createUserDto.roles.map(roleId => ({
         userId: user.id,
         roleId,
       }));
-      await this.prisma.userRole.createMany({ data: roleData });
+      await this.prisma.client.userRole.createMany({ data: roleData });
     }
 
     return this.findOne(user.id);
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    const user = await this.prisma.user.findUnique({ where: { id, deletedAt: null } });
+    const user = await this.prisma.client.user.findUnique({ where: { id, deletedAt: null } });
     if (!user) throw new NotFoundException('User not found');
 
     if (updateUserDto.username && updateUserDto.username !== user.username) {
-      const existing = await this.prisma.user.findUnique({ where: { username: updateUserDto.username } });
+      const existing = await this.prisma.client.user.findUnique({ where: { username: updateUserDto.username } });
       if (existing) throw new BadRequestException('Username already exists');
     }
 
     if (updateUserDto.employeeId && updateUserDto.employeeId !== user.employeeId) {
-      const empLinked = await this.prisma.user.findUnique({ where: { employeeId: updateUserDto.employeeId } });
+      const empLinked = await this.prisma.client.user.findUnique({ where: { employeeId: updateUserDto.employeeId } });
       if (empLinked) throw new BadRequestException('This employee is already linked to another user account');
     }
 
@@ -96,7 +96,7 @@ export class UsersService {
       data.passwordHash = await bcrypt.hash(updateUserDto.password, 10);
     }
 
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.client.$transaction(async (tx: any) => {
       await tx.user.update({ where: { id }, data });
 
       if (updateUserDto.roles) {
@@ -118,10 +118,10 @@ export class UsersService {
   }
 
   async remove(id: string) {
-    const user = await this.prisma.user.findUnique({ where: { id, deletedAt: null } });
+    const user = await this.prisma.client.user.findUnique({ where: { id, deletedAt: null } });
     if (!user) throw new NotFoundException('User not found');
 
-    await this.prisma.user.update({
+    await this.prisma.client.user.update({
       where: { id },
       data: { deletedAt: new Date(), isActive: false }
     });
