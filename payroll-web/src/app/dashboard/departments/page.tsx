@@ -37,24 +37,7 @@ export default function DepartmentsPage() {
     setSortConfig({ key, direction });
   };
 
-  const sortedDepartments = React.useMemo(() => {
-    let sortableItems = [...filteredDepartments];
-    if (sortConfig !== null) {
-      sortableItems.sort((a, b) => {
-        let aValue = a[sortConfig.key] || '';
-        let bValue = b[sortConfig.key] || '';
-
-        if (aValue < bValue) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    return sortableItems;
-  }, [filteredDepartments, sortConfig]);
+  
   
   const renderSortIcon = (key: string) => {
     if (sortConfig?.key === key) {
@@ -76,6 +59,25 @@ export default function DepartmentsPage() {
     if (sortOrder === "asc") return a.name.localeCompare(b.name, 'th');
     return b.name.localeCompare(a.name, 'th');
   });
+
+  const sortedDepartments = React.useMemo(() => {
+    let sortableItems = [...filteredDepartments];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        let aValue = a[sortConfig.key] || '';
+        let bValue = b[sortConfig.key] || '';
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredDepartments, sortConfig]);
 
 
   const fetchDepartments = async () => {

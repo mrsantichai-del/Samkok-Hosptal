@@ -37,24 +37,7 @@ export default function PositionsPage() {
     setSortConfig({ key, direction });
   };
 
-  const sortedData = React.useMemo(() => {
-    let sortableItems = [...filteredTypes];
-    if (sortConfig !== null) {
-      sortableItems.sort((a, b) => {
-        let aValue = a[sortConfig.key] || '';
-        let bValue = b[sortConfig.key] || '';
-
-        if (aValue < bValue) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    return sortableItems;
-  }, [filteredTypes, sortConfig]);
+  
   
   const renderSortIcon = (key: string) => {
     if (sortConfig?.key === key) {
@@ -76,6 +59,25 @@ export default function PositionsPage() {
     if (sortOrder === "asc") return a.name.localeCompare(b.name, 'th');
     return b.name.localeCompare(a.name, 'th');
   });
+
+  const sortedData = React.useMemo(() => {
+    let sortableItems = [...filteredTypes];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        let aValue = a[sortConfig.key] || '';
+        let bValue = b[sortConfig.key] || '';
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredTypes, sortConfig]);
 
 
   const fetchTypes = async () => {
