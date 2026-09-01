@@ -32,6 +32,30 @@ let EmployeeController = class EmployeeController {
     findAll(skip, take) {
         return this.employeeService.findAll(skip, take);
     }
+    createType(body) {
+        return this.employeeService.createType(body.name, body.description);
+    }
+    getTypes() {
+        return this.employeeService.getTypes();
+    }
+    updateType(id, body) {
+        return this.employeeService.updateType(id, body);
+    }
+    removeType(id) {
+        return this.employeeService.removeType(id);
+    }
+    createPosition(body) {
+        return this.employeeService.createPosition(body.name, body.description);
+    }
+    getPositions() {
+        return this.employeeService.getPositions();
+    }
+    updatePosition(id, body) {
+        return this.employeeService.updatePosition(id, body);
+    }
+    removePosition(id) {
+        return this.employeeService.removePosition(id);
+    }
     findOne(id) {
         return this.employeeService.findOne(id);
     }
@@ -64,6 +88,78 @@ __decorate([
     __metadata("design:paramtypes", [Number, Number]),
     __metadata("design:returntype", void 0)
 ], EmployeeController.prototype, "findAll", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer'),
+    (0, common_1.Post)('types'),
+    (0, swagger_1.ApiOperation)({ summary: 'Create employee type' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], EmployeeController.prototype, "createType", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
+    (0, common_1.Get)('types'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all employee types' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], EmployeeController.prototype, "getTypes", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer'),
+    (0, common_1.Patch)('types/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update employee type' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], EmployeeController.prototype, "updateType", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer'),
+    (0, common_1.Delete)('types/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete employee type' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], EmployeeController.prototype, "removeType", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer'),
+    (0, common_1.Post)('positions'),
+    (0, swagger_1.ApiOperation)({ summary: 'Create position' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], EmployeeController.prototype, "createPosition", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
+    (0, common_1.Get)('positions'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all positions' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], EmployeeController.prototype, "getPositions", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer'),
+    (0, common_1.Patch)('positions/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update position' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], EmployeeController.prototype, "updatePosition", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer'),
+    (0, common_1.Delete)('positions/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete position' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], EmployeeController.prototype, "removePosition", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
     (0, common_1.Get)(':id'),

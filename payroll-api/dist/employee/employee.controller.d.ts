@@ -20,7 +20,7 @@ export declare class EmployeeController {
         employeeTypeId: string | null;
     }>;
     findAll(skip?: number, take?: number): Promise<({
-        department: {
+        employeeType: {
             name: string;
             id: string;
             deletedAt: Date | null;
@@ -36,7 +36,7 @@ export declare class EmployeeController {
             updatedAt: Date;
             description: string | null;
         } | null;
-        employeeType: {
+        department: {
             name: string;
             id: string;
             deletedAt: Date | null;
@@ -59,8 +59,84 @@ export declare class EmployeeController {
         positionId: string | null;
         employeeTypeId: string | null;
     })[]>;
+    createType(body: {
+        name: string;
+        description?: string;
+    }): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
+    getTypes(): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }[]>;
+    updateType(id: string, body: {
+        name?: string;
+        description?: string;
+    }): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
+    removeType(id: string): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
+    createPosition(body: {
+        name: string;
+        description?: string;
+    }): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
+    getPositions(): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }[]>;
+    updatePosition(id: string, body: {
+        name?: string;
+        description?: string;
+    }): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
+    removePosition(id: string): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
     findOne(id: string): Promise<{
-        department: {
+        employeeType: {
             name: string;
             id: string;
             deletedAt: Date | null;
@@ -76,7 +152,7 @@ export declare class EmployeeController {
             updatedAt: Date;
             description: string | null;
         } | null;
-        employeeType: {
+        department: {
             name: string;
             id: string;
             deletedAt: Date | null;

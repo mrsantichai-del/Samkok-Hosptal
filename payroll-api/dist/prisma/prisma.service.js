@@ -54,6 +54,8 @@ let PrismaService = class PrismaService {
     user;
     role;
     employee;
+    employeeType;
+    position;
     payItem;
     payrollRecord;
     payrollTransaction;
@@ -65,6 +67,8 @@ let PrismaService = class PrismaService {
         this.user = this.client.user;
         this.role = this.client.role;
         this.employee = this.client.employee;
+        this.employeeType = this.client.employeeType;
+        this.position = this.client.position;
         this.payItem = this.client.payItem;
         this.payrollRecord = this.client.payrollRecord;
         this.payrollTransaction = this.client.payrollTransaction;

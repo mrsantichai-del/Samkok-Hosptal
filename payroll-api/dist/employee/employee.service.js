@@ -75,6 +75,52 @@ let EmployeeService = class EmployeeService {
         });
         return { message: 'Employee deleted successfully' };
     }
+    async getTypes() {
+        return this.prisma.employeeType.findMany({
+            where: { deletedAt: null },
+            orderBy: { createdAt: 'asc' }
+        });
+    }
+    async createType(name, description) {
+        return this.prisma.employeeType.create({
+            data: { name, description }
+        });
+    }
+    async updateType(id, data) {
+        return this.prisma.employeeType.update({
+            where: { id },
+            data
+        });
+    }
+    async removeType(id) {
+        return this.prisma.employeeType.update({
+            where: { id },
+            data: { deletedAt: new Date() }
+        });
+    }
+    async getPositions() {
+        return this.prisma.position.findMany({
+            where: { deletedAt: null },
+            orderBy: { name: 'asc' }
+        });
+    }
+    async createPosition(name, description) {
+        return this.prisma.position.create({
+            data: { name, description }
+        });
+    }
+    async updatePosition(id, data) {
+        return this.prisma.position.update({
+            where: { id },
+            data
+        });
+    }
+    async removePosition(id) {
+        return this.prisma.position.update({
+            where: { id },
+            data: { deletedAt: new Date() }
+        });
+    }
 };
 exports.EmployeeService = EmployeeService;
 exports.EmployeeService = EmployeeService = __decorate([

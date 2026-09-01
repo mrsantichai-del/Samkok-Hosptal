@@ -89,7 +89,7 @@ let PayrollService = class PayrollService {
             whereClause.employeeId = employeeId;
         return this.prisma.payrollTransaction.findMany({
             where: whereClause,
-            include: { employee: { select: { firstName: true, lastName: true, employeeCode: true, position: { select: { name: true } } } }, payItem: { select: { name: true, type: true } } }
+            include: { employee: { select: { firstName: true, lastName: true, employeeCode: true, position: { select: { id: true, name: true } }, employeeType: { select: { id: true, name: true } } } }, payItem: { select: { name: true, type: true } } }
         });
     }
     async updateEmployeeTransactions(recordId, employeeId, transactions, userId) {
@@ -131,6 +131,8 @@ let PayrollService = class PayrollService {
         const incomeHeaders = new Set();
         const deductionHeaders = new Set();
         for (const tx of transactions) {
+            if (!tx.employee || !tx.payItem)
+                continue;
             if (!empData.has(tx.employeeId)) {
                 empData.set(tx.employeeId, { employee: tx.employee, incomes: {}, deductions: {}, totalIncome: 0, totalDeduction: 0 });
             }
@@ -151,13 +153,17 @@ let PayrollService = class PayrollService {
         const sheet = workbook.addWorksheet(`Payroll_${record.month}_${record.year}`);
         const incArr = Array.from(incomeHeaders);
         const dedArr = Array.from(deductionHeaders);
-        const headers = ['รหัสพนักงาน', 'ชื่อ-นามสกุล', ...incArr, 'รวมรายรับ', ...dedArr, 'รวมรายจ่าย', 'รับสุทธิ'];
+        const headers = ['ลำดับที่', 'รหัสพนักงาน', 'ชื่อ-นามสกุล', 'ตำแหน่ง', 'ประเภทพนักงาน', ...incArr, 'รวมรายรับ', ...dedArr, 'รวมรายจ่าย', 'รับสุทธิ'];
         sheet.addRow(headers);
         sheet.getRow(1).font = { bold: true };
+        let seq = 1;
         for (const e of empData.values()) {
             const row = [
-                e.employee.employeeCode,
-                `${e.employee.firstName} ${e.employee.lastName}`,
+                seq++,
+                e.employee.employeeCode || '-',
+                `${e.employee.firstName || ''} ${e.employee.lastName || ''}`.trim(),
+                e.employee.position?.name || 'ไม่ระบุ',
+                e.employee.employeeType?.name || 'ไม่ระบุ',
                 ...incArr.map(h => e.incomes[h] || 0),
                 e.totalIncome,
                 ...dedArr.map(h => e.deductions[h] || 0),
@@ -183,11 +189,15 @@ let PayrollService = class PayrollService {
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="Payslips_${record.month}_${record.year}.pdf"`);
         doc.pipe(res);
-        doc.registerFont('ThaiRegular', 'src/assets/fonts/Sarabun-Regular.ttf');
-        doc.registerFont('ThaiBold', 'src/assets/fonts/Sarabun-Bold.ttf');
         const { bahttext } = require('bahttext');
         const fs = require('fs');
         const path = require('path');
+        const fontRegular = path.join(__dirname, '..', 'assets', 'fonts', 'Sarabun-Regular.ttf');
+        const fontBold = path.join(__dirname, '..', 'assets', 'fonts', 'Sarabun-Bold.ttf');
+        const finalFontRegular = fs.existsSync(fontRegular) ? fontRegular : path.join(process.cwd(), 'src', 'assets', 'fonts', 'Sarabun-Regular.ttf');
+        const finalFontBold = fs.existsSync(fontBold) ? fontBold : path.join(process.cwd(), 'src', 'assets', 'fonts', 'Sarabun-Bold.ttf');
+        doc.registerFont('ThaiRegular', finalFontRegular);
+        doc.registerFont('ThaiBold', finalFontBold);
         const getImagePath = (name) => {
             const exts = ['.png', '.jpg', '.jpeg'];
             for (const ext of exts) {
@@ -201,6 +211,8 @@ let PayrollService = class PayrollService {
         const signaturePath = getImagePath('signature');
         const empData = new Map();
         for (const tx of transactions) {
+            if (!tx.employee || !tx.payItem)
+                continue;
             if (!empData.has(tx.employeeId)) {
                 empData.set(tx.employeeId, { employee: tx.employee, txMap: new Map(), totalInc: 0, totalDed: 0, net: 0 });
             }
@@ -228,7 +240,12 @@ let PayrollService = class PayrollService {
             const endY = startY + 20 + (maxRows * rowHeight) + 20;
             doc.lineWidth(1).rect(40, 40, 515, endY - 40 + 50).stroke();
             if (logoPath) {
-                doc.image(logoPath, 50, 45, { height: 40 });
+                try {
+                    doc.image(logoPath, 50, 45, { height: 40 });
+                }
+                catch (err) {
+                    console.error("Failed to load logo image:", err);
+                }
             }
             doc.font('ThaiBold').fontSize(16).text(`โรงพยาบาลสามโคก ประจำเดือน ${monthStr}`, 40, 50, { align: 'center' });
             doc.font('ThaiBold').fontSize(12).text(`ใบแจ้งรายละเอียดเงินเดือน`, 40, 70, { align: 'center' });
@@ -275,7 +292,12 @@ let PayrollService = class PayrollService {
             doc.text(`${e.net.toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท`, { align: 'right' });
             doc.fontSize(12).font('ThaiRegular').text(`(${bahttext(e.net)})`, 40, endY + 30, { align: 'center' });
             if (signaturePath) {
-                doc.image(signaturePath, 300, endY + 50, { height: 40 });
+                try {
+                    doc.image(signaturePath, 300, endY + 50, { height: 40 });
+                }
+                catch (err) {
+                    console.error("Failed to load signature image:", err);
+                }
             }
             i++;
         }

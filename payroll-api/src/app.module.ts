@@ -7,6 +7,7 @@ import { EmployeeModule } from './employee/employee.module';
 import { PayItemModule } from './pay-item/pay-item.module';
 import { PayrollModule } from './payroll/payroll.module';
 import { SettingsModule } from './settings/settings.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { SettingsModule } from './settings/settings.module';
     EmployeeModule, 
     PayItemModule, 
     PayrollModule,
-    SettingsModule
+    SettingsModule,
+    UsersModule
   ],
   controllers: [AppController],
   providers: [AppService],

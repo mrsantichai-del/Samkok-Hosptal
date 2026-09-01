@@ -21,12 +21,17 @@ export declare class PayrollController {
     }[]>;
     getTransactions(id: string, employeeId?: string): Promise<({
         employee: {
+            employeeType: {
+                name: string;
+                id: string;
+            } | null;
+            position: {
+                name: string;
+                id: string;
+            } | null;
             employeeCode: string;
             firstName: string;
             lastName: string;
-            position: {
-                name: string;
-            } | null;
         };
         payItem: {
             name: string;

@@ -40,11 +40,19 @@ let PayrollController = class PayrollController {
     approvePayroll(id, req) {
         return this.payrollService.approvePayroll(id, req.user.userId);
     }
-    exportExcel(id, res) {
-        return this.payrollService.exportExcel(id, res);
+    async exportExcel(id, res) {
+        await this.payrollService.exportExcel(id, res);
     }
-    exportPdf(id, res) {
-        return this.payrollService.exportPdf(id, res);
+    async exportPdf(id, res) {
+        try {
+            await this.payrollService.exportPdf(id, res);
+        }
+        catch (error) {
+            console.error('PDF Export Error:', error);
+            if (!res.headersSent) {
+                res.status(500).json({ message: 'PDF Error: ' + (error.message || 'Unknown error'), stack: error.stack });
+            }
+        }
     }
 };
 exports.PayrollController = PayrollController;
@@ -107,7 +115,7 @@ __decorate([
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], PayrollController.prototype, "exportExcel", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive', 'Employee'),
@@ -117,7 +125,7 @@ __decorate([
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], PayrollController.prototype, "exportPdf", null);
 exports.PayrollController = PayrollController = __decorate([
     (0, swagger_1.ApiTags)('Payroll Processing'),

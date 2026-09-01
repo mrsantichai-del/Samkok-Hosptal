@@ -5,7 +5,7 @@ export declare class EmployeeService {
     private prisma;
     constructor(prisma: PrismaService);
     findAll(skip?: number, take?: number): Promise<({
-        department: {
+        employeeType: {
             name: string;
             id: string;
             deletedAt: Date | null;
@@ -21,7 +21,7 @@ export declare class EmployeeService {
             updatedAt: Date;
             description: string | null;
         } | null;
-        employeeType: {
+        department: {
             name: string;
             id: string;
             deletedAt: Date | null;
@@ -45,7 +45,7 @@ export declare class EmployeeService {
         employeeTypeId: string | null;
     })[]>;
     findOne(id: string): Promise<{
-        department: {
+        employeeType: {
             name: string;
             id: string;
             deletedAt: Date | null;
@@ -61,7 +61,7 @@ export declare class EmployeeService {
             updatedAt: Date;
             description: string | null;
         } | null;
-        employeeType: {
+        department: {
             name: string;
             id: string;
             deletedAt: Date | null;
@@ -116,5 +116,75 @@ export declare class EmployeeService {
     }>;
     remove(id: string, userId: string): Promise<{
         message: string;
+    }>;
+    getTypes(): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }[]>;
+    createType(name: string, description?: string): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
+    updateType(id: string, data: {
+        name?: string;
+        description?: string;
+    }): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
+    removeType(id: string): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
+    getPositions(): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }[]>;
+    createPosition(name: string, description?: string): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
+    updatePosition(id: string, data: {
+        name?: string;
+        description?: string;
+    }): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
+    removePosition(id: string): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
     }>;
 }
