@@ -91,6 +91,8 @@ export class UsersService {
     if (updateUserDto.email !== undefined) data.email = updateUserDto.email;
     if (updateUserDto.isActive !== undefined) data.isActive = updateUserDto.isActive;
     if (updateUserDto.employeeId !== undefined) data.employeeId = updateUserDto.employeeId;
+    if ((updateUserDto as any).imgUrl !== undefined) data.imgUrl = (updateUserDto as any).imgUrl;
+    if ((updateUserDto as any).signatureUrl !== undefined) data.signatureUrl = (updateUserDto as any).signatureUrl;
     
     if (updateUserDto.password) {
       data.passwordHash = await bcrypt.hash(updateUserDto.password, 10);

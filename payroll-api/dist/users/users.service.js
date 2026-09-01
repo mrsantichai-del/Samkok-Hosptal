@@ -131,6 +131,10 @@ let UsersService = class UsersService {
             data.isActive = updateUserDto.isActive;
         if (updateUserDto.employeeId !== undefined)
             data.employeeId = updateUserDto.employeeId;
+        if (updateUserDto.imgUrl !== undefined)
+            data.imgUrl = updateUserDto.imgUrl;
+        if (updateUserDto.signatureUrl !== undefined)
+            data.signatureUrl = updateUserDto.signatureUrl;
         if (updateUserDto.password) {
             data.passwordHash = await bcrypt.hash(updateUserDto.password, 10);
         }
