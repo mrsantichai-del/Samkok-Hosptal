@@ -22,6 +22,9 @@ const roles_decorator_1 = require("../auth/decorators/roles.decorator");
 const swagger_1 = require("@nestjs/swagger");
 let PayrollController = class PayrollController {
     payrollService;
+    approvePayrollLegacy(id, req) {
+        return this.payrollService.approvePayroll(id, req.user.userId);
+    }
     constructor(payrollService) {
         this.payrollService = payrollService;
     }
@@ -37,7 +40,7 @@ let PayrollController = class PayrollController {
     updateEmployeeTransactions(id, empId, body, req) {
         return this.payrollService.updateEmployeeTransactions(id, empId, body.transactions, req.user.userId);
     }
-    approvePayroll(id, req) {
+    approvePayrollExec(id, req) {
         return this.payrollService.approvePayroll(id, req.user.userId);
     }
     async exportExcel(id, body, res) {
@@ -56,6 +59,16 @@ let PayrollController = class PayrollController {
     }
 };
 exports.PayrollController = PayrollController;
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
+    (0, common_1.Patch)(':id/approve'),
+    (0, swagger_1.ApiOperation)({ summary: 'Approve a payroll record' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], PayrollController.prototype, "approvePayrollLegacy", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer'),
     (0, common_1.Post)('process'),
@@ -106,7 +119,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
-], PayrollController.prototype, "approvePayroll", null);
+], PayrollController.prototype, "approvePayrollExec", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
     (0, common_1.Post)('records/:id/export/excel'),

@@ -5,4 +5,6 @@ export declare class CreateUserDto {
     isActive?: boolean;
     employeeId?: string;
     roles?: string[];
+    imgUrl?: string;
+    signatureUrl?: string;
 }

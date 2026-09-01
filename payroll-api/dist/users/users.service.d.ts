@@ -45,6 +45,8 @@ export declare class UsersService {
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        signatureUrl: string | null;
+        imgUrl: string | null;
         employeeId: string | null;
     })[]>;
     getRoles(): Promise<{
@@ -96,6 +98,8 @@ export declare class UsersService {
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        signatureUrl: string | null;
+        imgUrl: string | null;
         employeeId: string | null;
     }>;
     create(createUserDto: CreateUserDto): Promise<{
@@ -139,6 +143,8 @@ export declare class UsersService {
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        signatureUrl: string | null;
+        imgUrl: string | null;
         employeeId: string | null;
     }>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<{
@@ -182,6 +188,8 @@ export declare class UsersService {
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        signatureUrl: string | null;
+        imgUrl: string | null;
         employeeId: string | null;
     }>;
     remove(id: string): Promise<{

@@ -3,6 +3,9 @@ import { ProcessPayrollDto } from './dto/process-payroll.dto';
 import type { Response } from 'express';
 export declare class PayrollController {
     private readonly payrollService;
+    approvePayrollLegacy(id: string, req: any): Promise<{
+        message: string;
+    }>;
     constructor(payrollService: PayrollService);
     processPayroll(processPayrollDto: ProcessPayrollDto, req: any): Promise<{
         message: string;
@@ -18,6 +21,7 @@ export declare class PayrollController {
         year: number;
         status: string;
         notes: string | null;
+        approvedById: string | null;
     }[]>;
     getTransactions(id: string, employeeId?: string): Promise<({
         employee: {
@@ -56,7 +60,7 @@ export declare class PayrollController {
     }, req: any): Promise<{
         message: string;
     }>;
-    approvePayroll(id: string, req: any): Promise<{
+    approvePayrollExec(id: string, req: any): Promise<{
         message: string;
     }>;
     exportExcel(id: string, body: {

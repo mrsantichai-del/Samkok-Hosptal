@@ -85,7 +85,7 @@ export class PayrollService {
   async approvePayroll(recordId: string, userId: string) {
     const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
     if (!record) throw new NotFoundException('Record not found');
-    await this.prisma.payrollRecord.update({ where: { id: recordId }, data: { status: 'APPROVED' } });
+    await this.prisma.payrollRecord.update({ where: { id: recordId }, data: { status: 'APPROVED', approvedById: userId } });
     await this.prisma.auditLog.create({ data: { action: 'APPROVE_PAYROLL', tableName: 'PayrollRecord', recordId: record.id, userId } });
     return { message: 'Payroll approved' };
   }
@@ -204,7 +204,23 @@ export class PayrollService {
     };
 
     const logoBuffer = await fetchImageBuffer('logo');
-    const signatureBuffer = await fetchImageBuffer('signature');
+    
+    let signatureBuffer = null;
+    if (record.status === 'APPROVED' && record.approvedById) {
+      const approver = await this.prisma.user.findUnique({ where: { id: record.approvedById } });
+      if (approver?.signatureUrl) {
+        // Extract filename from URL (assumes supabase storage public URL format)
+        const parts = approver.signatureUrl.split('/');
+        const fileName = parts[parts.length - 1];
+        
+        const { data: fileData, error: downloadError } = await supabase.storage.from('uploads').download(fileName);
+        if (!downloadError && fileData) {
+          const arrayBuffer = await fileData.arrayBuffer();
+          signatureBuffer = Buffer.from(arrayBuffer);
+        }
+      }
+    }
+
 
     const empData = new Map<string, any>();
     for (const tx of transactions) {

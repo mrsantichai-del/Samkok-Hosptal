@@ -19,6 +19,8 @@ class CreateUserDto {
     isActive;
     employeeId;
     roles;
+    imgUrl;
+    signatureUrl;
 }
 exports.CreateUserDto = CreateUserDto;
 __decorate([
@@ -59,4 +61,16 @@ __decorate([
     (0, class_validator_1.IsString)({ each: true }),
     __metadata("design:type", Array)
 ], CreateUserDto.prototype, "roles", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "imgUrl", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "signatureUrl", void 0);
 //# sourceMappingURL=create-user.dto.js.map

@@ -33,4 +33,14 @@ export class CreateUserDto {
   @IsArray()
   @IsString({ each: true })
   roles?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  imgUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  signatureUrl?: string;
 }

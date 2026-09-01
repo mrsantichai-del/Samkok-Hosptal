@@ -12,6 +12,14 @@ import type { Response } from 'express';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('payroll')
 export class PayrollController {
+
+  @Roles('System Administrator', 'Finance Officer', 'Executive')
+  @Patch(':id/approve')
+  @ApiOperation({ summary: 'Approve a payroll record' })
+  approvePayrollLegacy(@Param('id') id: string, @Req() req: any) {
+    return this.payrollService.approvePayroll(id, req.user.userId);
+  }
+
   constructor(private readonly payrollService: PayrollService) {}
 
   @Roles('System Administrator', 'Finance Officer')
@@ -46,7 +54,7 @@ export class PayrollController {
   @Roles('Executive', 'System Administrator')
   @Patch('records/:id/approve')
   @ApiOperation({ summary: 'Approve a payroll record (Executive only)' })
-  approvePayroll(@Param('id') id: string, @Req() req: any) {
+  approvePayrollExec(@Param('id') id: string, @Req() req: any) {
     return this.payrollService.approvePayroll(id, req.user.userId);
   }
 

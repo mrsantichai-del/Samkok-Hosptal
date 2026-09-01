@@ -21,8 +21,40 @@ const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
+const platform_express_1 = require("@nestjs/platform-express");
+const supabase_js_1 = require("@supabase/supabase-js");
+const path_1 = require("path");
+const supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL || 'https://wjjewbltlwvsqljeazlz.supabase.co', process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqamV3Ymx0bHd2c3FsamVhemx6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NzczOTkxNCwiZXhwIjoyMTAzMzE1OTE0fQ.j2TyaPGhFOIvoO7RhO7i6CKJspjMoia4gMPJ5VVMKH4');
 let UsersController = class UsersController {
     usersService;
+    async uploadImage(id, file) {
+        if (!file)
+            throw new common_1.BadRequestException('No file uploaded');
+        const ext = (0, path_1.extname)(file.originalname);
+        const fileName = `profile_${id}${ext}`;
+        const { error } = await supabase.storage.from('uploads').upload(fileName, file.buffer, {
+            upsert: true,
+            contentType: file.mimetype
+        });
+        if (error)
+            throw new common_1.BadRequestException('Upload failed: ' + error.message);
+        const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(fileName);
+        return this.usersService.update(id, { imgUrl: urlData.publicUrl });
+    }
+    async uploadSignature(id, file) {
+        if (!file)
+            throw new common_1.BadRequestException('No file uploaded');
+        const ext = (0, path_1.extname)(file.originalname);
+        const fileName = `sig_${id}${ext}`;
+        const { error } = await supabase.storage.from('uploads').upload(fileName, file.buffer, {
+            upsert: true,
+            contentType: file.mimetype
+        });
+        if (error)
+            throw new common_1.BadRequestException('Upload failed: ' + error.message);
+        const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(fileName);
+        return this.usersService.update(id, { signatureUrl: urlData.publicUrl });
+    }
     constructor(usersService) {
         this.usersService = usersService;
     }
@@ -46,6 +78,28 @@ let UsersController = class UsersController {
     }
 };
 exports.UsersController = UsersController;
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator'),
+    (0, common_1.Post)(':id/upload-image'),
+    (0, swagger_1.ApiOperation)({ summary: 'Upload user profile image' }),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "uploadImage", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator'),
+    (0, common_1.Post)(':id/upload-signature'),
+    (0, swagger_1.ApiOperation)({ summary: 'Upload user signature' }),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "uploadSignature", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator'),
     (0, common_1.Get)('roles'),

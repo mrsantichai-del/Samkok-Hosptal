@@ -18,6 +18,7 @@ export declare class PayrollService {
         year: number;
         status: string;
         notes: string | null;
+        approvedById: string | null;
     }[]>;
     getPayrollTransactions(recordId: string, employeeId?: string): Promise<({
         employee: {
