@@ -48,9 +48,9 @@ export default function UsersPage() {
     try {
       const token = Cookies.get("token");
       const [usersRes, rolesRes, empRes] = await Promise.all([
-        axios.get(\`\${API_URL}/users\`, { headers: { Authorization: \`Bearer \${token}\` } }),
-        axios.get(\`\${API_URL}/users/roles\`, { headers: { Authorization: \`Bearer \${token}\` } }),
-        axios.get(\`\${API_URL}/employees\`, { headers: { Authorization: \`Bearer \${token}\` } })
+        axios.get(`${API_URL}/users`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/users/roles`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/employees`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setUsers(usersRes.data);
       setRoles(rolesRes.data);
@@ -125,9 +125,9 @@ export default function UsersPage() {
       if (formData.password) payload.password = formData.password;
       
       if (isEdit) {
-        await axios.patch(\`\${API_URL}/users/\${currentUser.id}\`, payload, { headers: { Authorization: \`Bearer \${token}\` } });
+        await axios.patch(`${API_URL}/users/${currentUser.id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
       } else {
-        await axios.post(\`\${API_URL}/users\`, payload, { headers: { Authorization: \`Bearer \${token}\` } });
+        await axios.post(`${API_URL}/users`, payload, { headers: { Authorization: `Bearer ${token}` } });
       }
       toast.success("บันทึกข้อมูลสำเร็จ", { id: toastId });
       setIsAddOpen(false);
@@ -145,7 +145,7 @@ export default function UsersPage() {
     const toastId = toast.loading("กำลังลบข้อมูล...");
     try {
       const token = Cookies.get("token");
-      await axios.delete(\`\${API_URL}/users/\${currentUser.id}\`, { headers: { Authorization: \`Bearer \${token}\` } });
+      await axios.delete(`${API_URL}/users/${currentUser.id}`, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("ลบข้อมูลสำเร็จ", { id: toastId });
       setIsDeleteOpen(false);
       fetchData();
@@ -289,7 +289,7 @@ export default function UsersPage() {
                       {formData.employeeId ? (
                         (() => {
                           const e = employees.find(emp => emp.id === formData.employeeId);
-                          return e ? \`\${e.employeeCode} - \${e.firstName} \${e.lastName}\` : "เลือกพนักงาน...";
+                          return e ? `${e.employeeCode} - ${e.firstName} ${e.lastName}` : "เลือกพนักงาน...";
                         })()
                       ) : "เลือกพนักงาน (พิมพ์ค้นหาได้)..."}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -314,7 +314,7 @@ export default function UsersPage() {
                           {employees.map(emp => (
                             <CommandItem
                               key={emp.id}
-                              value={\`\${emp.employeeCode} \${emp.firstName} \${emp.lastName}\`}
+                              value={`${emp.employeeCode} ${emp.firstName} ${emp.lastName}`}
                               onSelect={() => {
                                 setFormData({...formData, employeeId: emp.id});
                                 setEmpComboboxOpen(false);
@@ -340,12 +340,12 @@ export default function UsersPage() {
                   <div key={role.id} className="flex items-center space-x-2">
                     <input 
                       type="checkbox" 
-                      id={\`role-\${role.id}\`}
+                      id={`role-${role.id}`}
                       checked={formData.roleIds.includes(role.id)}
                       onChange={() => toggleRole(role.id)}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <label htmlFor={\`role-\${role.id}\`} className="text-sm font-medium leading-none cursor-pointer">
+                    <label htmlFor={`role-${role.id}`} className="text-sm font-medium leading-none cursor-pointer">
                       {role.name}
                     </label>
                   </div>
