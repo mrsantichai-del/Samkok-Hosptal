@@ -44,7 +44,7 @@ export default function SettingsPage() {
     <div className="space-y-4 max-w-4xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold">ตั้งค่าระบบ</h1>
-        <p className="text-gray-500 text-sm mt-1">ตั้งค่าโลโก้โรงพยาบาลและลายเซ็นสำหรับออกสลิปเงินเดือน (PDF)</p>
+        <p className="text-gray-500 text-sm mt-1">ตั้งค่าโลโก้โรงพยาบาลสำหรับออกสลิปเงินเดือน (PDF)</p>
       </div>
 
       <Card>
