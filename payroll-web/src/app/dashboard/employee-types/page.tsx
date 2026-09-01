@@ -1,7 +1,7 @@
 "use client";
 import { API_URL } from "@/lib/config";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -25,6 +25,44 @@ export default function EmployeeTypesPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
+  
+  // Sort State
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedData = React.useMemo(() => {
+    let sortableItems = [...filteredTypes];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        let aValue = a[sortConfig.key] || '';
+        let bValue = b[sortConfig.key] || '';
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredTypes, sortConfig]);
+  
+  const renderSortIcon = (key: string) => {
+    if (sortConfig?.key === key) {
+      return sortConfig.direction === 'asc' ? <span className="ml-1">↑</span> : <span className="ml-1">↓</span>;
+    }
+    return <ArrowUpDown className="ml-1 h-3 w-3 inline-block text-gray-400" />;
+  };
+
   const [deleteItem, setDeleteItem] = useState<any>(null);
   
   // Filtering & Sorting
@@ -183,12 +221,13 @@ export default function EmployeeTypesPage() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={3} className="text-center py-10 text-gray-500">กำลังโหลดข้อมูล...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">กำลังโหลดข้อมูล...</TableCell></TableRow>
             ) : filteredTypes.length === 0 ? (
-              <TableRow><TableCell colSpan={3} className="text-center py-10 text-gray-500">ไม่พบข้อมูลประเภทพนักงาน</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">ไม่พบข้อมูลประเภทพนักงาน</TableCell></TableRow>
             ) : (
-              filteredTypes.map((item) => (
+              sortedData.map((item: any, index: number) => (
                 <TableRow key={item.id}>
+                  <TableCell className="text-center text-gray-500">{index + 1}</TableCell>
                   <TableCell className="font-medium text-[#1877f2]">{item.name}</TableCell>
                   <TableCell className="text-gray-600">{item.description || "-"}</TableCell>
                   <TableCell>

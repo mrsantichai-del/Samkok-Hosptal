@@ -13,8 +13,8 @@ import { Search, Plus, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
-export default function PositionsPage() {
-  const [types, setTypes] = useState<any[]>([]);
+export default function DepartmentsPage() {
+  const [departments, setDepartments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Dialog State
@@ -37,8 +37,8 @@ export default function PositionsPage() {
     setSortConfig({ key, direction });
   };
 
-  const sortedData = React.useMemo(() => {
-    let sortableItems = [...filteredTypes];
+  const sortedDepartments = React.useMemo(() => {
+    let sortableItems = [...filteredDepartments];
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
         let aValue = a[sortConfig.key] || '';
@@ -54,7 +54,7 @@ export default function PositionsPage() {
       });
     }
     return sortableItems;
-  }, [filteredTypes, sortConfig]);
+  }, [filteredDepartments, sortConfig]);
   
   const renderSortIcon = (key: string) => {
     if (sortConfig?.key === key) {
@@ -78,23 +78,24 @@ export default function PositionsPage() {
   });
 
 
-  const fetchTypes = async () => {
+  const fetchDepartments = async () => {
     setLoading(true);
     try {
       const token = Cookies.get("token");
-      const res = await axios.get(`${API_URL}/employees/positions`, {
+      const res = await axios.get(`${API_URL}/employees/departments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setTypes(res.data);
+      setDepartments(res.data);
     } catch (e) {
       console.error(e);
+      toast.error("ดึงข้อมูลไม่สำเร็จ");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTypes();
+    fetchDepartments();
   }, []);
 
   const openAddDialog = () => {
@@ -121,16 +122,16 @@ export default function PositionsPage() {
       };
 
       if (editingItem) {
-        await axios.patch(`${API_URL}/employees/positions/${editingItem.id}`, payload, {
+        await axios.patch(`${API_URL}/employees/departments/${editingItem.id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        await axios.post(`${API_URL}/employees/positions`, payload, {
+        await axios.post(`${API_URL}/employees/departments`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
       setIsDialogOpen(false);
-      fetchTypes();
+      fetchDepartments();
     } catch (e: any) {
       toast.error(e.response?.data?.message || "เกิดข้อผิดพลาดในการบันทึก");
     } finally {
@@ -147,11 +148,11 @@ export default function PositionsPage() {
     setSaving(true);
     try {
       const token = Cookies.get("token");
-      await axios.delete(`${API_URL}/employees/positions/${deleteItem.id}`, {
+      await axios.delete(`${API_URL}/employees/departments/${deleteItem.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDeleteItem(null);
-      fetchTypes();
+      fetchDepartments();
       toast.success("ลบข้อมูลสำเร็จ");
     } catch (e: any) {
       toast.error(e.response?.data?.message || "เกิดข้อผิดพลาดในการลบ");
@@ -164,21 +165,22 @@ export default function PositionsPage() {
     <div className="space-y-4 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">ตำแหน่ง</h1>
-          <p className="text-gray-500 text-sm mt-1">ตั้งค่าตำแหน่ง เช่น ผู้อำนวยการ, แพทย์, พยาบาลวิชาชีพ ฯลฯ</p>
+          <h1 className="text-2xl font-bold">ประเภทพนักงาน</h1>
+          <p className="text-gray-500 text-sm mt-1">ตั้งค่าประเภทพนักงาน เช่น ข้าราชการ, ลจ.ประจำ, พนักงาน, พกส. ฯลฯ</p>
         </div>
         <Button className="bg-[#1877f2] hover:bg-[#166fe5]" onClick={openAddDialog}>
-          <Plus className="mr-2 h-4 w-4" /> เพิ่มตำแหน่งใหม่
+          <Plus className="mr-2 h-4 w-4" /> เพิ่มประเภทใหม่
         </Button>
       </div>
 
       <Card className="border-none shadow-sm rounded-lg overflow-hidden">
         <div className="p-4 bg-white border-b flex items-center justify-between">
           <div className="flex gap-4">
+            <div className="flex gap-4">
             <div className="relative w-72">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input 
-                placeholder="ค้นหาตำแหน่ง..." 
+                placeholder="ค้นหาประเภท..." 
                 className="pl-9 bg-[#f0f2f5] border-none" 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -196,11 +198,23 @@ export default function PositionsPage() {
               </select>
             </div>
           </div>
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-semibold whitespace-nowrap">เรียงลำดับ:</Label>
+              <select 
+                className="h-10 border rounded px-3 text-sm bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" 
+                value={sortOrder} 
+                onChange={e => setSortOrder(e.target.value)}
+              >
+                <option value="asc">ชื่อ (ก-ฮ)</option>
+                <option value="desc">ชื่อ (ฮ-ก)</option>
+              </select>
+            </div>
+          </div>
         </div>
         <Table className="bg-white">
           <TableHeader>
             <TableRow>
-              <TableHead>ตำแหน่ง</TableHead>
+              <TableHead>ประเภทพนักงาน</TableHead>
               <TableHead>รายละเอียดเพิ่มเติม</TableHead>
               <TableHead className="w-[120px]">จัดการ</TableHead>
             </TableRow>
@@ -208,10 +222,10 @@ export default function PositionsPage() {
           <TableBody>
             {loading ? (
               <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">กำลังโหลดข้อมูล...</TableCell></TableRow>
-            ) : filteredTypes.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">ไม่พบข้อมูลตำแหน่ง</TableCell></TableRow>
+            ) : filteredDepartments.length === 0 ? (
+              <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">ไม่พบข้อมูลประเภทพนักงาน</TableCell></TableRow>
             ) : (
-              sortedData.map((item: any, index: number) => (
+              sortedDepartments.map((item: any, index: number) => (
                 <TableRow key={item.id}>
                   <TableCell className="text-center text-gray-500">{index + 1}</TableCell>
                   <TableCell className="font-medium text-[#1877f2]">{item.name}</TableCell>
@@ -237,12 +251,12 @@ export default function PositionsPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{editingItem ? "แก้ไขตำแหน่ง" : "เพิ่มตำแหน่งใหม่"}</DialogTitle>
+            <DialogTitle>{editingItem ? "แก้ไขประเภทพนักงาน" : "เพิ่มประเภทพนักงานใหม่"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">ชื่อตำแหน่ง (เช่น แพทย์)</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="กรอกชื่อตำแหน่ง" />
+              <Label htmlFor="name">ชื่อประเภทพนักงาน (เช่น ข้าราชการ)</Label>
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="กรอกชื่อประเภท" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">รายละเอียดเพิ่มเติม (ไม่บังคับ)</Label>

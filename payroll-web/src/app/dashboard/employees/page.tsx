@@ -22,6 +22,7 @@ export default function EmployeesPage() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [employeeTypes, setEmployeeTypes] = useState<any[]>([]);
   const [positions, setPositions] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Dialog State
@@ -35,10 +36,13 @@ export default function EmployeesPage() {
   const [employeeCode, setEmployeeCode] = useState("");
   const [employeeTypeId, setEmployeeTypeId] = useState("unassigned");
   const [positionId, setPositionId] = useState("unassigned");
+  const [departmentId, setDepartmentId] = useState("unassigned");
+  const [openDept, setOpenDept] = useState(false);
   
   // Filter States
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPositionId, setFilterPositionId] = useState("all");
+  const [filterDepartmentId, setFilterDepartmentId] = useState("all");
   const [filterTypeId, setFilterTypeId] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   
@@ -50,9 +54,10 @@ export default function EmployeesPage() {
   const filteredEmployees = employees.filter(emp => {
     const matchSearch = emp.firstName.includes(searchTerm) || emp.lastName.includes(searchTerm) || emp.employeeCode.includes(searchTerm);
     const matchPos = filterPositionId === "all" || emp.positionId === filterPositionId;
+    const matchDept = filterDepartmentId === "all" || emp.departmentId === filterDepartmentId;
     const matchType = filterTypeId === "all" || emp.employeeTypeId === filterTypeId;
     const matchStatus = filterStatus === "all" || (filterStatus === "active" ? !emp.resignedDate : !!emp.resignedDate);
-    return matchSearch && matchPos && matchType && matchStatus;
+    return matchSearch && matchPos && matchType && matchStatus && matchDept;
   });
 
 
@@ -80,6 +85,9 @@ export default function EmployeesPage() {
         } else if (sortConfig.key === 'typeName') {
           aValue = a.employeeType?.name || '';
           bValue = b.employeeType?.name || '';
+        } else if (sortConfig.key === 'departmentName') {
+          aValue = a.department?.name || '';
+          bValue = b.department?.name || '';
         } else if (sortConfig.key === 'name') {
           aValue = `${a.firstName} ${a.lastName}`;
           bValue = `${b.firstName} ${b.lastName}`;
@@ -120,6 +128,7 @@ export default function EmployeesPage() {
       'รหัสพนักงาน': emp.employeeCode,
       'ชื่อ': emp.firstName,
       'นามสกุล': emp.lastName,
+      'แผนก': emp.department?.name || '',
       'ตำแหน่ง': emp.position?.name || '',
       'ประเภทพนักงาน': emp.employeeType?.name || ''
     }));
@@ -242,10 +251,12 @@ export default function EmployeesPage() {
       const [empRes, typeRes, posRes] = await Promise.all([
         axios.get(`${API_URL}/employees`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/employees/types`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/employees/departments`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/employees/positions`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setEmployees(empRes.data);
       setEmployeeTypes(typeRes.data);
+      setDepartments(deptRes.data);
       setPositions(posRes.data);
     } catch (e) {
       console.error(e);
@@ -267,6 +278,7 @@ export default function EmployeesPage() {
     setIdCard("");
     setEmployeeTypeId("unassigned");
     setPositionId("unassigned");
+      setDepartmentId("unassigned");
     setIsDialogOpen(true);
   };
 
@@ -290,6 +302,7 @@ export default function EmployeesPage() {
         lastName,
         idCard: idCard || undefined,
         employeeTypeId: employeeTypeId === "unassigned" ? null : employeeTypeId,
+      departmentId: departmentId === "unassigned" ? null : departmentId,
         positionId: positionId === "unassigned" ? null : positionId
       };
 
@@ -392,17 +405,28 @@ export default function EmployeesPage() {
           </div>
         </div>
         <Table className="bg-white">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[60px] text-center">ลำดับ</TableHead>
-                <TableHead>รหัสพนักงาน</TableHead>
-              <TableHead>ชื่อ - นามสกุล</TableHead>
-              <TableHead>ตำแหน่ง</TableHead>
-                <TableHead>ประเภทพนักงาน</TableHead>
-              <TableHead>สถานะ</TableHead>
-              <TableHead className="w-[120px]">จัดการ</TableHead>
-            </TableRow>
-          </TableHeader>
+                      <TableHeader>
+              <TableRow>
+                <TableHead className="w-[60px] text-center">ลำดับ</TableHead>
+                <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('employeeCode')}>
+                  รหัสพนักงาน {renderSortIcon('employeeCode')}
+                </TableHead>
+                <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('name')}>
+                  ชื่อ - นามสกุล {renderSortIcon('name')}
+                </TableHead>
+                <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('departmentName')}>
+                  แผนก {renderSortIcon('departmentName')}
+                </TableHead>
+                <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('positionName')}>
+                  ตำแหน่ง {renderSortIcon('positionName')}
+                </TableHead>
+                <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('typeName')}>
+                  ประเภทพนักงาน {renderSortIcon('typeName')}
+                </TableHead>
+                <TableHead>สถานะ</TableHead>
+                <TableHead className="w-[120px]">จัดการ</TableHead>
+              </TableRow>
+            </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
@@ -422,6 +446,9 @@ export default function EmployeesPage() {
                   <TableCell className="text-center text-gray-500">{index + 1}</TableCell>
                     <TableCell className="font-medium">{emp.employeeCode}</TableCell>
                   <TableCell>{emp.firstName} {emp.lastName}</TableCell>
+                  <TableCell className="text-gray-600">
+                    {emp.department?.name || "-"}
+                  </TableCell>
                   <TableCell className="text-gray-600">
                     {emp.position?.name || "-"}
                   </TableCell>
