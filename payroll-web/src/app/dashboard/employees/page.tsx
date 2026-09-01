@@ -1,7 +1,7 @@
 "use client";
 import { API_URL } from "@/lib/config";
 
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import Cookies from "js-cookie";
@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Plus, Edit, Trash2, Check, ChevronsUpDown, Download, Upload } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Check, ChevronsUpDown, Download, Upload, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -55,6 +55,55 @@ export default function EmployeesPage() {
     return matchSearch && matchPos && matchType && matchStatus;
   });
 
+
+  // Sort State
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedEmployees = React.useMemo(() => {
+    let sortableItems = [...filteredEmployees];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        let aValue = a[sortConfig.key] || '';
+        let bValue = b[sortConfig.key] || '';
+        
+        if (sortConfig.key === 'positionName') {
+          aValue = a.position?.name || '';
+          bValue = b.position?.name || '';
+        } else if (sortConfig.key === 'typeName') {
+          aValue = a.employeeType?.name || '';
+          bValue = b.employeeType?.name || '';
+        } else if (sortConfig.key === 'name') {
+          aValue = `${a.firstName} ${a.lastName}`;
+          bValue = `${b.firstName} ${b.lastName}`;
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredEmployees, sortConfig]);
+  
+  const renderSortIcon = (key: string) => {
+    if (sortConfig?.key === key) {
+      return sortConfig.direction === 'asc' ? <span className="ml-1">↑</span> : <span className="ml-1">↓</span>;
+    }
+    return <ArrowUpDown className="ml-1 h-3 w-3 inline-block text-gray-400" />;
+  };
+
   const [saving, setSaving] = useState(false);
   const [deleteItem, setDeleteItem] = useState<any>(null);
   
@@ -67,7 +116,7 @@ export default function EmployeesPage() {
 
 
   const handleExportExcel = () => {
-    const data = filteredEmployees.map(emp => ({
+    const data = sortedEmployees.map(emp => ({
       'รหัสพนักงาน': emp.employeeCode,
       'ชื่อ': emp.firstName,
       'นามสกุล': emp.lastName,
@@ -368,7 +417,7 @@ export default function EmployeesPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredEmployees.map((emp, index) => (
+              sortedEmployees.map((emp, index) => (
                 <TableRow key={emp.id}>
                   <TableCell className="text-center text-gray-500">{index + 1}</TableCell>
                     <TableCell className="font-medium">{emp.employeeCode}</TableCell>
