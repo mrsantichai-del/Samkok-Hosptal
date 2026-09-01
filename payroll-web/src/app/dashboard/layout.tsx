@@ -48,6 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const navItems = [
     { name: "แดชบอร์ด", href: "/dashboard", icon: LayoutDashboard },
+    { name: "ผู้ใช้งาน", href: "/dashboard/users", icon: Users },
     { name: "พนักงาน", href: "/dashboard/employees", icon: Users },
     { name: "ประเภทพนักงาน", href: "/dashboard/employee-types", icon: FolderKanban },
     { name: "ตำแหน่ง", href: "/dashboard/positions", icon: Briefcase },
