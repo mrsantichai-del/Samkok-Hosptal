@@ -124,6 +124,29 @@ export class EmployeeService {
     });
   }
 
+
+  async getDepartments() {
+    return this.prisma.department.findMany({
+      where: { deletedAt: null },
+      orderBy: { name: 'asc' }
+    });
+  }
+
+  async createDepartment(data: { name: string; description?: string }) {
+    return this.prisma.department.create({ data });
+  }
+
+  async updateDepartment(id: string, data: { name?: string; description?: string }) {
+    return this.prisma.department.update({ where: { id }, data });
+  }
+
+  async deleteDepartment(id: string) {
+    return this.prisma.department.update({
+      where: { id },
+      data: { deletedAt: new Date() }
+    });
+  }
+
   async getPositions() {
     return this.prisma.position.findMany({
       where: { deletedAt: null },

@@ -108,6 +108,44 @@ export declare class EmployeeController {
         updatedAt: Date;
         description: string | null;
     }>;
+    getDepartments(): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }[]>;
+    createDepartment(body: {
+        name: string;
+        description?: string;
+    }): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
+    updateDepartment(id: string, body: {
+        name?: string;
+        description?: string;
+    }): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
+    deleteDepartment(id: string): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
     getPositions(): Promise<{
         name: string;
         id: string;

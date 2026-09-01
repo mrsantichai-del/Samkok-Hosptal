@@ -152,6 +152,44 @@ export declare class EmployeeService {
         updatedAt: Date;
         description: string | null;
     }>;
+    getDepartments(): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }[]>;
+    createDepartment(data: {
+        name: string;
+        description?: string;
+    }): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
+    updateDepartment(id: string, data: {
+        name?: string;
+        description?: string;
+    }): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
+    deleteDepartment(id: string): Promise<{
+        name: string;
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+    }>;
     getPositions(): Promise<{
         name: string;
         id: string;

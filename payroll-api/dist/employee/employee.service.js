@@ -121,6 +121,24 @@ let EmployeeService = class EmployeeService {
             data: { deletedAt: new Date() }
         });
     }
+    async getDepartments() {
+        return this.prisma.department.findMany({
+            where: { deletedAt: null },
+            orderBy: { name: 'asc' }
+        });
+    }
+    async createDepartment(data) {
+        return this.prisma.department.create({ data });
+    }
+    async updateDepartment(id, data) {
+        return this.prisma.department.update({ where: { id }, data });
+    }
+    async deleteDepartment(id) {
+        return this.prisma.department.update({
+            where: { id },
+            data: { deletedAt: new Date() }
+        });
+    }
     async getPositions() {
         return this.prisma.position.findMany({
             where: { deletedAt: null },
