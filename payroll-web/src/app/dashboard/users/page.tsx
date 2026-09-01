@@ -299,39 +299,35 @@ export default function UsersPage() {
               />
             </div>
 
-            <Select value={filterLinkStatus} onValueChange={setFilterLinkStatus}>
-              <SelectTrigger className="w-[150px] h-9">
-                <SelectValue placeholder="สถานะการผูก" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">การผูกทั้งหมด</SelectItem>
-                <SelectItem value="LINKED">ผูกพนักงานแล้ว</SelectItem>
-                <SelectItem value="UNLINKED">ไม่ได้ผูกพนักงาน</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filterRole} onValueChange={setFilterRole}>
-              <SelectTrigger className="w-[180px] h-9">
-                <SelectValue placeholder="กลุ่มผู้ใช้งาน" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">กลุ่มผู้ใช้งานทั้งหมด</SelectItem>
+            
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-semibold whitespace-nowrap">การผูกบัญชี:</Label>
+              <select className="h-9 border rounded px-2 text-sm bg-gray-50" value={filterLinkStatus} onChange={e => setFilterLinkStatus(e.target.value)}>
+                <option value="ALL">ทั้งหมด (All)</option>
+                <option value="LINKED">ผูกพนักงานแล้ว</option>
+                <option value="UNLINKED">ไม่ได้ผูก</option>
+              </select>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-semibold whitespace-nowrap">กลุ่มผู้ใช้งาน:</Label>
+              <select className="h-9 border rounded px-2 text-sm bg-gray-50" value={filterRole} onChange={e => setFilterRole(e.target.value)}>
+                <option value="ALL">ทั้งหมด (All)</option>
                 {roles.map(r => (
-                  <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                  <option key={r.id} value={r.id}>{r.name}</option>
                 ))}
-              </SelectContent>
-            </Select>
+              </select>
+            </div>
 
-            <Select value={filterActive} onValueChange={setFilterActive}>
-              <SelectTrigger className="w-[150px] h-9">
-                <SelectValue placeholder="สถานะบัญชี" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">สถานะทั้งหมด</SelectItem>
-                <SelectItem value="ACTIVE">เปิดใช้งาน</SelectItem>
-                <SelectItem value="INACTIVE">ระงับ</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-semibold whitespace-nowrap">สถานะ:</Label>
+              <select className="h-9 border rounded px-2 text-sm bg-gray-50" value={filterActive} onChange={e => setFilterActive(e.target.value)}>
+                <option value="ALL">ทั้งหมด (All)</option>
+                <option value="ACTIVE">เปิดใช้งาน</option>
+                <option value="INACTIVE">ระงับ</option>
+              </select>
+            </div>
+
           </div>
 
           <Button className="bg-[#1877f2] hover:bg-[#166fe5] h-9" onClick={openAddDialog}>
