@@ -46,8 +46,8 @@ export class EmployeeService {
     
     return this.prisma.employee.create({
       data: {
-        employeeCode,
         ...createEmployeeDto,
+        employeeCode,
       },
     });
   }

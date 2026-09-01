@@ -1,5 +1,5 @@
 export declare class CreateEmployeeDto {
-    employeeCode?: string;
+    employeeCode: string;
     firstName: string;
     lastName: string;
     idCard?: string;
