@@ -40,12 +40,12 @@ let PayrollController = class PayrollController {
     approvePayroll(id, req) {
         return this.payrollService.approvePayroll(id, req.user.userId);
     }
-    async exportExcel(id, res) {
-        await this.payrollService.exportExcel(id, res);
+    async exportExcel(id, body, res) {
+        await this.payrollService.exportExcel(id, res, body.employeeIds);
     }
-    async exportPdf(id, res) {
+    async exportPdf(id, body, res) {
         try {
-            await this.payrollService.exportPdf(id, res);
+            await this.payrollService.exportPdf(id, res, body.employeeIds);
         }
         catch (error) {
             console.error('PDF Export Error:', error);
@@ -109,22 +109,24 @@ __decorate([
 ], PayrollController.prototype, "approvePayroll", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
-    (0, common_1.Get)('records/:id/export/excel'),
+    (0, common_1.Post)('records/:id/export/excel'),
     (0, swagger_1.ApiOperation)({ summary: 'Export Payroll to Excel' }),
     __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Res)()),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], PayrollController.prototype, "exportExcel", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive', 'Employee'),
-    (0, common_1.Get)('records/:id/export/pdf'),
+    (0, common_1.Post)('records/:id/export/pdf'),
     (0, swagger_1.ApiOperation)({ summary: 'Export Payslips to PDF' }),
     __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Res)()),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], PayrollController.prototype, "exportPdf", null);
 exports.PayrollController = PayrollController = __decorate([

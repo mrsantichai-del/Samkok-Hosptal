@@ -29,6 +29,7 @@
     "@nestjs/swagger": "^11.4.7",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
+    "@supabase/supabase-js": "^2.112.4",
     "bahttext": "^2.4.0",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",

@@ -16,6 +16,7 @@ const employee_module_1 = require("./employee/employee.module");
 const pay_item_module_1 = require("./pay-item/pay-item.module");
 const payroll_module_1 = require("./payroll/payroll.module");
 const settings_module_1 = require("./settings/settings.module");
+const users_module_1 = require("./users/users.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -27,7 +28,8 @@ exports.AppModule = AppModule = __decorate([
             employee_module_1.EmployeeModule,
             pay_item_module_1.PayItemModule,
             payroll_module_1.PayrollModule,
-            settings_module_1.SettingsModule
+            settings_module_1.SettingsModule,
+            users_module_1.UsersModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

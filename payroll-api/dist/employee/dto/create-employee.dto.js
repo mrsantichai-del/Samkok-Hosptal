@@ -13,6 +13,7 @@ exports.CreateEmployeeDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 class CreateEmployeeDto {
+    employeeCode;
     firstName;
     lastName;
     idCard;
@@ -23,6 +24,12 @@ class CreateEmployeeDto {
     employeeTypeId;
 }
 exports.CreateEmployeeDto = CreateEmployeeDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateEmployeeDto.prototype, "employeeCode", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsString)(),

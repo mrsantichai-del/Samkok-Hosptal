@@ -57,6 +57,6 @@ export declare class PayrollService {
     approvePayroll(recordId: string, userId: string): Promise<{
         message: string;
     }>;
-    exportExcel(recordId: string, res: Response): Promise<void>;
-    exportPdf(recordId: string, res: Response): Promise<void>;
+    exportExcel(recordId: string, res: Response, employeeIds?: string[]): Promise<void>;
+    exportPdf(recordId: string, res: Response, employeeIds?: string[]): Promise<void>;
 }

@@ -5,6 +5,12 @@ import * as ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
 import type { Response } from 'express';
 
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(
+  process.env.SUPABASE_URL || 'https://wjjewbltlwvsqljeazlz.supabase.co',
+  process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqamV3Ymx0bHd2c3FsamVhemx6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NzczOTkxNCwiZXhwIjoyMTAzMzE1OTE0fQ.j2TyaPGhFOIvoO7RhO7i6CKJspjMoia4gMPJ5VVMKH4'
+);
+
 @Injectable()
 export class PayrollService {
   constructor(private prisma: PrismaService) {}
@@ -186,17 +192,19 @@ export class PayrollService {
       doc.registerFont('ThaiRegular', finalFontRegular);
       doc.registerFont('ThaiBold', finalFontBold);
     
-    const getImagePath = (name: string) => {
-      const exts = ['.png', '.jpg', '.jpeg'];
-      for (const ext of exts) {
-        const p = path.join(process.cwd(), 'uploads', name + ext);
-        if (fs.existsSync(p)) return p;
-      }
-      return null;
+    const fetchImageBuffer = async (namePrefix: string) => {
+      const { data, error } = await supabase.storage.from('uploads').list();
+      if (error || !data) return null;
+      const file = data.find((f: any) => f.name.startsWith(namePrefix + '.'));
+      if (!file) return null;
+      const { data: fileData, error: downloadError } = await supabase.storage.from('uploads').download(file.name);
+      if (downloadError || !fileData) return null;
+      const arrayBuffer = await fileData.arrayBuffer();
+      return Buffer.from(arrayBuffer);
     };
-    
-    const logoPath = getImagePath('logo');
-    const signaturePath = getImagePath('signature');
+
+    const logoBuffer = await fetchImageBuffer('logo');
+    const signatureBuffer = await fetchImageBuffer('signature');
 
     const empData = new Map<string, any>();
     for (const tx of transactions) {
@@ -232,9 +240,9 @@ export class PayrollService {
       // Draw Outer Border
       doc.lineWidth(1).rect(40, 40, 515, endY - 40 + 50).stroke();
 
-      if (logoPath) {
+      if (logoBuffer) {
         try {
-          doc.image(logoPath, 50, 45, { height: 40 });
+          doc.image(logoBuffer, 50, 45, { height: 40 });
         } catch (err) {
           console.error("Failed to load logo image:", err);
         }
@@ -304,9 +312,9 @@ export class PayrollService {
       
       doc.fontSize(12).font('ThaiRegular').text(`(${bahttext(e.net)})`, 40, endY + 30, { align: 'center' });
 
-      if (signaturePath) {
+      if (signatureBuffer) {
         try {
-          doc.image(signaturePath, 300, endY + 50, { height: 40 });
+          doc.image(signatureBuffer, 300, endY + 50, { height: 40 });
         } catch (err) {
           console.error("Failed to load signature image:", err);
         }

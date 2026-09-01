@@ -50,6 +50,8 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const ExcelJS = __importStar(require("exceljs"));
 const pdfkit_1 = __importDefault(require("pdfkit"));
+const supabase_js_1 = require("@supabase/supabase-js");
+const supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL || 'https://wjjewbltlwvsqljeazlz.supabase.co', process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqamV3Ymx0bHd2c3FsamVhemx6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NzczOTkxNCwiZXhwIjoyMTAzMzE1OTE0fQ.j2TyaPGhFOIvoO7RhO7i6CKJspjMoia4gMPJ5VVMKH4');
 let PayrollService = class PayrollService {
     prisma;
     constructor(prisma) {
@@ -122,11 +124,15 @@ let PayrollService = class PayrollService {
         await this.prisma.auditLog.create({ data: { action: 'APPROVE_PAYROLL', tableName: 'PayrollRecord', recordId: record.id, userId } });
         return { message: 'Payroll approved' };
     }
-    async exportExcel(recordId, res) {
+    async exportExcel(recordId, res, employeeIds) {
         const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
         if (!record)
             throw new common_1.NotFoundException('Record not found');
-        const transactions = await this.getPayrollTransactions(recordId);
+        let transactions = await this.getPayrollTransactions(recordId);
+        if (employeeIds && employeeIds.length > 0) {
+            transactions = transactions.filter(tx => employeeIds.includes(tx.employeeId));
+            transactions.sort((a, b) => employeeIds.indexOf(a.employeeId) - employeeIds.indexOf(b.employeeId));
+        }
         const empData = new Map();
         const incomeHeaders = new Set();
         const deductionHeaders = new Set();
@@ -177,11 +183,15 @@ let PayrollService = class PayrollService {
         await workbook.xlsx.write(res);
         res.end();
     }
-    async exportPdf(recordId, res) {
+    async exportPdf(recordId, res, employeeIds) {
         const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
         if (!record)
             throw new common_1.NotFoundException('Record not found');
-        const transactions = await this.getPayrollTransactions(recordId);
+        let transactions = await this.getPayrollTransactions(recordId);
+        if (employeeIds && employeeIds.length > 0) {
+            transactions = transactions.filter(tx => employeeIds.includes(tx.employeeId));
+            transactions.sort((a, b) => employeeIds.indexOf(a.employeeId) - employeeIds.indexOf(b.employeeId));
+        }
         const allPayItems = await this.prisma.payItem.findMany({ orderBy: { createdAt: 'asc' } });
         const allIncomes = allPayItems.filter(p => p.type === 'INCOME');
         const allDeductions = allPayItems.filter(p => p.type === 'DEDUCTION');
@@ -198,17 +208,21 @@ let PayrollService = class PayrollService {
         const finalFontBold = fs.existsSync(fontBold) ? fontBold : path.join(process.cwd(), 'src', 'assets', 'fonts', 'Sarabun-Bold.ttf');
         doc.registerFont('ThaiRegular', finalFontRegular);
         doc.registerFont('ThaiBold', finalFontBold);
-        const getImagePath = (name) => {
-            const exts = ['.png', '.jpg', '.jpeg'];
-            for (const ext of exts) {
-                const p = path.join(process.cwd(), 'uploads', name + ext);
-                if (fs.existsSync(p))
-                    return p;
-            }
-            return null;
+        const fetchImageBuffer = async (namePrefix) => {
+            const { data, error } = await supabase.storage.from('uploads').list();
+            if (error || !data)
+                return null;
+            const file = data.find((f) => f.name.startsWith(namePrefix + '.'));
+            if (!file)
+                return null;
+            const { data: fileData, error: downloadError } = await supabase.storage.from('uploads').download(file.name);
+            if (downloadError || !fileData)
+                return null;
+            const arrayBuffer = await fileData.arrayBuffer();
+            return Buffer.from(arrayBuffer);
         };
-        const logoPath = getImagePath('logo');
-        const signaturePath = getImagePath('signature');
+        const logoBuffer = await fetchImageBuffer('logo');
+        const signatureBuffer = await fetchImageBuffer('signature');
         const empData = new Map();
         for (const tx of transactions) {
             if (!tx.employee || !tx.payItem)
@@ -239,9 +253,9 @@ let PayrollService = class PayrollService {
             const startY = 150;
             const endY = startY + 20 + (maxRows * rowHeight) + 20;
             doc.lineWidth(1).rect(40, 40, 515, endY - 40 + 50).stroke();
-            if (logoPath) {
+            if (logoBuffer) {
                 try {
-                    doc.image(logoPath, 50, 45, { height: 40 });
+                    doc.image(logoBuffer, 50, 45, { height: 40 });
                 }
                 catch (err) {
                     console.error("Failed to load logo image:", err);
@@ -291,9 +305,9 @@ let PayrollService = class PayrollService {
             doc.fontSize(14).text(`คงเหลือสุทธิ`, 180, endY + 10, { continued: true });
             doc.text(`${e.net.toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท`, { align: 'right' });
             doc.fontSize(12).font('ThaiRegular').text(`(${bahttext(e.net)})`, 40, endY + 30, { align: 'center' });
-            if (signaturePath) {
+            if (signatureBuffer) {
                 try {
-                    doc.image(signaturePath, 300, endY + 50, { height: 40 });
+                    doc.image(signatureBuffer, 300, endY + 50, { height: 40 });
                 }
                 catch (err) {
                     console.error("Failed to load signature image:", err);

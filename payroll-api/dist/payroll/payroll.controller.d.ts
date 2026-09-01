@@ -59,6 +59,10 @@ export declare class PayrollController {
     approvePayroll(id: string, req: any): Promise<{
         message: string;
     }>;
-    exportExcel(id: string, res: Response): Promise<void>;
-    exportPdf(id: string, res: Response): Promise<void>;
+    exportExcel(id: string, body: {
+        employeeIds?: string[];
+    }, res: Response): Promise<void>;
+    exportPdf(id: string, body: {
+        employeeIds?: string[];
+    }, res: Response): Promise<void>;
 }

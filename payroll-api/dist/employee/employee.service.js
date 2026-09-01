@@ -43,7 +43,15 @@ let EmployeeService = class EmployeeService {
         return employee;
     }
     async create(createEmployeeDto) {
-        const employeeCode = `EMP-${Date.now().toString().slice(-6)}`;
+        let employeeCode = createEmployeeDto.employeeCode;
+        if (employeeCode) {
+            const existing = await this.prisma.employee.findFirst({ where: { employeeCode, deletedAt: null } });
+            if (existing)
+                throw new common_1.BadRequestException('รหัสพนักงานนี้มีอยู่ในระบบแล้ว');
+        }
+        else {
+            employeeCode = `EMP-${Date.now().toString().slice(-6)}`;
+        }
         return this.prisma.employee.create({
             data: {
                 employeeCode,
@@ -53,6 +61,13 @@ let EmployeeService = class EmployeeService {
     }
     async update(id, updateEmployeeDto) {
         await this.findOne(id);
+        if (updateEmployeeDto.employeeCode) {
+            const existing = await this.prisma.employee.findFirst({
+                where: { employeeCode: updateEmployeeDto.employeeCode, id: { not: id }, deletedAt: null }
+            });
+            if (existing)
+                throw new common_1.BadRequestException('รหัสพนักงานนี้มีอยู่ในระบบแล้ว');
+        }
         return this.prisma.employee.update({
             where: { id },
             data: updateEmployeeDto,
@@ -82,11 +97,19 @@ let EmployeeService = class EmployeeService {
         });
     }
     async createType(name, description) {
+        const existing = await this.prisma.employeeType.findFirst({ where: { name, deletedAt: null } });
+        if (existing)
+            throw new common_1.BadRequestException('ชื่อประเภทพนักงานนี้มีอยู่ในระบบแล้ว');
         return this.prisma.employeeType.create({
             data: { name, description }
         });
     }
     async updateType(id, data) {
+        if (data.name) {
+            const existing = await this.prisma.employeeType.findFirst({ where: { name: data.name, id: { not: id }, deletedAt: null } });
+            if (existing)
+                throw new common_1.BadRequestException('ชื่อประเภทพนักงานนี้มีอยู่ในระบบแล้ว');
+        }
         return this.prisma.employeeType.update({
             where: { id },
             data
@@ -105,11 +128,19 @@ let EmployeeService = class EmployeeService {
         });
     }
     async createPosition(name, description) {
+        const existing = await this.prisma.position.findFirst({ where: { name, deletedAt: null } });
+        if (existing)
+            throw new common_1.BadRequestException('ชื่อตำแหน่งนี้มีอยู่ในระบบแล้ว');
         return this.prisma.position.create({
             data: { name, description }
         });
     }
     async updatePosition(id, data) {
+        if (data.name) {
+            const existing = await this.prisma.position.findFirst({ where: { name: data.name, id: { not: id }, deletedAt: null } });
+            if (existing)
+                throw new common_1.BadRequestException('ชื่อตำแหน่งนี้มีอยู่ในระบบแล้ว');
+        }
         return this.prisma.position.update({
             where: { id },
             data
