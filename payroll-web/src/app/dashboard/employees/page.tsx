@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Plus, Edit, Trash2, Check, ChevronsUpDown, Download, Upload, ArrowUpDown } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Check, ChevronsUpDown, Download, Upload, ArrowUpDown, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -84,6 +84,11 @@ export default function EmployeesPage() {
     } finally {
       setSavingUser(null);
     }
+  };
+
+  
+  const handlePrint = () => {
+    window.print();
   };
 
   const handleSort = (key: string) => {
@@ -371,28 +376,41 @@ export default function EmployeesPage() {
   };
 
   return (
-    <div className="space-y-4 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-4 max-w-6xl mx-auto print:max-w-none print:w-full">
+      {/* Official Print Header */}
+      <div className="hidden print:block text-center mb-8">
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <img src="/logo.jpg" alt="Logo" className="w-16 h-16 object-contain" />
+          <h1 className="text-2xl font-bold font-serif text-black">โรงพยาบาลสามโคก (Samkok Hospital)</h1>
+        </div>
+        <h2 className="text-xl font-bold font-serif text-black">รายงานข้อมูลบุคลากร</h2>
+        <p className="text-black font-serif">ข้อมูล ณ วันที่ {new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      </div>
+
+      <div className="flex justify-between items-center mb-6 print:hidden">
         <div>
           <h1 className="text-2xl font-bold">ข้อมูลพนักงาน</h1>
           <p className="text-gray-500 text-sm mt-1">จัดการรายชื่อพนักงานทั้งหมด</p>
         </div>
         <div className="flex gap-2">
           <input type="file" accept=".xlsx, .xls" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
-          <Button variant="outline" className="text-green-600 border-green-600 hover:bg-green-50" onClick={handleExportExcel}>
+          <Button variant="outline" className="text-gray-600 border-gray-600 hover:bg-gray-50 print:hidden" onClick={handlePrint}>
+            <Printer className="mr-2 h-4 w-4" /> พิมพ์รายงาน
+          </Button>
+          <Button variant="outline" className="text-green-600 border-green-600 hover:bg-green-50 print:hidden" onClick={handleExportExcel}>
             <Download className="mr-2 h-4 w-4" /> ส่งออก Excel
           </Button>
-          <Button variant="outline" className="text-blue-600 border-blue-600 hover:bg-blue-50" onClick={() => fileInputRef.current?.click()}>
+          <Button variant="outline" className="text-blue-600 border-blue-600 hover:bg-blue-50 print:hidden" onClick={() => fileInputRef.current?.click()}>
             <Upload className="mr-2 h-4 w-4" /> นำเข้า Excel (อัปเดต)
           </Button>
-          <Button className="bg-[#1877f2] hover:bg-[#166fe5]" onClick={openAddDialog}>
+          <Button className="bg-[#1877f2] hover:bg-[#166fe5] print:hidden" onClick={openAddDialog}>
             <Plus className="mr-2 h-4 w-4" /> เพิ่มพนักงานใหม่
           </Button>
         </div>
       </div>
 
-      <Card className="border-none shadow-sm rounded-lg overflow-hidden">
-        <div className="p-4 bg-white border-b flex items-center justify-between">
+      <Card className="border-none shadow-sm rounded-lg overflow-hidden print:shadow-none print:rounded-none">
+        <div className="p-4 bg-white border-b flex items-center justify-between print:hidden">
           <div className="flex gap-4 flex-wrap">
             <div className="relative w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
@@ -428,7 +446,7 @@ export default function EmployeesPage() {
             </div>
           </div>
         </div>
-        <Table className="bg-white">
+        <Table className="bg-white print:text-black font-serif print:border-collapse print:[&_th]:border print:[&_td]:border print:[&_th]:border-black print:[&_td]:border-black print:[&_th]:bg-gray-100">
                       <TableHeader>
               <TableRow>
                 <TableHead className="w-[60px] text-center">ลำดับ</TableHead>
@@ -449,7 +467,7 @@ export default function EmployeesPage() {
                 </TableHead>
                 <TableHead>ผู้ใช้งาน</TableHead>
                 <TableHead>สถานะ</TableHead>
-                <TableHead className="w-[120px]">จัดการ</TableHead>
+                <TableHead className="w-[120px] print:hidden">จัดการ</TableHead>
               </TableRow>
             </TableHeader>
           <TableBody>
@@ -512,7 +530,7 @@ export default function EmployeesPage() {
                       </span>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="print:hidden">
                     <div className="flex items-center gap-2">
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:bg-blue-50" onClick={() => openEditDialog(emp)}>
                         <Edit className="h-4 w-4" />

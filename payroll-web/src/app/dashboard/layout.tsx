@@ -97,7 +97,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar */}
-        <aside className="w-[280px] hidden lg:flex flex-col p-2 overflow-y-auto">
+        <aside className="w-[280px] hidden lg:flex flex-col p-2 overflow-y-auto print:hidden">
           <nav className="space-y-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/dashboard");
