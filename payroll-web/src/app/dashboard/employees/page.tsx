@@ -447,6 +447,7 @@ export default function EmployeesPage() {
                 <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('typeName')}>
                   ประเภทพนักงาน {renderSortIcon('typeName')}
                 </TableHead>
+                <TableHead>ผู้ใช้งาน</TableHead>
                 <TableHead>สถานะ</TableHead>
                 <TableHead className="w-[120px]">จัดการ</TableHead>
               </TableRow>
@@ -482,6 +483,23 @@ export default function EmployeesPage() {
                         {emp.employeeType.name}
                       </span>
                     ) : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {emp.user ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-200">
+                        <Check className="h-3 w-3" /> สร้างแล้ว
+                      </span>
+                    ) : (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-7 text-xs bg-white text-[#1877f2] border-[#1877f2] hover:bg-[#1877f2] hover:text-white"
+                        onClick={() => handleCreateUser(emp)}
+                        disabled={savingUser === emp.id}
+                      >
+                        {savingUser === emp.id ? "กำลังสร้าง..." : "สร้าง User"}
+                      </Button>
+                    )}
                   </TableCell>
                   <TableCell>
                     {emp.resignedDate ? (
