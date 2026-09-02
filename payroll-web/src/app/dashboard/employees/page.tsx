@@ -52,7 +52,10 @@ export default function EmployeesPage() {
 
   // Derived filtered list
   const filteredEmployees = employees.filter(emp => {
-    const matchSearch = emp.firstName.includes(searchTerm) || emp.lastName.includes(searchTerm) || emp.employeeCode.includes(searchTerm);
+    const s = searchTerm.toLowerCase();
+      const matchSearch = (emp.firstName || "").toLowerCase().includes(s) || 
+                          (emp.lastName || "").toLowerCase().includes(s) || 
+                          (emp.employeeCode || "").toLowerCase().includes(s);
     const matchPos = filterPositionId === "all" || emp.positionId === filterPositionId;
     const matchDept = filterDepartmentId === "all" || emp.departmentId === filterDepartmentId;
     const matchType = filterTypeId === "all" || emp.employeeTypeId === filterTypeId;
