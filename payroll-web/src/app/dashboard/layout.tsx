@@ -61,7 +61,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-[#f0f2f5] flex flex-col">
       {/* Top Navbar */}
-      <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 shadow-sm h-14 flex items-center px-4 justify-between">
+      <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 shadow-sm h-14 flex items-center px-4 justify-between print:hidden">
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="flex items-center gap-2">
             <img src="/logo.jpg" alt="Samkok Hospital Logo" className="w-10 h-10 rounded-full object-cover border border-gray-200" />
