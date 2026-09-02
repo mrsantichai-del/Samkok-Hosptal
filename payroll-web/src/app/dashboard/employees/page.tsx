@@ -64,6 +64,25 @@ export default function EmployeesPage() {
   // Sort State
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
 
+  
+  const [savingUser, setSavingUser] = useState<string | null>(null);
+
+  const handleCreateUser = async (emp: any) => {
+    setSavingUser(emp.id);
+    try {
+      const token = Cookies.get("token");
+      await axios.post(`${API_URL}/employees/${emp.id}/create-user`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success(`สร้างผู้ใช้งานให้ ${emp.firstName} สำเร็จ`);
+      fetchEmployees();
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || "เกิดข้อผิดพลาดในการสร้าง User");
+    } finally {
+      setSavingUser(null);
+    }
+  };
+
   const handleSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -430,13 +449,13 @@ export default function EmployeesPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-10 text-gray-500">
+                <TableCell colSpan={8} className="text-center py-10 text-gray-500">
                   กำลังโหลดข้อมูล...
                 </TableCell>
               </TableRow>
             ) : filteredEmployees.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-10 text-gray-500">
+                <TableCell colSpan={8} className="text-center py-10 text-gray-500">
                   ไม่พบข้อมูลพนักงาน
                 </TableCell>
               </TableRow>
