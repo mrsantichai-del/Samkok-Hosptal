@@ -47,6 +47,7 @@ export default function Home() {
       <div className="grid md:grid-cols-2 gap-10 max-w-5xl w-full">
         {/* Left Side - Brand */}
         <div className="flex flex-col justify-center space-y-4">
+          <img src="/logo.jpg" alt="Samkok Hospital Logo" className="w-24 h-24 rounded-full object-cover shadow-sm" />
           <h1 className="text-[3.5rem] font-bold text-[#1877f2] leading-none tracking-tight">Samkok Payroll</h1>
           <p className="text-2xl text-gray-700 leading-snug">
             ระบบจัดการเงินเดือนและค่าตอบแทน
