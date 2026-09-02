@@ -167,22 +167,21 @@ export default function DepartmentsPage() {
     <div className="space-y-4 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">ประเภทพนักงาน</h1>
-          <p className="text-gray-500 text-sm mt-1">ตั้งค่าประเภทพนักงาน เช่น ข้าราชการ, ลจ.ประจำ, พนักงาน, พกส. ฯลฯ</p>
+          <h1 className="text-2xl font-bold">แผนก</h1>
+          <p className="text-gray-500 text-sm mt-1">ตั้งค่าแผนก/ฝ่ายต่างๆ ในองค์กร</p>
         </div>
         <Button className="bg-[#1877f2] hover:bg-[#166fe5]" onClick={openAddDialog}>
-          <Plus className="mr-2 h-4 w-4" /> เพิ่มประเภทใหม่
+          <Plus className="mr-2 h-4 w-4" /> เพิ่มแผนกใหม่
         </Button>
       </div>
 
       <Card className="border-none shadow-sm rounded-lg overflow-hidden">
         <div className="p-4 bg-white border-b flex items-center justify-between">
           <div className="flex gap-4">
-            <div className="flex gap-4">
             <div className="relative w-72">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input 
-                placeholder="ค้นหาประเภท..." 
+                placeholder="ค้นหาแผนก..." 
                 className="pl-9 bg-[#f0f2f5] border-none" 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -200,23 +199,12 @@ export default function DepartmentsPage() {
               </select>
             </div>
           </div>
-            <div className="flex items-center gap-2">
-              <Label className="text-sm font-semibold whitespace-nowrap">เรียงลำดับ:</Label>
-              <select 
-                className="h-10 border rounded px-3 text-sm bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" 
-                value={sortOrder} 
-                onChange={e => setSortOrder(e.target.value)}
-              >
-                <option value="asc">ชื่อ (ก-ฮ)</option>
-                <option value="desc">ชื่อ (ฮ-ก)</option>
-              </select>
-            </div>
-          </div>
         </div>
         <Table className="bg-white">
           <TableHeader>
             <TableRow>
-              <TableHead>ประเภทพนักงาน</TableHead>
+              <TableHead className="w-[80px] text-center">ลำดับ</TableHead>
+              <TableHead>แผนก</TableHead>
               <TableHead>รายละเอียดเพิ่มเติม</TableHead>
               <TableHead className="w-[120px]">จัดการ</TableHead>
             </TableRow>
@@ -225,7 +213,7 @@ export default function DepartmentsPage() {
             {loading ? (
               <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">กำลังโหลดข้อมูล...</TableCell></TableRow>
             ) : filteredDepartments.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">ไม่พบข้อมูลประเภทพนักงาน</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">ไม่พบข้อมูลแผนก</TableCell></TableRow>
             ) : (
               sortedDepartments.map((item: any, index: number) => (
                 <TableRow key={item.id}>
@@ -253,12 +241,12 @@ export default function DepartmentsPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{editingItem ? "แก้ไขประเภทพนักงาน" : "เพิ่มประเภทพนักงานใหม่"}</DialogTitle>
+            <DialogTitle>{editingItem ? "แก้ไขแผนก" : "เพิ่มแผนกใหม่"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">ชื่อประเภทพนักงาน (เช่น ข้าราชการ)</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="กรอกชื่อประเภท" />
+              <Label htmlFor="name">ชื่อแผนก</Label>
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="กรอกชื่อแผนก" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">รายละเอียดเพิ่มเติม (ไม่บังคับ)</Label>
