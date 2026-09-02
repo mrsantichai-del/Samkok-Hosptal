@@ -20,6 +20,19 @@ export declare class EmployeeController {
         employeeTypeId: string | null;
     }>;
     findAll(skip?: number, take?: number): Promise<({
+        user: {
+            id: string;
+            username: string;
+            passwordHash: string;
+            email: string | null;
+            isActive: boolean;
+            deletedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+            signatureUrl: string | null;
+            imgUrl: string | null;
+            employeeId: string | null;
+        } | null;
         employeeType: {
             name: string;
             id: string;
@@ -173,7 +186,36 @@ export declare class EmployeeController {
         updatedAt: Date;
         description: string | null;
     }>;
+    createUserAccount(id: string): Promise<{
+        success: boolean;
+        user: {
+            id: string;
+            username: string;
+            passwordHash: string;
+            email: string | null;
+            isActive: boolean;
+            deletedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+            signatureUrl: string | null;
+            imgUrl: string | null;
+            employeeId: string | null;
+        };
+    }>;
     findOne(id: string): Promise<{
+        user: {
+            id: string;
+            username: string;
+            passwordHash: string;
+            email: string | null;
+            isActive: boolean;
+            deletedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+            signatureUrl: string | null;
+            imgUrl: string | null;
+            employeeId: string | null;
+        } | null;
         employeeType: {
             name: string;
             id: string;

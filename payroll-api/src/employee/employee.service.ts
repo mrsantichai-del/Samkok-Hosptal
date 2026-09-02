@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class EmployeeService {
@@ -16,6 +17,7 @@ export class EmployeeService {
         position: true,
         department: true,
         employeeType: true,
+        user: true,
       },
     });
   }
@@ -27,6 +29,7 @@ export class EmployeeService {
         position: true,
         department: true,
         employeeType: true,
+        user: true,
       },
     });
 
@@ -145,6 +148,48 @@ export class EmployeeService {
       where: { id },
       data: { deletedAt: new Date() }
     });
+  }
+
+  
+  async createUserAccount(id: string) {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id, deletedAt: null },
+      include: { user: true }
+    });
+
+    if (!employee) throw new NotFoundException('Employee not found');
+    if (employee.user) throw new BadRequestException('User account already exists for this employee');
+
+    // Make sure Employee role exists
+    let employeeRole = await this.prisma.client.role.findFirst({
+      where: { name: 'Employee', deletedAt: null }
+    });
+
+    if (!employeeRole) {
+      employeeRole = await this.prisma.client.role.create({
+        data: { name: 'Employee', description: 'General Employee' }
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(employee.employeeCode, 10);
+
+    const newUser = await this.prisma.client.user.create({
+      data: {
+        username: employee.employeeCode,
+        passwordHash,
+        employeeId: employee.id,
+        isActive: true,
+      }
+    });
+
+    await this.prisma.client.userRole.create({
+      data: {
+        userId: newUser.id,
+        roleId: employeeRole.id
+      }
+    });
+
+    return { success: true, user: newUser };
   }
 
   async getPositions() {

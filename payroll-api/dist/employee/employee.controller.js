@@ -68,6 +68,9 @@ let EmployeeController = class EmployeeController {
     removePosition(id) {
         return this.employeeService.removePosition(id);
     }
+    createUserAccount(id) {
+        return this.employeeService.createUserAccount(id);
+    }
     findOne(id) {
         return this.employeeService.findOne(id);
     }
@@ -208,6 +211,18 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], EmployeeController.prototype, "removePosition", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
+    (0, common_1.Get)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get an employee by ID' }),
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer'),
+    (0, common_1.Post)(':id/create-user'),
+    (0, swagger_1.ApiOperation)({ summary: 'Create user account for employee automatically' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], EmployeeController.prototype, "createUserAccount", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
     (0, common_1.Get)(':id'),
