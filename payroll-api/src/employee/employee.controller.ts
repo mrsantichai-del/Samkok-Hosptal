@@ -115,10 +115,6 @@ export class EmployeeController {
     return this.employeeService.removePosition(id);
   }
 
-  @Roles('System Administrator', 'Finance Officer', 'Executive')
-  @Get(':id')
-  @ApiOperation({ summary: 'Get an employee by ID' })
-  
   @Roles('System Administrator', 'Finance Officer')
   @Post(':id/create-user')
   @ApiOperation({ summary: 'Create user account for employee automatically' })
