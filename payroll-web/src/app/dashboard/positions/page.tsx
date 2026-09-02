@@ -202,8 +202,13 @@ export default function PositionsPage() {
         <Table className="bg-white">
           <TableHeader>
             <TableRow>
-              <TableHead>ตำแหน่ง</TableHead>
-              <TableHead>รายละเอียดเพิ่มเติม</TableHead>
+              <TableHead className="w-[80px] text-center">ลำดับ</TableHead>
+              <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('name')}>
+                ตำแหน่ง {renderSortIcon('name')}
+              </TableHead>
+              <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('description')}>
+                รายละเอียดเพิ่มเติม {renderSortIcon('description')}
+              </TableHead>
               <TableHead className="w-[120px]">จัดการ</TableHead>
             </TableRow>
           </TableHeader>

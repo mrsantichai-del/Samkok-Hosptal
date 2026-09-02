@@ -204,8 +204,12 @@ export default function DepartmentsPage() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[80px] text-center">ลำดับ</TableHead>
-              <TableHead>แผนก</TableHead>
-              <TableHead>รายละเอียดเพิ่มเติม</TableHead>
+              <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('name')}>
+                แผนก {renderSortIcon('name')}
+              </TableHead>
+              <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('description')}>
+                รายละเอียดเพิ่มเติม {renderSortIcon('description')}
+              </TableHead>
               <TableHead className="w-[120px]">จัดการ</TableHead>
             </TableRow>
           </TableHeader>
