@@ -25,8 +25,9 @@ class CreateEmployeeDto {
 }
 exports.CreateEmployeeDto = CreateEmployeeDto;
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ required: false }),
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateEmployeeDto.prototype, "employeeCode", void 0);
 __decorate([
