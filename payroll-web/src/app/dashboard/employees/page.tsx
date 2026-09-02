@@ -338,7 +338,8 @@ export default function EmployeesPage() {
       setIsDialogOpen(false);
       fetchEmployees();
     } catch (e: any) {
-      toast.error();
+      toast.error(e.response?.data?.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+      console.error(e);
     } finally {
       setSaving(false);
     }
