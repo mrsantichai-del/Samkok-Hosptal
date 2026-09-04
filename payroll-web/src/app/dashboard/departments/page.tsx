@@ -162,11 +162,11 @@ export default function DepartmentsPage() {
     <div className="space-y-4 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">แผนก</h1>
-          <p className="text-gray-500 text-sm mt-1">ตั้งค่าแผนก/ฝ่ายต่างๆ ในองค์กร</p>
+          <h1 className="text-2xl font-bold">กลุ่มงาน</h1>
+          <p className="text-gray-500 text-sm mt-1">ตั้งค่ากลุ่มงาน/ฝ่ายต่างๆ ในองค์กร</p>
         </div>
         <Button className="bg-[#1877f2] hover:bg-[#166fe5]" onClick={openAddDialog}>
-          <Plus className="mr-2 h-4 w-4" /> เพิ่มแผนกใหม่
+          <Plus className="mr-2 h-4 w-4" /> เพิ่มกลุ่มงานใหม่
         </Button>
       </div>
 
@@ -176,7 +176,7 @@ export default function DepartmentsPage() {
             <div className="relative w-72">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input 
-                placeholder="ค้นหาแผนก..." 
+                placeholder="ค้นหากลุ่มงาน..." 
                 className="pl-9 bg-[#f0f2f5] border-none" 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -190,7 +190,7 @@ export default function DepartmentsPage() {
             <TableRow>
               <TableHead className="w-[80px] text-center">ลำดับ</TableHead>
               <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('name')}>
-                แผนก {renderSortIcon('name')}
+                กลุ่มงาน {renderSortIcon('name')}
               </TableHead>
               <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('description')}>
                 รายละเอียดเพิ่มเติม {renderSortIcon('description')}
@@ -202,7 +202,7 @@ export default function DepartmentsPage() {
             {loading ? (
               <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">กำลังโหลดข้อมูล...</TableCell></TableRow>
             ) : filteredDepartments.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">ไม่พบข้อมูลแผนก</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">ไม่พบข้อมูลกลุ่มงาน</TableCell></TableRow>
             ) : (
               sortedDepartments.map((item: any, index: number) => (
                 <TableRow key={item.id}>
@@ -230,12 +230,12 @@ export default function DepartmentsPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{editingItem ? "แก้ไขแผนก" : "เพิ่มแผนกใหม่"}</DialogTitle>
+            <DialogTitle>{editingItem ? "แก้ไขกลุ่มงาน" : "เพิ่มกลุ่มงานใหม่"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">ชื่อแผนก</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="กรอกชื่อแผนก" />
+              <Label htmlFor="name">ชื่อกลุ่มงาน</Label>
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="กรอกชื่อกลุ่มงาน" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">รายละเอียดเพิ่มเติม (ไม่บังคับ)</Label>

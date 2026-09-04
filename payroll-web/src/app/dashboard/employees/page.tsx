@@ -155,7 +155,7 @@ export default function EmployeesPage() {
       'รหัสพนักงาน': emp.employeeCode,
       'ชื่อ': emp.firstName,
       'นามสกุล': emp.lastName,
-      'แผนก': emp.department?.name || '',
+      'กลุ่มงาน': emp.department?.name || '',
       'ตำแหน่ง': emp.position?.name || '',
       'ประเภทพนักงาน': emp.employeeType?.name || ''
     }));
@@ -457,7 +457,7 @@ export default function EmployeesPage() {
                   ชื่อ - นามสกุล {renderSortIcon('name')}
                 </TableHead>
                 <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('departmentName')}>
-                  แผนก {renderSortIcon('departmentName')}
+                  กลุ่มงาน {renderSortIcon('departmentName')}
                 </TableHead>
                 <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('positionName')}>
                   ตำแหน่ง {renderSortIcon('positionName')}
@@ -575,18 +575,18 @@ export default function EmployeesPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>แผนก</Label>
+              <Label>กลุ่มงาน</Label>
               <Popover open={openDept} onOpenChange={setOpenDept}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" role="combobox" aria-expanded={openDept} className="w-full justify-between">
-                    {departmentId === "unassigned" ? "ไม่ระบุ" : departments.find(d => d.id === departmentId)?.name || "เลือกแผนก..."}
+                    {departmentId === "unassigned" ? "ไม่ระบุ" : departments.find(d => d.id === departmentId)?.name || "เลือกกลุ่มงาน..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[380px] p-0" style={{ zIndex: 99999 }}>
                   <Command>
-                    <CommandInput placeholder="ค้นหาแผนก..." />
-                    <CommandEmpty>ไม่พบแผนก</CommandEmpty>
+                    <CommandInput placeholder="ค้นหากลุ่มงาน..." />
+                    <CommandEmpty>ไม่พบกลุ่มงาน</CommandEmpty>
                     <CommandGroup>
                       <CommandList>
                         <CommandItem onSelect={() => { setDepartmentId("unassigned"); setOpenDept(false); }}>
