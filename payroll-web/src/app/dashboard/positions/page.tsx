@@ -12,9 +12,11 @@ import { Label } from "@/components/ui/label";
 import { Search, Plus, Edit, Trash2, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function PositionsPage() {
   const [types, setTypes] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Dialog State
@@ -24,6 +26,7 @@ export default function PositionsPage() {
   // Form State
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+    const [departmentId, setDepartmentId] = useState("unassigned");
   const [saving, setSaving] = useState(false);
   
   // Sort State
@@ -76,13 +79,14 @@ export default function PositionsPage() {
 
 
   const fetchTypes = async () => {
-    setLoading(true);
     try {
       const token = Cookies.get("token");
-      const res = await axios.get(`${API_URL}/employees/positions`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setTypes(res.data);
+      const [posRes, deptRes] = await Promise.all([
+        axios.get(`${API_URL}/employees/positions`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/employees/departments`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      setTypes(posRes.data);
+      setDepartments(deptRes.data);
     } catch (e) {
       console.error(e);
     } finally {
@@ -98,6 +102,7 @@ export default function PositionsPage() {
     setEditingItem(null);
     setName("");
     setDescription("");
+    setDepartmentId("unassigned");
     setIsDialogOpen(true);
   };
 
@@ -105,6 +110,7 @@ export default function PositionsPage() {
     setEditingItem(item);
     setName(item.name);
     setDescription(item.description || "");
+    setDepartmentId(item.departmentId || "unassigned");
     setIsDialogOpen(true);
   };
 
@@ -114,7 +120,8 @@ export default function PositionsPage() {
       const token = Cookies.get("token");
       const payload = {
         name,
-        description: description === "" ? null : description
+        description: description === "" ? null : description,
+        departmentId: departmentId === "unassigned" ? null : departmentId
       };
 
       if (editingItem) {
@@ -244,6 +251,23 @@ export default function PositionsPage() {
               <Label htmlFor="description">รายละเอียดเพิ่มเติม (ไม่บังคับ)</Label>
               <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="อธิบายเพิ่มเติม (ถ้ามี)" />
             </div>
+              <div className="space-y-2">
+                <Label htmlFor="department">กลุ่มงาน (ถ้ามี)</Label>
+                <Select value={departmentId} onValueChange={setDepartmentId}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="เลือกกลุ่มงาน" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">ไม่ระบุ</SelectItem>
+                    {departments.map((dept) => (
+                      <SelectItem key={dept.id} value={dept.id}>
+                        {dept.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>ยกเลิก</Button>
