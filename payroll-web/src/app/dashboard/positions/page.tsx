@@ -50,15 +50,10 @@ export default function PositionsPage() {
   
   // Filtering & Sorting
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortOrder, setSortOrder] = useState("asc");
-
   const filteredTypes = types.filter(item => 
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  ).sort((a, b) => {
-    if (sortOrder === "asc") return a.name.localeCompare(b.name, 'th');
-    return b.name.localeCompare(a.name, 'th');
-  });
+  );
 
   const sortedData = React.useMemo(() => {
     let sortableItems = [...filteredTypes];
@@ -186,17 +181,7 @@ export default function PositionsPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-2">
-              <Label className="text-sm font-semibold whitespace-nowrap">เรียงลำดับ:</Label>
-              <select 
-                className="h-10 border rounded px-3 text-sm bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" 
-                value={sortOrder} 
-                onChange={e => setSortOrder(e.target.value)}
-              >
-                <option value="asc">ชื่อ (ก-ฮ)</option>
-                <option value="desc">ชื่อ (ฮ-ก)</option>
-              </select>
-            </div>
+            
           </div>
         </div>
         <Table className="bg-white">
