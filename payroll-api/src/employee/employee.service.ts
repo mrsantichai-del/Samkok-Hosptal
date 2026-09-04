@@ -195,16 +195,15 @@ export class EmployeeService {
   async getPositions() {
     return this.prisma.position.findMany({
       where: { deletedAt: null },
-      orderBy: { name: 'asc' }
+      orderBy: { name: 'asc' },
+      include: { department: true }
     });
   }
 
-  async createPosition(name: string, description?: string) {
+  async createPosition(name: string, description?: string, departmentId?: string) {
     const existing = await this.prisma.position.findFirst({ where: { name, deletedAt: null } });
     if (existing) throw new BadRequestException('ชื่อตำแหน่งนี้มีอยู่ในระบบแล้ว');
-    return this.prisma.position.create({
-      data: { name, description }
-    });
+    return this.prisma.position.create({ data: { name, description, departmentId } });
   }
 
   async updatePosition(id: string, data: { name?: string; description?: string }) {

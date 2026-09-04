@@ -63,6 +63,7 @@ model Department {
   updatedAt   DateTime   @updatedAt
   deletedAt   DateTime?
   employees   Employee[]
+  positions    Position[]
 }
 
 model Position {
@@ -73,6 +74,8 @@ model Position {
   updatedAt   DateTime   @updatedAt
   deletedAt   DateTime?
   employees   Employee[]
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
 }
 
 model EmployeeType {

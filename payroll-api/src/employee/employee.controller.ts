@@ -61,8 +61,8 @@ export class EmployeeController {
   @Roles('System Administrator', 'Finance Officer')
   @Post('positions')
   @ApiOperation({ summary: 'Create position' })
-  createPosition(@Body() body: { name: string; description?: string }) {
-    return this.employeeService.createPosition(body.name, body.description);
+  createPosition(@Body() body: { name: string; description?: string; departmentId?: string }) {
+    return this.employeeService.createPosition(body.name, body.description, body.departmentId);
   }
 
   
