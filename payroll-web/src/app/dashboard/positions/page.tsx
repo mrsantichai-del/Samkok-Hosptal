@@ -255,7 +255,9 @@ export default function PositionsPage() {
                 <Label htmlFor="department">กลุ่มงาน (ถ้ามี)</Label>
                 <Select value={departmentId} onValueChange={setDepartmentId}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="เลือกกลุ่มงาน" />
+                    <SelectValue placeholder="เลือกกลุ่มงาน">
+                      {departmentId && departmentId !== "unassigned" ? (departments.find(d => d.id === departmentId)?.name || departmentId) : "เลือกกลุ่มงาน"}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="unassigned">ไม่ระบุ</SelectItem>
