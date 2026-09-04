@@ -191,22 +191,26 @@ export default function PositionsPage() {
               <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('name')}>
                 ตำแหน่ง {renderSortIcon('name')}
               </TableHead>
-              <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('description')}>
-                รายละเอียดเพิ่มเติม {renderSortIcon('description')}
-              </TableHead>
+              <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('department.name')}>
+                  กลุ่มงาน {renderSortIcon('department.name')}
+                </TableHead>
+                <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort('description')}>
+                  รายละเอียดเพิ่มเติม {renderSortIcon('description')}
+                </TableHead>
               <TableHead className="w-[120px]">จัดการ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">กำลังโหลดข้อมูล...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-10 text-gray-500">กำลังโหลดข้อมูล...</TableCell></TableRow>
             ) : filteredTypes.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">ไม่พบข้อมูลตำแหน่ง</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-10 text-gray-500">ไม่พบข้อมูลตำแหน่ง</TableCell></TableRow>
             ) : (
               sortedData.map((item: any, index: number) => (
                 <TableRow key={item.id}>
                   <TableCell className="text-center text-gray-500">{index + 1}</TableCell>
                   <TableCell className="font-medium text-[#1877f2]">{item.name}</TableCell>
+                    <TableCell className="text-gray-600">{item.department?.name || "-"}</TableCell>
                   <TableCell className="text-gray-600">{item.description || "-"}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
