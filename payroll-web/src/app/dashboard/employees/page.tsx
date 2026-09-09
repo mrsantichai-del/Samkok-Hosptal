@@ -135,12 +135,14 @@ export default function EmployeesPage() {
         return 0;
       });
 
-  const totalPages = Math.ceil(sortedEmployees.length / rowsPerPage);
-  const paginatedEmployees = sortedEmployees.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
-
+    
     }
     return sortableItems;
   }, [filteredEmployees, sortConfig]);
+
+  const totalPages = Math.ceil(sortedEmployees.length / rowsPerPage);
+  const paginatedEmployees = sortedEmployees.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+
   
   const renderSortIcon = (key: string) => {
     if (sortConfig?.key === key) {
