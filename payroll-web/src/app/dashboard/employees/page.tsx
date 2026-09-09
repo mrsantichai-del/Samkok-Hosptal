@@ -473,13 +473,13 @@ export default function EmployeesPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-10 text-gray-500">
+                <TableCell colSpan={9} className="text-center py-10 text-gray-500">
                   กำลังโหลดข้อมูล...
                 </TableCell>
               </TableRow>
             ) : filteredEmployees.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-10 text-gray-500">
+                <TableCell colSpan={9} className="text-center py-10 text-gray-500">
                   ไม่พบข้อมูลพนักงาน
                 </TableCell>
               </TableRow>
