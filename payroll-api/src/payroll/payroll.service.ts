@@ -102,8 +102,6 @@ export class PayrollService {
     
     // Group by Employee
     const empData = new Map<string, any>();
-    const incomeHeaders = new Set<string>();
-    const deductionHeaders = new Set<string>();
 
     for (const tx of transactions) {
       if (!tx.employee || !tx.payItem) continue;
@@ -116,21 +114,24 @@ export class PayrollService {
       if (tx.payItem.type === 'INCOME') {
          e.incomes[tx.payItem.name] = amount;
          e.totalIncome += amount;
-         incomeHeaders.add(tx.payItem.name);
       } else {
          e.deductions[tx.payItem.name] = amount;
          e.totalDeduction += amount;
-         deductionHeaders.add(tx.payItem.name);
       }
     }
 
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet(`Payroll_${record.month}_${record.year}`);
 
-    // Headers
-    const incArr = Array.from(incomeHeaders);
-    const dedArr = Array.from(deductionHeaders);
+    // Include ALL active Pay Items to ensure Export matches Import exactly
+    const allPayItems = await this.prisma.payItem.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: 'asc' }
+    });
     
+    const incArr = allPayItems.filter(p => p.type === 'INCOME').map(p => p.name);
+    const dedArr = allPayItems.filter(p => p.type === 'DEDUCTION').map(p => p.name);
+
     const headers = ['ลำดับที่', 'รหัสพนักงาน', 'ชื่อ-นามสกุล', 'ตำแหน่ง', 'ประเภทพนักงาน', ...incArr, 'รวมรายรับ', ...dedArr, 'รวมรายจ่าย', 'รับสุทธิ'];
     sheet.addRow(headers);
     sheet.getRow(1).font = { bold: true };
@@ -141,8 +142,8 @@ export class PayrollService {
          seq++,
          e.employee.employeeCode || '-',
          `${e.employee.firstName || ''} ${e.employee.lastName || ''}`.trim(),
-         e.employee.position?.name || 'ไม่ระบุ',
-         e.employee.employeeType?.name || 'ไม่ระบุ',
+         (e.employee.position && typeof e.employee.position === 'object' ? e.employee.position.name : e.employee.position) || 'ไม่ระบุ',
+         (e.employee.employeeType && typeof e.employee.employeeType === 'object' ? e.employee.employeeType.name : e.employee.employeeType) || 'ไม่ระบุ',
          ...incArr.map(h => e.incomes[h] || 0),
          e.totalIncome,
          ...dedArr.map(h => e.deductions[h] || 0),
