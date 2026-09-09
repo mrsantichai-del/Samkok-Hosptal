@@ -39,6 +39,11 @@ export default function EmployeesPage() {
   const [departmentId, setDepartmentId] = useState("unassigned");
   const [openDept, setOpenDept] = useState(false);
   
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 50;
+
   // Filter States
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPositionId, setFilterPositionId] = useState("all");
@@ -51,6 +56,8 @@ export default function EmployeesPage() {
   const [openType, setOpenType] = useState(false);
 
   // Derived filtered list
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, filterPositionId, filterDepartmentId, filterTypeId, filterStatus]);
+
   const filteredEmployees = employees.filter(emp => {
     const s = searchTerm.toLowerCase();
       const matchSearch = (emp.firstName || "").toLowerCase().includes(s) || 
@@ -69,6 +76,10 @@ export default function EmployeesPage() {
 
   
   const [savingUser, setSavingUser] = useState<string | null>(null);
+
+  
+  const totalPages = Math.ceil(sortedEmployees.length / rowsPerPage);
+  const paginatedEmployees = sortedEmployees.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
   const handleCreateUser = async (emp: any) => {
     setSavingUser(emp.id);
@@ -484,17 +495,17 @@ export default function EmployeesPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              sortedEmployees.map((emp, index) => (
+              paginatedEmployees.map((emp, index) => (
                 <TableRow key={emp.id}>
-                  <TableCell className="text-center text-gray-500">{index + 1}</TableCell>
-                    <TableCell className="font-medium">{emp.employeeCode}</TableCell>
-                  <TableCell>{emp.firstName} {emp.lastName}</TableCell>
-                  <TableCell className="text-gray-600">
-                    {emp.department?.name || "-"}
-                  </TableCell>
-                  <TableCell className="text-gray-600">
-                    {emp.position?.name || "-"}
-                  </TableCell>
+                  <TableCell className="text-center text-gray-500 text-xs">{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
+                    <TableCell className="font-medium text-xs">{emp.employeeCode}</TableCell>
+                  <TableCell className="text-xs">{emp.firstName} {emp.lastName}</TableCell>
+                  <TableCell className="text-gray-600 text-xs max-w-[150px] truncate" title={emp.department?.name || "-"}>
+                      {emp.department?.name || "-"}
+                    </TableCell>
+                  <TableCell className="text-gray-600 text-xs max-w-[150px] truncate" title={emp.position?.name || "-"}>
+                      {emp.position?.name || "-"}
+                    </TableCell>
                   <TableCell>
                     {emp.employeeType?.name ? (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -544,8 +555,57 @@ export default function EmployeesPage() {
               ))
             )}
           </TableBody>
-        </Table>
-      </Card>
+        
+          </Table>
+          
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t">
+              <div className="text-sm text-gray-500">
+                แสดงผล {(currentPage - 1) * rowsPerPage + 1} ถึง {Math.min(currentPage * rowsPerPage, sortedEmployees.length)} จากทั้งหมด {sortedEmployees.length} รายการ
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  ก่อนหน้า
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }).map((_, i) => {
+                    const page = i + 1;
+                    if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
+                      return (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          className={currentPage === page ? "bg-[#1877f2]" : ""}
+                          onClick={() => setCurrentPage(page)}
+                        >
+                          {page}
+                        </Button>
+                      );
+                    } else if (page === currentPage - 2 || page === currentPage + 2) {
+                      return <span key={page} className="px-2 text-gray-400">...</span>;
+                    }
+                    return null;
+                  })}
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  ถัดไป
+                </Button>
+              </div>
+            </div>
+          )}
+        </Card>
+
 
       {/* Dialog for Add/Edit */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
