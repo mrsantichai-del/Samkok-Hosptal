@@ -96,6 +96,7 @@ model Employee {
   idCard       String?    @unique
   bankAccount  String?
   bankName     String?
+  baseSalary   Decimal?   @db.Decimal(12, 2)
   
   departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id])
