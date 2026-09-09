@@ -76,11 +76,6 @@ export default function EmployeesPage() {
 
   
   const [savingUser, setSavingUser] = useState<string | null>(null);
-
-  
-  const totalPages = Math.ceil(sortedEmployees.length / rowsPerPage);
-  const paginatedEmployees = sortedEmployees.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
-
   const handleCreateUser = async (emp: any) => {
     setSavingUser(emp.id);
     try {
@@ -139,6 +134,10 @@ export default function EmployeesPage() {
         }
         return 0;
       });
+
+  const totalPages = Math.ceil(sortedEmployees.length / rowsPerPage);
+  const paginatedEmployees = sortedEmployees.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+
     }
     return sortableItems;
   }, [filteredEmployees, sortConfig]);
