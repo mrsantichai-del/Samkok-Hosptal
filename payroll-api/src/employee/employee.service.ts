@@ -11,7 +11,7 @@ export class EmployeeService {
   async findAll(skip?: number, take?: number) {
     return this.prisma.employee.findMany({
       skip: skip ? Number(skip) : 0,
-      take: take ? Number(take) : 50,
+      take: take ? Number(take) : 10000,
       where: { deletedAt: null },
       include: {
         position: true,
