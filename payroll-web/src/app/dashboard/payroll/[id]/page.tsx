@@ -579,7 +579,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
 
       {viewingEmp && (
         <Dialog open={!!viewingEmp} onOpenChange={(open) => !open && setViewingEmp(null)}>
-          <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
+          <DialogContent className="max-w-[95vw] md:max-w-4xl lg:max-w-5xl xl:max-w-6xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
             <DialogHeader className="p-4 border-b bg-gray-50 flex-shrink-0">
               <DialogTitle className="text-lg flex justify-between items-center">
                 <span>รายละเอียดเงินเดือน: {viewingEmp.firstName} {viewingEmp.lastName}</span>
@@ -589,16 +589,16 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
               </DialogDescription>
             </DialogHeader>
             <div className="flex-1 overflow-y-auto p-4 bg-gray-50/50">
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 gap-8 lg:gap-12">
                 <div>
                   <h3 className="font-semibold text-green-700 mb-3 border-b border-green-200 pb-2">รายรับ (+)</h3>
                   <div className="space-y-2">
                     {incomeItems.map(item => (
                       <div key={item.id} className="flex items-center justify-between">
-                        <Label className="text-xs text-gray-600 truncate mr-2" title={item.name}>{item.name}</Label>
+                        <Label className="text-sm text-gray-700 font-medium mr-4 leading-snug" title={item.name}>{item.name}</Label>
                         <Input 
                           type="number" 
-                          className="h-8 w-32 text-right text-xs focus-visible:ring-green-500"
+                          className="h-9 w-32 md:w-40 flex-shrink-0 text-right text-sm focus-visible:ring-green-500"
                           value={gridData[viewingEmp.employeeId]?.[item.id] || ''}
                           onChange={(e) => {
                             setGridData(prev => ({...prev, [viewingEmp.employeeId]: {...(prev[viewingEmp.employeeId]||{}), [item.id]: e.target.value}}));
@@ -614,10 +614,10 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                   <div className="space-y-2">
                     {deductionItems.map(item => (
                       <div key={item.id} className="flex items-center justify-between">
-                        <Label className="text-xs text-gray-600 truncate mr-2" title={item.name}>{item.name}</Label>
+                        <Label className="text-sm text-gray-700 font-medium mr-4 leading-snug" title={item.name}>{item.name}</Label>
                         <Input 
                           type="number" 
-                          className="h-8 w-32 text-right text-xs focus-visible:ring-red-500"
+                          className="h-9 w-32 md:w-40 flex-shrink-0 text-right text-sm focus-visible:ring-red-500"
                           value={gridData[viewingEmp.employeeId]?.[item.id] || ''}
                           onChange={(e) => {
                             setGridData(prev => ({...prev, [viewingEmp.employeeId]: {...(prev[viewingEmp.employeeId]||{}), [item.id]: e.target.value}}));
@@ -631,7 +631,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
             <div className="p-4 border-t bg-gray-100 flex-shrink-0">
-              <div className="flex justify-between items-center mb-4 text-sm">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 text-sm gap-4">
                 <div className="flex gap-6">
                   <div className="text-green-700">รวมรายรับ: <span className="font-bold">{incomeItems.reduce((sum, item) => sum + Number(gridData[viewingEmp.employeeId]?.[item.id] || 0), 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
                   <div className="text-red-700">รวมรายจ่าย: <span className="font-bold">{deductionItems.reduce((sum, item) => sum + Number(gridData[viewingEmp.employeeId]?.[item.id] || 0), 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
