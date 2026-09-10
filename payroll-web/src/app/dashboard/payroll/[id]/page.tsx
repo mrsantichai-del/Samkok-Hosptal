@@ -49,19 +49,43 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   const [pendingGridData, setPendingGridData] = useState<Record<string, Record<string, string>> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [viewingEmp, setViewingEmp] = useState<any>(null);
+  const [record, setRecord] = useState<any>(null);
 
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+
+  const handleViewHistory = async () => {
+    try {
+      const token = Cookies.get("token");
+      const res = await axios.get(`${API_URL}/payroll/records/${resolvedParams.id}/audit-logs`, { headers: { Authorization: `Bearer ${token}` } });
+      setAuditLogs(res.data);
+      setHistoryOpen(true);
+    } catch(e) { toast.error('Error fetching history'); }
+  };
+
+  const [user, setUser] = useState<any>(null);
+
+  
   const fetchData = async () => {
     setLoading(true);
     try {
       const token = Cookies.get("token");
-      const [txRes, itemsRes, typeRes] = await Promise.all([
+      if (token) {
+        try {
+          setUser(jwtDecode(token));
+        } catch(e){}
+      }
+      const [txRes, itemsRes, typeRes, recRes] = await Promise.all([
         axios.get(`${API_URL}/payroll/records/${resolvedParams.id}/transactions`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/pay-items`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/employees/types`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_URL}/employees/types`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/payroll/records/${resolvedParams.id}`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setTransactions(txRes.data);
       setAllPayItems(itemsRes.data);
       setEmployeeTypes(typeRes.data);
+      setRecord(recRes.data);
+
 
       const initialGrid: Record<string, Record<string, string>> = {};
       const empMap = new Map<string, any>();
@@ -121,6 +145,59 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
       setSavingGlobal(false);
     }
   };
+
+  
+  const handleRequestApproval = async () => {
+    if (!confirm('ยืนยันการส่งขออนุมัติ? ระบบจะล็อกการแก้ไข')) return;
+    try {
+      const token = Cookies.get("token");
+      await axios.patch(`${API_URL}/payroll/records/${resolvedParams.id}/request-approval`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('ส่งคำขออนุมัติแล้ว');
+      fetchData();
+    } catch(e) { toast.error('Error'); }
+  }
+
+  const handleApprove = async () => {
+    if (!confirm('ยืนยันการอนุมัติเงินเดือน?')) return;
+    try {
+      const token = Cookies.get("token");
+      await axios.patch(`${API_URL}/payroll/records/${resolvedParams.id}/approve`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('อนุมัติแล้ว');
+      fetchData();
+    } catch(e) { toast.error('Error'); }
+  }
+
+  const handleRequestEdit = async () => {
+    const reason = prompt('ระบุเหตุผลในการขอแก้ไข:');
+    if (!reason) return;
+    try {
+      const token = Cookies.get("token");
+      await axios.patch(`${API_URL}/payroll/records/${resolvedParams.id}/request-edit`, { reason }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('ส่งคำขอแก้ไขแล้ว');
+      fetchData();
+    } catch(e) { toast.error('Error'); }
+  }
+
+  const handleGrantEdit = async () => {
+    if (!confirm('อนุญาตให้แก้ไขเงินเดือนรอบนี้?')) return;
+    try {
+      const token = Cookies.get("token");
+      await axios.patch(`${API_URL}/payroll/records/${resolvedParams.id}/grant-edit`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('อนุญาตให้แก้ไขแล้ว');
+      fetchData();
+    } catch(e) { toast.error('Error'); }
+  }
+
+  const renderStatusBadge = () => {
+    if (!record) return null;
+    switch(record.status) {
+      case 'DRAFT': return <Badge variant="outline" className="bg-gray-100 text-gray-800"><Edit className="w-3 h-3 mr-1"/> ฉบับร่าง</Badge>;
+      case 'PENDING_APPROVAL': return <Badge variant="outline" className="bg-yellow-100 text-yellow-800"><Clock className="w-3 h-3 mr-1"/> รอการอนุมัติ</Badge>;
+      case 'APPROVED': return <Badge variant="outline" className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1"/> อนุมัติแล้ว</Badge>;
+      case 'EDIT_REQUESTED': return <Badge variant="outline" className="bg-orange-100 text-orange-800"><AlertCircle className="w-3 h-3 mr-1"/> ขอแก้ไข</Badge>;
+      default: return <Badge>{record.status}</Badge>;
+    }
+  }
 
   const handleExportExcel = async () => {
     setIsExportingExcel(true);
@@ -477,6 +554,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                            <TableCell key={item.id} className={`border border-gray-300 p-0 min-w-[95px] w-[95px] ${isModified ? "bg-yellow-50" : "bg-white"}`}>
                              <Input 
                                type="number"
+                                  readOnly={record?.status !== "DRAFT"}
                                className="h-7 w-full text-right border-0 rounded-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-green-500 text-green-800 bg-transparent text-[11px] px-1"
                                value={gridData[emp.employeeId]?.[item.id] || ''}
                                onChange={(e) => {

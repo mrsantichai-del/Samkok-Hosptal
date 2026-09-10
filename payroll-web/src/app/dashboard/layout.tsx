@@ -17,6 +17,10 @@ import {
   FolderKanban,
   Briefcase
 } from "lucide-react";
+
+import axios from "axios";
+import { API_URL } from "@/lib/config";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -24,6 +28,44 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<any>(null);
+
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  const fetchNotifications = async () => {
+    try {
+      const token = Cookies.get("token");
+      if (!token) return;
+      const res = await axios.get(`${API_URL}/users/my-notifications`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotifications(res.data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const markAllRead = async () => {
+    try {
+      const token = Cookies.get("token");
+      await axios.patch(`${API_URL}/users/notifications/read-all`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotifications([]);
+      setShowNotifications(false);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 60000); // Poll every minute
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
 
   useEffect(() => {
     const token = Cookies.get("token");
