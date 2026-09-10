@@ -5,7 +5,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, Plus, Edit, Trash2, Check, ChevronsUpDown, ArrowUpDown } from "lucide-react";
@@ -487,8 +487,7 @@ export default function UsersPage() {
               <Label className="text-right">ผูกกับพนักงาน</Label>
               <div className="col-span-3">
                 <Popover open={empComboboxOpen} onOpenChange={setEmpComboboxOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" role="combobox" aria-expanded={empComboboxOpen} className="w-full justify-between font-normal bg-white">
+                  <PopoverTrigger role="combobox" aria-expanded={empComboboxOpen} className={buttonVariants({ variant: "outline", className: "w-full justify-between font-normal bg-white" })}>
                       {formData.employeeId ? (
                         (() => {
                           const e = employees.find(emp => emp.id === formData.employeeId);
@@ -496,7 +495,6 @@ export default function UsersPage() {
                         })()
                       ) : "เลือกพนักงาน (พิมพ์ค้นหาได้)..."}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[340px] p-0" style={{ zIndex: 99999 }}>
                     <Command>

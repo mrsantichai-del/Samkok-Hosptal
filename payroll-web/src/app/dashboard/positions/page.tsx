@@ -253,7 +253,7 @@ export default function PositionsPage() {
             </div>
               <div className="space-y-2">
                 <Label htmlFor="department">กลุ่มงาน (ถ้ามี)</Label>
-                <Select value={departmentId} onValueChange={setDepartmentId}>
+                <Select value={departmentId} onValueChange={(v) => setDepartmentId(v ?? "")}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="เลือกกลุ่มงาน">
                       {departmentId && departmentId !== "unassigned" ? (departments.find(d => d.id === departmentId)?.name || departmentId) : "เลือกกลุ่มงาน"}

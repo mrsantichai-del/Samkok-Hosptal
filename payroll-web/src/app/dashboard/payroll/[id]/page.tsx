@@ -693,6 +693,39 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
         </DialogContent>
       </Dialog>
 
+      {/* History Dialog */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-blue-600" /> ประวัติการแก้ไข
+            </DialogTitle>
+            <DialogDescription>บันทึกการเปลี่ยนแปลงทั้งหมดของรอบเงินเดือนนี้</DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto py-2 space-y-2">
+            {auditLogs.length === 0 ? (
+              <p className="text-center text-gray-500 py-8">ไม่มีประวัติการแก้ไข</p>
+            ) : (
+              auditLogs.map((log: any, i: number) => (
+                <div key={i} className="border rounded-md p-3 bg-gray-50 text-sm">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="font-semibold text-blue-700">{log.action}</span>
+                    <span className="text-xs text-gray-500">{new Date(log.createdAt).toLocaleString('th-TH')}</span>
+                  </div>
+                  <div className="text-gray-600">
+                    โดย: {log.user?.employee ? `${log.user.employee.firstName} ${log.user.employee.lastName}` : log.user?.username || '-'}
+                  </div>
+                  {log.reason && <div className="text-gray-500 text-xs mt-1">เหตุผล: {log.reason}</div>}
+                </div>
+              ))
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHistoryOpen(false)}>ปิด</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {viewingEmp && (
         <Dialog open={!!viewingEmp} onOpenChange={(open) => !open && setViewingEmp(null)}>
           <DialogContent className="max-w-[95vw] md:max-w-4xl lg:max-w-5xl xl:max-w-6xl max-h-[90vh] flex flex-col p-0 overflow-hidden">

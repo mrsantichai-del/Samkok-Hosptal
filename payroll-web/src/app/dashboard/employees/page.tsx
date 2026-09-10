@@ -7,7 +7,7 @@ import * as XLSX from "xlsx";
 import Cookies from "js-cookie";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, Plus, Edit, Trash2, Check, ChevronsUpDown, Download, Upload, ArrowUpDown, Printer } from "lucide-react";
@@ -638,11 +638,9 @@ export default function EmployeesPage() {
             <div className="space-y-2">
               <Label>กลุ่มงาน</Label>
               <Popover open={openDept} onOpenChange={setOpenDept}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" role="combobox" aria-expanded={openDept} className="w-full justify-between">
+                <PopoverTrigger role="combobox" aria-expanded={openDept} className={buttonVariants({ variant: "outline", className: "w-full justify-between" })}>
                     {departmentId === "unassigned" ? "ไม่ระบุ" : departments.find(d => d.id === departmentId)?.name || "เลือกกลุ่มงาน..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[380px] p-0" style={{ zIndex: 99999 }}>
                   <Command>
@@ -670,11 +668,9 @@ export default function EmployeesPage() {
             <div className="space-y-2">
               <Label>ตำแหน่ง</Label>
               <Popover open={openPos} onOpenChange={setOpenPos}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" role="combobox" aria-expanded={openPos} className="w-full justify-between">
+                <PopoverTrigger role="combobox" aria-expanded={openPos} className={buttonVariants({ variant: "outline", className: "w-full justify-between" })}>
                     {positionId === "unassigned" ? "ไม่ระบุ" : positions.find(p => p.id === positionId)?.name || "เลือกตำแหน่ง..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[380px] p-0" style={{ zIndex: 99999 }}>
                   <Command>
@@ -702,11 +698,9 @@ export default function EmployeesPage() {
             <div className="space-y-2">
               <Label>ประเภทพนักงาน</Label>
               <Popover open={openType} onOpenChange={setOpenType}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" role="combobox" aria-expanded={openType} className="w-full justify-between">
+                <PopoverTrigger role="combobox" aria-expanded={openType} className={buttonVariants({ variant: "outline", className: "w-full justify-between" })}>
                     {employeeTypeId === "unassigned" ? "ไม่ระบุ" : employeeTypes.find(t => t.id === employeeTypeId)?.name || "เลือกประเภท..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[380px] p-0" style={{ zIndex: 99999 }}>
                   <Command>

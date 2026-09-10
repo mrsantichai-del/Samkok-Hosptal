@@ -99,7 +99,7 @@ export default function PayItemsPage() {
       setIsDialogOpen(false);
       fetchPayItems();
     } catch (e: any) {
-      toast.error();
+      toast.error(e?.response?.data?.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่');
     } finally {
       setSaving(false);
     }
