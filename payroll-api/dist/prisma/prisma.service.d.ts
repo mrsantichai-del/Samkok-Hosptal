@@ -4,6 +4,7 @@ export declare class PrismaService implements OnModuleInit, OnModuleDestroy {
     client: PrismaClient;
     user: PrismaClient['user'];
     role: PrismaClient['role'];
+    userRole: PrismaClient['userRole'];
     employee: PrismaClient['employee'];
     employeeType: PrismaClient['employeeType'];
     position: PrismaClient['position'];

@@ -53,6 +53,7 @@ let PrismaService = class PrismaService {
     client;
     user;
     role;
+    userRole;
     employee;
     employeeType;
     position;
@@ -68,6 +69,7 @@ let PrismaService = class PrismaService {
         this.client = new client_1.PrismaClient({ adapter });
         this.user = this.client.user;
         this.role = this.client.role;
+        this.userRole = this.client.userRole;
         this.employee = this.client.employee;
         this.employeeType = this.client.employeeType;
         this.position = this.client.position;

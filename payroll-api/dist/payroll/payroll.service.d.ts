@@ -90,7 +90,18 @@ export declare class PayrollService {
     }[], userId: string): Promise<{
         message: string;
     }>;
+    notifyAll(title: string, message: string): Promise<void>;
+    notifyRole(roleName: string, title: string, message: string): Promise<void>;
+    requestApproval(recordId: string, userId: string): Promise<{
+        message: string;
+    }>;
     approvePayroll(recordId: string, userId: string): Promise<{
+        message: string;
+    }>;
+    requestEdit(recordId: string, userId: string, reason: string): Promise<{
+        message: string;
+    }>;
+    grantEdit(recordId: string, userId: string): Promise<{
         message: string;
     }>;
     exportExcel(recordId: string, res: Response, employeeIds?: string[]): Promise<void>;

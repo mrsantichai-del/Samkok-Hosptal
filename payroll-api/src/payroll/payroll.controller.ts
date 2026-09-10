@@ -13,13 +13,6 @@ import type { Response } from 'express';
 @Controller('payroll')
 export class PayrollController {
 
-  @Roles('System Administrator', 'Finance Officer', 'Executive')
-  @Patch(':id/approve')
-  @ApiOperation({ summary: 'Approve a payroll record' })
-  approvePayrollLegacy(@Param('id') id: string, @Req() req: any) {
-    return this.payrollService.approvePayroll(id, req.user.userId);
-  }
-
   constructor(private readonly payrollService: PayrollService) {}
 
   @Roles('System Administrator', 'Finance Officer')
@@ -37,6 +30,20 @@ export class PayrollController {
   }
 
   @Roles('System Administrator', 'Finance Officer', 'Executive')
+  @Get('records/:id')
+  @ApiOperation({ summary: 'Get a single payroll record by ID' })
+  getRecordById(@Param('id') id: string) {
+    return this.payrollService.getPayrollRecordById(id);
+  }
+
+  @Roles('System Administrator', 'Finance Officer', 'Executive')
+  @Get('records/:id/audit-logs')
+  @ApiOperation({ summary: 'Get audit logs for a payroll record' })
+  getAuditLogs(@Param('id') id: string) {
+    return this.payrollService.getAuditLogs(id);
+  }
+
+  @Roles('System Administrator', 'Finance Officer', 'Executive')
   @Get('records/:id/transactions')
   @ApiOperation({ summary: 'Get all transactions for a payroll record' })
   @ApiQuery({ name: 'employeeId', required: false })
@@ -51,11 +58,31 @@ export class PayrollController {
     return this.payrollService.updateEmployeeTransactions(id, empId, body.transactions, req.user.userId);
   }
 
-  @Roles('Executive', 'System Administrator')
+  @Patch('records/:id/request-approval')
+  @ApiOperation({ summary: 'Request approval for a payroll record' })
+  requestApproval(@Param('id') id: string, @Req() req: any) {
+    return this.payrollService.requestApproval(id, req.user.userId);
+  }
+
+  @Roles('System Administrator', 'Executive')
   @Patch('records/:id/approve')
-  @ApiOperation({ summary: 'Approve a payroll record (Executive only)' })
-  approvePayrollExec(@Param('id') id: string, @Req() req: any) {
+  @ApiOperation({ summary: 'Approve a payroll record' })
+  approvePayroll(@Param('id') id: string, @Req() req: any) {
     return this.payrollService.approvePayroll(id, req.user.userId);
+  }
+
+  @Patch('records/:id/request-edit')
+  @ApiOperation({ summary: 'Request edit for an approved payroll record' })
+  requestEdit(@Param('id') id: string, @Body('reason') reason: string, @Req() req: any) {
+    if (!reason) throw new BadRequestException('Reason is required');
+    return this.payrollService.requestEdit(id, req.user.userId, reason);
+  }
+
+  @Roles('System Administrator', 'Executive')
+  @Patch('records/:id/grant-edit')
+  @ApiOperation({ summary: 'Grant edit access for a payroll record' })
+  grantEdit(@Param('id') id: string, @Req() req: any) {
+    return this.payrollService.grantEdit(id, req.user.userId);
   }
 
   @Roles('System Administrator', 'Finance Officer', 'Executive')
