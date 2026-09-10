@@ -45,7 +45,7 @@ let EmployeeController = class EmployeeController {
         return this.employeeService.removeType(id);
     }
     createPosition(body) {
-        return this.employeeService.createPosition(body.name, body.description);
+        return this.employeeService.createPosition(body.name, body.description, body.departmentId);
     }
     getDepartments() {
         return this.employeeService.getDepartments();

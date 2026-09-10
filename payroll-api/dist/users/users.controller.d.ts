@@ -3,6 +3,19 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 export declare class UsersController {
     private readonly usersService;
+    getMyNotifications(req: any): Promise<{
+        id: string;
+        createdAt: Date;
+        userId: string | null;
+        roleName: string | null;
+        title: string;
+        message: string;
+        isRead: boolean;
+        linkUrl: string | null;
+    }[]>;
+    markAllRead(req: any): Promise<{
+        success: boolean;
+    }>;
     constructor(usersService: UsersService);
     uploadImage(id: string, file: Express.Multer.File): Promise<{
         employee: {
@@ -16,6 +29,7 @@ export declare class UsersController {
             idCard: string | null;
             bankAccount: string | null;
             bankName: string | null;
+            baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;
@@ -61,6 +75,7 @@ export declare class UsersController {
             idCard: string | null;
             bankAccount: string | null;
             bankName: string | null;
+            baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;
@@ -106,6 +121,7 @@ export declare class UsersController {
             idCard: string | null;
             bankAccount: string | null;
             bankName: string | null;
+            baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;
@@ -153,6 +169,7 @@ export declare class UsersController {
             idCard: string | null;
             bankAccount: string | null;
             bankName: string | null;
+            baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;
@@ -208,6 +225,7 @@ export declare class UsersController {
             idCard: string | null;
             bankAccount: string | null;
             bankName: string | null;
+            baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;
@@ -253,6 +271,7 @@ export declare class UsersController {
             idCard: string | null;
             bankAccount: string | null;
             bankName: string | null;
+            baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;
@@ -298,6 +317,7 @@ export declare class UsersController {
             idCard: string | null;
             bankAccount: string | null;
             bankName: string | null;
+            baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;
@@ -343,6 +363,7 @@ export declare class UsersController {
             idCard: string | null;
             bankAccount: string | null;
             bankName: string | null;
+            baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;

@@ -54,7 +54,7 @@ let EmployeeService = class EmployeeService {
     async findAll(skip, take) {
         return this.prisma.employee.findMany({
             skip: skip ? Number(skip) : 0,
-            take: take ? Number(take) : 50,
+            take: take ? Number(take) : 10000,
             where: { deletedAt: null },
             include: {
                 position: true,
@@ -212,16 +212,15 @@ let EmployeeService = class EmployeeService {
     async getPositions() {
         return this.prisma.position.findMany({
             where: { deletedAt: null },
-            orderBy: { name: 'asc' }
+            orderBy: { name: 'asc' },
+            include: { department: true }
         });
     }
-    async createPosition(name, description) {
+    async createPosition(name, description, departmentId) {
         const existing = await this.prisma.position.findFirst({ where: { name, deletedAt: null } });
         if (existing)
             throw new common_1.BadRequestException('ชื่อตำแหน่งนี้มีอยู่ในระบบแล้ว');
-        return this.prisma.position.create({
-            data: { name, description }
-        });
+        return this.prisma.position.create({ data: { name, description, departmentId } });
     }
     async updatePosition(id, data) {
         if (data.name) {

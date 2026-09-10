@@ -12,6 +12,7 @@ export declare class PrismaService implements OnModuleInit, OnModuleDestroy {
     payrollRecord: PrismaClient['payrollRecord'];
     payrollTransaction: PrismaClient['payrollTransaction'];
     auditLog: PrismaClient['auditLog'];
+    notification: PrismaClient['notification'];
     constructor();
     onModuleInit(): Promise<void>;
     onModuleDestroy(): Promise<void>;

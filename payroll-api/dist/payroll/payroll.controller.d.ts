@@ -22,6 +22,8 @@ export declare class PayrollController {
         status: string;
         notes: string | null;
         approvedById: string | null;
+        editRequestReason: string | null;
+        editRequestedAt: Date | null;
     }[]>;
     getTransactions(id: string, employeeId?: string): Promise<({
         employee: {

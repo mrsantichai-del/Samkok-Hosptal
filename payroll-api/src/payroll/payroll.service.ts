@@ -44,6 +44,26 @@ export class PayrollService {
 
   async getPayrollRecords() { return this.prisma.payrollRecord.findMany({ orderBy: [{ year: 'desc' }, { month: 'desc' }] }); }
 
+  
+  async getPayrollRecordById(id: string) {
+    const record = await this.prisma.payrollRecord.findUnique({
+      where: { id }
+    });
+    if (!record) throw new NotFoundException('Record not found');
+    return record;
+  }
+
+
+  
+  async getAuditLogs(recordId: string) {
+    return this.prisma.auditLog.findMany({
+      where: { recordId, tableName: 'PayrollRecord' },
+      orderBy: { createdAt: 'desc' },
+      include: { user: { select: { username: true, employee: { select: { firstName: true, lastName: true } } } } }
+    });
+  }
+
+
   async getPayrollTransactions(recordId: string, employeeId?: string) {
     const whereClause: any = { payrollRecordId: recordId, deletedAt: null };
     if (employeeId) whereClause.employeeId = employeeId;

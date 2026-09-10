@@ -3,6 +3,19 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 export declare class UsersService {
     private prisma;
+    getNotifications(userId: string, roles: string[]): Promise<{
+        id: string;
+        createdAt: Date;
+        userId: string | null;
+        roleName: string | null;
+        title: string;
+        message: string;
+        isRead: boolean;
+        linkUrl: string | null;
+    }[]>;
+    markAllNotificationsRead(userId: string): Promise<{
+        success: boolean;
+    }>;
     constructor(prisma: PrismaService);
     findAll(): Promise<({
         employee: {
@@ -16,6 +29,7 @@ export declare class UsersService {
             idCard: string | null;
             bankAccount: string | null;
             bankName: string | null;
+            baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;
@@ -69,6 +83,7 @@ export declare class UsersService {
             idCard: string | null;
             bankAccount: string | null;
             bankName: string | null;
+            baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;
@@ -114,6 +129,7 @@ export declare class UsersService {
             idCard: string | null;
             bankAccount: string | null;
             bankName: string | null;
+            baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;
@@ -159,6 +175,7 @@ export declare class UsersService {
             idCard: string | null;
             bankAccount: string | null;
             bankName: string | null;
+            baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;

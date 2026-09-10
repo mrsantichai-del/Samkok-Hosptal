@@ -20,6 +20,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   public payrollRecord: PrismaClient['payrollRecord'];
   public payrollTransaction: PrismaClient['payrollTransaction'];
   public auditLog: PrismaClient['auditLog'];
+  public notification: PrismaClient['notification'];
 
   constructor() {
     const pool = new Pool({ connectionString: process.env.DATABASE_URL || process.env.DIRECT_URL });
@@ -36,6 +37,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     this.payrollRecord = this.client.payrollRecord;
     this.payrollTransaction = this.client.payrollTransaction;
     this.auditLog = this.client.auditLog;
+    this.notification = this.client.notification;
   }
 
   async onModuleInit() {

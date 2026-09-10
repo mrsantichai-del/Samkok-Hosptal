@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, BadRequestException, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -20,6 +20,22 @@ const supabase = createClient(
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')
 export class UsersController {
+
+  @Get('my-notifications')
+  @ApiOperation({ summary: 'Get notifications for current user' })
+  async getMyNotifications(@Req() req: any) {
+    const userId = req.user.userId;
+    const roles = req.user.roles || [];
+    return this.usersService.getNotifications(userId, roles);
+  }
+
+  @Patch('notifications/read-all')
+  @ApiOperation({ summary: 'Mark all notifications as read' })
+  async markAllRead(@Req() req: any) {
+    const userId = req.user.userId;
+    return this.usersService.markAllNotificationsRead(userId);
+  }
+
   constructor(private readonly usersService: UsersService) {}
 
   @Roles('System Administrator')

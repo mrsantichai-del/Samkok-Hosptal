@@ -85,6 +85,21 @@ let PayrollService = class PayrollService {
         return { message: 'Payroll processed successfully', recordId: record.id, count: transactions.length };
     }
     async getPayrollRecords() { return this.prisma.payrollRecord.findMany({ orderBy: [{ year: 'desc' }, { month: 'desc' }] }); }
+    async getPayrollRecordById(id) {
+        const record = await this.prisma.payrollRecord.findUnique({
+            where: { id }
+        });
+        if (!record)
+            throw new common_1.NotFoundException('Record not found');
+        return record;
+    }
+    async getAuditLogs(recordId) {
+        return this.prisma.auditLog.findMany({
+            where: { recordId, tableName: 'PayrollRecord' },
+            orderBy: { createdAt: 'desc' },
+            include: { user: { select: { username: true, employee: { select: { firstName: true, lastName: true } } } } }
+        });
+    }
     async getPayrollTransactions(recordId, employeeId) {
         const whereClause = { payrollRecordId: recordId, deletedAt: null };
         if (employeeId)
@@ -134,8 +149,6 @@ let PayrollService = class PayrollService {
             transactions.sort((a, b) => employeeIds.indexOf(a.employeeId) - employeeIds.indexOf(b.employeeId));
         }
         const empData = new Map();
-        const incomeHeaders = new Set();
-        const deductionHeaders = new Set();
         for (const tx of transactions) {
             if (!tx.employee || !tx.payItem)
                 continue;
@@ -147,18 +160,20 @@ let PayrollService = class PayrollService {
             if (tx.payItem.type === 'INCOME') {
                 e.incomes[tx.payItem.name] = amount;
                 e.totalIncome += amount;
-                incomeHeaders.add(tx.payItem.name);
             }
             else {
                 e.deductions[tx.payItem.name] = amount;
                 e.totalDeduction += amount;
-                deductionHeaders.add(tx.payItem.name);
             }
         }
         const workbook = new ExcelJS.Workbook();
         const sheet = workbook.addWorksheet(`Payroll_${record.month}_${record.year}`);
-        const incArr = Array.from(incomeHeaders);
-        const dedArr = Array.from(deductionHeaders);
+        const allPayItems = await this.prisma.payItem.findMany({
+            where: { deletedAt: null },
+            orderBy: { createdAt: 'asc' }
+        });
+        const incArr = allPayItems.filter(p => p.type === 'INCOME').map(p => p.name);
+        const dedArr = allPayItems.filter(p => p.type === 'DEDUCTION').map(p => p.name);
         const headers = ['ลำดับที่', 'รหัสพนักงาน', 'ชื่อ-นามสกุล', 'ตำแหน่ง', 'ประเภทพนักงาน', ...incArr, 'รวมรายรับ', ...dedArr, 'รวมรายจ่าย', 'รับสุทธิ'];
         sheet.addRow(headers);
         sheet.getRow(1).font = { bold: true };
@@ -168,8 +183,8 @@ let PayrollService = class PayrollService {
                 seq++,
                 e.employee.employeeCode || '-',
                 `${e.employee.firstName || ''} ${e.employee.lastName || ''}`.trim(),
-                e.employee.position?.name || 'ไม่ระบุ',
-                e.employee.employeeType?.name || 'ไม่ระบุ',
+                (e.employee.position && typeof e.employee.position === 'object' ? e.employee.position.name : e.employee.position) || 'ไม่ระบุ',
+                (e.employee.employeeType && typeof e.employee.employeeType === 'object' ? e.employee.employeeType.name : e.employee.employeeType) || 'ไม่ระบุ',
                 ...incArr.map(h => e.incomes[h] || 0),
                 e.totalIncome,
                 ...dedArr.map(h => e.deductions[h] || 0),

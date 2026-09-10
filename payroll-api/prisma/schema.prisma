@@ -28,6 +28,7 @@ model User {
   roles        UserRole[]
   auditLogs    AuditLog[]
   approvedPayrolls PayrollRecord[]
+  notifications    Notification[]
 }
 
 model Role {
@@ -153,6 +154,9 @@ model PayrollRecord {
   approvedById String?
   approvedBy   User?      @relation(fields: [approvedById], references: [id])
 
+  editRequestReason String?
+  editRequestedAt   DateTime?
+
   @@unique([month, year])
 }
 
@@ -192,4 +196,19 @@ model AuditLog {
   reason      String?
   ipAddress   String?
   createdAt   DateTime @default(now())
+}
+
+// ------------------------------------------------------
+// Notifications
+// ------------------------------------------------------
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String?  // Target specific user
+  user      User?    @relation(fields: [userId], references: [id])
+  roleName  String?  // Target all users with this role (e.g., "Executive")
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  linkUrl   String?
+  createdAt DateTime @default(now())
 }

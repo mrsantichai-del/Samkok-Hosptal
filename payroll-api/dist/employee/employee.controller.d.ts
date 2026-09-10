@@ -15,6 +15,7 @@ export declare class EmployeeController {
         idCard: string | null;
         bankAccount: string | null;
         bankName: string | null;
+        baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
         departmentId: string | null;
         positionId: string | null;
         employeeTypeId: string | null;
@@ -47,6 +48,7 @@ export declare class EmployeeController {
             deletedAt: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            departmentId: string | null;
             description: string | null;
         } | null;
         department: {
@@ -68,6 +70,7 @@ export declare class EmployeeController {
         idCard: string | null;
         bankAccount: string | null;
         bankName: string | null;
+        baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
         departmentId: string | null;
         positionId: string | null;
         employeeTypeId: string | null;
@@ -113,12 +116,14 @@ export declare class EmployeeController {
     createPosition(body: {
         name: string;
         description?: string;
+        departmentId?: string;
     }): Promise<{
         name: string;
         id: string;
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        departmentId: string | null;
         description: string | null;
     }>;
     getDepartments(): Promise<{
@@ -159,14 +164,24 @@ export declare class EmployeeController {
         updatedAt: Date;
         description: string | null;
     }>;
-    getPositions(): Promise<{
+    getPositions(): Promise<({
+        department: {
+            name: string;
+            id: string;
+            deletedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+            description: string | null;
+        } | null;
+    } & {
         name: string;
         id: string;
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        departmentId: string | null;
         description: string | null;
-    }[]>;
+    })[]>;
     updatePosition(id: string, body: {
         name?: string;
         description?: string;
@@ -176,6 +191,7 @@ export declare class EmployeeController {
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        departmentId: string | null;
         description: string | null;
     }>;
     removePosition(id: string): Promise<{
@@ -184,6 +200,7 @@ export declare class EmployeeController {
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        departmentId: string | null;
         description: string | null;
     }>;
     createUserAccount(id: string): Promise<{
@@ -230,6 +247,7 @@ export declare class EmployeeController {
             deletedAt: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            departmentId: string | null;
             description: string | null;
         } | null;
         department: {
@@ -251,6 +269,7 @@ export declare class EmployeeController {
         idCard: string | null;
         bankAccount: string | null;
         bankName: string | null;
+        baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
         departmentId: string | null;
         positionId: string | null;
         employeeTypeId: string | null;
@@ -266,6 +285,7 @@ export declare class EmployeeController {
         idCard: string | null;
         bankAccount: string | null;
         bankName: string | null;
+        baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
         departmentId: string | null;
         positionId: string | null;
         employeeTypeId: string | null;

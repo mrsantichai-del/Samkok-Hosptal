@@ -32,6 +32,7 @@ export declare class EmployeeService {
             deletedAt: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            departmentId: string | null;
             description: string | null;
         } | null;
         department: {
@@ -53,6 +54,7 @@ export declare class EmployeeService {
         idCard: string | null;
         bankAccount: string | null;
         bankName: string | null;
+        baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
         departmentId: string | null;
         positionId: string | null;
         employeeTypeId: string | null;
@@ -85,6 +87,7 @@ export declare class EmployeeService {
             deletedAt: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            departmentId: string | null;
             description: string | null;
         } | null;
         department: {
@@ -106,6 +109,7 @@ export declare class EmployeeService {
         idCard: string | null;
         bankAccount: string | null;
         bankName: string | null;
+        baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
         departmentId: string | null;
         positionId: string | null;
         employeeTypeId: string | null;
@@ -121,6 +125,7 @@ export declare class EmployeeService {
         idCard: string | null;
         bankAccount: string | null;
         bankName: string | null;
+        baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
         departmentId: string | null;
         positionId: string | null;
         employeeTypeId: string | null;
@@ -136,6 +141,7 @@ export declare class EmployeeService {
         idCard: string | null;
         bankAccount: string | null;
         bankName: string | null;
+        baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
         departmentId: string | null;
         positionId: string | null;
         employeeTypeId: string | null;
@@ -232,20 +238,31 @@ export declare class EmployeeService {
             employeeId: string | null;
         };
     }>;
-    getPositions(): Promise<{
+    getPositions(): Promise<({
+        department: {
+            name: string;
+            id: string;
+            deletedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+            description: string | null;
+        } | null;
+    } & {
         name: string;
         id: string;
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        departmentId: string | null;
         description: string | null;
-    }[]>;
-    createPosition(name: string, description?: string): Promise<{
+    })[]>;
+    createPosition(name: string, description?: string, departmentId?: string): Promise<{
         name: string;
         id: string;
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        departmentId: string | null;
         description: string | null;
     }>;
     updatePosition(id: string, data: {
@@ -257,6 +274,7 @@ export declare class EmployeeService {
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        departmentId: string | null;
         description: string | null;
     }>;
     removePosition(id: string): Promise<{
@@ -265,6 +283,7 @@ export declare class EmployeeService {
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        departmentId: string | null;
         description: string | null;
     }>;
 }

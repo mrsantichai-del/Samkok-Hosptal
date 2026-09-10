@@ -61,6 +61,7 @@ let PrismaService = class PrismaService {
     payrollRecord;
     payrollTransaction;
     auditLog;
+    notification;
     constructor() {
         const pool = new pg_1.Pool({ connectionString: process.env.DATABASE_URL || process.env.DIRECT_URL });
         const adapter = new adapter_pg_1.PrismaPg(pool);
@@ -75,6 +76,7 @@ let PrismaService = class PrismaService {
         this.payrollRecord = this.client.payrollRecord;
         this.payrollTransaction = this.client.payrollTransaction;
         this.auditLog = this.client.auditLog;
+        this.notification = this.client.notification;
     }
     async onModuleInit() {
         await this.client.$connect();

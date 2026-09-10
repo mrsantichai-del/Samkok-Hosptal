@@ -48,6 +48,27 @@ const prisma_service_1 = require("../prisma/prisma.service");
 const bcrypt = __importStar(require("bcrypt"));
 let UsersService = class UsersService {
     prisma;
+    async getNotifications(userId, roles) {
+        const notifs = await this.prisma.notification.findMany({
+            where: {
+                OR: [
+                    { userId: null, roleName: null },
+                    { userId: userId },
+                    { roleName: { in: roles } }
+                ],
+                isRead: false
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        return notifs;
+    }
+    async markAllNotificationsRead(userId) {
+        await this.prisma.notification.updateMany({
+            where: { userId: userId },
+            data: { isRead: true }
+        });
+        return { success: true };
+    }
     constructor(prisma) {
         this.prisma = prisma;
     }
