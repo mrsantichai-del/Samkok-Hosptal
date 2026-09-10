@@ -23,6 +23,7 @@ import {
 export default function PayItemsPage() {
   const [payItems, setPayItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   
   // Dialog State
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -120,6 +121,8 @@ export default function PayItemsPage() {
     }
   };
 
+  const filteredPayItems = payItems.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
   return (
     <div className="space-y-4 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -136,7 +139,7 @@ export default function PayItemsPage() {
         <div className="p-4 bg-white border-b flex items-center justify-between">
           <div className="relative w-72">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-            <Input placeholder="ค้นหารายการ..." className="pl-9 bg-[#f0f2f5] border-none" />
+            <Input placeholder="ค้นหารายการ..." className="pl-9 bg-[#f0f2f5] border-none" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
           </div>
         </div>
         <Table className="bg-white">
@@ -151,10 +154,10 @@ export default function PayItemsPage() {
           <TableBody>
             {loading ? (
               <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">กำลังโหลดข้อมูล...</TableCell></TableRow>
-            ) : payItems.length === 0 ? (
+            ) : filteredPayItems.length === 0 ? (
               <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">ไม่พบข้อมูลรายการตั้งค่า</TableCell></TableRow>
             ) : (
-              payItems.map((item) => (
+              filteredPayItems.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.name}</TableCell>
                   <TableCell>

@@ -1,23 +1,36 @@
 const fs = require('fs');
-
-const file = 'src/app/dashboard/employees/page.tsx';
+let file = 'src/app/dashboard/pay-items/page.tsx';
 let content = fs.readFileSync(file, 'utf8');
 
-const oldSearch = `const matchSearch = emp.firstName.includes(searchTerm) || emp.lastName.includes(searchTerm) || 
-emp.employeeCode.includes(searchTerm);`;
+// 1. Add searchTerm state
+content = content.replace(
+  'const [loading, setLoading] = useState(true);',
+  'const [loading, setLoading] = useState(true);\n  const [searchTerm, setSearchTerm] = useState("");'
+);
 
-const newSearch = `const s = searchTerm.toLowerCase();
-      const matchSearch = (emp.firstName || "").toLowerCase().includes(s) || 
-                          (emp.lastName || "").toLowerCase().includes(s) || 
-                          (emp.employeeCode || "").toLowerCase().includes(s);`;
+// 2. Attach searchTerm to Input
+content = content.replace(
+  '<Input placeholder="ค้นหารายการ..." className="pl-9 bg-[#f0f2f5] border-none" />',
+  '<Input placeholder="ค้นหารายการ..." className="pl-9 bg-[#f0f2f5] border-none" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />'
+);
 
-// Wait, the formatting in the file might be on one line
-const searchRegex = /const matchSearch = emp\.firstName\.includes\(searchTerm\) \|\| emp\.lastName\.includes\(searchTerm\) \|\|\s*emp\.employeeCode\.includes\(searchTerm\);/;
+// 3. Create filtered logic inside the component body, just before return
+content = content.replace(
+  '  return (',
+  '  const filteredPayItems = payItems.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));\n\n  return ('
+);
 
-if (content.match(searchRegex)) {
-  content = content.replace(searchRegex, newSearch);
-  fs.writeFileSync(file, content);
-  console.log('Fixed search to be case-insensitive');
-} else {
-  console.log('Could not find matchSearch in employees page');
-}
+// 4. Update the map loop to use filteredPayItems
+content = content.replace(
+  'payItems.map((item) => (',
+  'filteredPayItems.map((item) => ('
+);
+
+// 5. Update the empty state check to use filteredPayItems.length
+content = content.replace(
+  'payItems.length === 0 ? (',
+  'filteredPayItems.length === 0 ? ('
+);
+
+fs.writeFileSync(file, content);
+console.log('Search feature added to pay-items!');
