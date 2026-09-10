@@ -1,22 +1,12 @@
 const fs = require('fs');
+let file = 'src/app/dashboard/payroll/[id]/page.tsx';
+let content = fs.readFileSync(file, 'utf8');
 
-function fixImport(file) {
-  let content = fs.readFileSync(file, 'utf8');
-  if (!content.includes('ArrowUpDown')) {
-    content = content.replace(
-      'import { Search, Plus, Edit, Trash2 }',
-      'import { Search, Plus, Edit, Trash2, ArrowUpDown }'
-    );
-    // Also try without Search just in case
-    content = content.replace(
-      'import { Plus, Edit, Trash2 }',
-      'import { Plus, Edit, Trash2, ArrowUpDown }'
-    );
-    fs.writeFileSync(file, content);
-    console.log('Fixed imports in ' + file);
-  }
-}
+// Fix imports
+content = content.replace(
+  'import { ArrowLeft, Download, Save, Upload, Search, FileX2, Eye } from "lucide-react";',
+  'import { ArrowLeft, Download, Save, Upload, Search, FileX2, Eye, Clock, CheckCircle, AlertCircle, Edit } from "lucide-react";\nimport { Badge } from "@/components/ui/badge";\nimport { jwtDecode } from "jwt-decode";'
+);
 
-fixImport('src/app/dashboard/departments/page.tsx');
-fixImport('src/app/dashboard/employee-types/page.tsx');
-fixImport('src/app/dashboard/positions/page.tsx');
+fs.writeFileSync(file, content);
+console.log('Fixed missing imports');
