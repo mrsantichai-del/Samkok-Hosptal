@@ -649,7 +649,7 @@ export default function EmployeesPage() {
                     <CommandInput placeholder="ค้นหากลุ่มงาน..." />
                     <CommandEmpty>ไม่พบกลุ่มงาน</CommandEmpty>
                     <CommandGroup>
-                      <CommandList>
+                      <CommandList className="max-h-[300px] overflow-y-auto">
                         <CommandItem onSelect={() => { setDepartmentId("unassigned"); setOpenDept(false); }}>
                           <Check className={cn("mr-2 h-4 w-4", departmentId === "unassigned" ? "opacity-100" : "opacity-0")} />
                           ไม่ระบุ
@@ -681,7 +681,7 @@ export default function EmployeesPage() {
                     <CommandInput placeholder="ค้นหาตำแหน่ง..." />
                     <CommandEmpty>ไม่พบตำแหน่ง</CommandEmpty>
                     <CommandGroup>
-                      <CommandList>
+                      <CommandList className="max-h-[300px] overflow-y-auto">
                         <CommandItem onSelect={() => { setPositionId("unassigned"); setOpenPos(false); }}>
                           <Check className={cn("mr-2 h-4 w-4", positionId === "unassigned" ? "opacity-100" : "opacity-0")} />
                           ไม่ระบุ
@@ -713,7 +713,7 @@ export default function EmployeesPage() {
                     <CommandInput placeholder="ค้นหาประเภทพนักงาน..." />
                     <CommandEmpty>ไม่พบประเภทพนักงาน</CommandEmpty>
                     <CommandGroup>
-                      <CommandList>
+                      <CommandList className="max-h-[300px] overflow-y-auto">
                         <CommandItem onSelect={() => { setEmployeeTypeId("unassigned"); setOpenType(false); }}>
                           <Check className={cn("mr-2 h-4 w-4", employeeTypeId === "unassigned" ? "opacity-100" : "opacity-0")} />
                           ไม่ระบุ
