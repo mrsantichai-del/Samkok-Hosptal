@@ -24,6 +24,12 @@ export default function PayItemsPage() {
   const [payItems, setPayItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
   
   // Dialog State
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -121,7 +127,7 @@ export default function PayItemsPage() {
     }
   };
 
-  const filteredPayItems = payItems.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredPayItems = payItems.filter(item => item.name.toLowerCase().includes(debouncedSearch.toLowerCase()));
 
   return (
     <div className="space-y-4 max-w-6xl mx-auto">
@@ -145,7 +151,8 @@ export default function PayItemsPage() {
         <Table className="bg-white">
           <TableHeader>
             <TableRow>
-              <TableHead>ชื่อรายการ</TableHead>
+              <TableHead className="w-[60px] text-center">ลำดับที่</TableHead>
+                <TableHead>ชื่อรายการ</TableHead>
               <TableHead>ประเภท</TableHead>
               <TableHead>สูตรคำนวณ (Default)</TableHead>
               <TableHead className="w-[100px]">จัดการ</TableHead>
@@ -153,13 +160,14 @@ export default function PayItemsPage() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">กำลังโหลดข้อมูล...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-10 text-gray-500">กำลังโหลดข้อมูล...</TableCell></TableRow>
             ) : filteredPayItems.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">ไม่พบข้อมูลรายการตั้งค่า</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-10 text-gray-500">ไม่พบข้อมูลรายการตั้งค่า</TableCell></TableRow>
             ) : (
-              filteredPayItems.map((item) => (
+              filteredPayItems.map((item, index) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell className="text-center text-gray-500">{index + 1}</TableCell>
+                    <TableCell className="font-medium">{item.name}</TableCell>
                   <TableCell>
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       item.type === 'INCOME' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
