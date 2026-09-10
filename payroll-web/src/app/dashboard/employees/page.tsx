@@ -647,9 +647,9 @@ export default function EmployeesPage() {
                 <PopoverContent className="w-[380px] p-0" style={{ zIndex: 99999 }}>
                   <Command>
                     <CommandInput placeholder="ค้นหากลุ่มงาน..." />
-                    <CommandEmpty>ไม่พบกลุ่มงาน</CommandEmpty>
-                    <CommandGroup>
-                      <CommandList className="max-h-[300px] overflow-y-auto">
+                    <CommandList className="max-h-[300px] overflow-y-auto">
+                      <CommandEmpty>ไม่พบกลุ่มงาน</CommandEmpty>
+                      <CommandGroup>
                         <CommandItem onSelect={() => { setDepartmentId("unassigned"); setOpenDept(false); }}>
                           <Check className={cn("mr-2 h-4 w-4", departmentId === "unassigned" ? "opacity-100" : "opacity-0")} />
                           ไม่ระบุ
@@ -660,9 +660,9 @@ export default function EmployeesPage() {
                             {dept.name}
                           </CommandItem>
                         ))}
+                      </CommandGroup>
                       </CommandList>
-                    </CommandGroup>
-                  </Command>
+                    </Command>
                 </PopoverContent>
               </Popover>
             </div>
@@ -679,9 +679,9 @@ export default function EmployeesPage() {
                 <PopoverContent className="w-[380px] p-0" style={{ zIndex: 99999 }}>
                   <Command>
                     <CommandInput placeholder="ค้นหาตำแหน่ง..." />
-                    <CommandEmpty>ไม่พบตำแหน่ง</CommandEmpty>
-                    <CommandGroup>
-                      <CommandList className="max-h-[300px] overflow-y-auto">
+                    <CommandList className="max-h-[300px] overflow-y-auto">
+                      <CommandEmpty>ไม่พบตำแหน่ง</CommandEmpty>
+                      <CommandGroup>
                         <CommandItem onSelect={() => { setPositionId("unassigned"); setOpenPos(false); }}>
                           <Check className={cn("mr-2 h-4 w-4", positionId === "unassigned" ? "opacity-100" : "opacity-0")} />
                           ไม่ระบุ
@@ -692,9 +692,9 @@ export default function EmployeesPage() {
                             {pos.name}
                           </CommandItem>
                         ))}
+                      </CommandGroup>
                       </CommandList>
-                    </CommandGroup>
-                  </Command>
+                    </Command>
                 </PopoverContent>
               </Popover>
             </div>
@@ -711,9 +711,9 @@ export default function EmployeesPage() {
                 <PopoverContent className="w-[380px] p-0" style={{ zIndex: 99999 }}>
                   <Command>
                     <CommandInput placeholder="ค้นหาประเภทพนักงาน..." />
-                    <CommandEmpty>ไม่พบประเภทพนักงาน</CommandEmpty>
-                    <CommandGroup>
-                      <CommandList className="max-h-[300px] overflow-y-auto">
+                    <CommandList className="max-h-[300px] overflow-y-auto">
+                      <CommandEmpty>ไม่พบประเภทพนักงาน</CommandEmpty>
+                      <CommandGroup>
                         <CommandItem onSelect={() => { setEmployeeTypeId("unassigned"); setOpenType(false); }}>
                           <Check className={cn("mr-2 h-4 w-4", employeeTypeId === "unassigned" ? "opacity-100" : "opacity-0")} />
                           ไม่ระบุ
@@ -724,9 +724,9 @@ export default function EmployeesPage() {
                             {type.name}
                           </CommandItem>
                         ))}
+                      </CommandGroup>
                       </CommandList>
-                    </CommandGroup>
-                  </Command>
+                    </Command>
                 </PopoverContent>
               </Popover>
             </div>
