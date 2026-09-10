@@ -1,7 +1,7 @@
 "use client";
 import { API_URL } from "@/lib/config";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import {
@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Plus, Edit, Trash2 } from "lucide-react";
+import { Search, Plus, Edit, Trash2, ArrowUpDown } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -129,6 +129,44 @@ export default function PayItemsPage() {
 
   const filteredPayItems = payItems.filter(item => item.name.toLowerCase().includes(debouncedSearch.toLowerCase()));
 
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const renderSortIcon = (key: string) => {
+    if (sortConfig?.key === key) {
+      return sortConfig.direction === 'asc' ? <span className="ml-1">↑</span> : <span className="ml-1">↓</span>;
+    }
+    return <ArrowUpDown className="ml-1 h-3 w-3 inline-block text-gray-400 opacity-50" />;
+  };
+
+  const sortedPayItems = React.useMemo(() => {
+    let sortableItems = [...filteredPayItems];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        let aValue = a[sortConfig.key] || '';
+        let bValue = b[sortConfig.key] || '';
+
+        if (sortConfig.key === 'type') {
+          aValue = a.type === 'INCOME' ? '1_INCOME' : '2_DEDUCTION';
+          bValue = b.type === 'INCOME' ? '1_INCOME' : '2_DEDUCTION';
+        }
+
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredPayItems, sortConfig]);
+
+
   return (
     <div className="space-y-4 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -152,9 +190,9 @@ export default function PayItemsPage() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[60px] text-center">ลำดับที่</TableHead>
-                <TableHead>ชื่อรายการ</TableHead>
-              <TableHead>ประเภท</TableHead>
-              <TableHead>สูตรคำนวณ (Default)</TableHead>
+                <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort("name")}>ชื่อรายการ {renderSortIcon("name")}</TableHead>
+              <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort("type")}>ประเภท {renderSortIcon("type")}</TableHead>
+              <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort("defaultFormula")}>สูตรคำนวณ (Default) {renderSortIcon("defaultFormula")}</TableHead>
               <TableHead className="w-[100px]">จัดการ</TableHead>
             </TableRow>
           </TableHeader>
@@ -164,7 +202,7 @@ export default function PayItemsPage() {
             ) : filteredPayItems.length === 0 ? (
               <TableRow><TableCell colSpan={5} className="text-center py-10 text-gray-500">ไม่พบข้อมูลรายการตั้งค่า</TableCell></TableRow>
             ) : (
-              filteredPayItems.map((item, index) => (
+              sortedPayItems.map((item, index) => (
                 <TableRow key={item.id}>
                   <TableCell className="text-center text-gray-500">{index + 1}</TableCell>
                     <TableCell className="font-medium">{item.name}</TableCell>
