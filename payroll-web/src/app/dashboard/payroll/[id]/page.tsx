@@ -460,21 +460,21 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
 
                      return (
                        <TableRow key={emp.employeeId} className={`hover:bg-blue-50/50 group ${isModified ? "bg-yellow-50/40" : ""}`}>
-                         <TableCell className="border border-gray-300 p-1 text-center sticky left-0 z-10 bg-white group-hover:bg-blue-50/50 text-[11px] text-gray-500">
+                         <TableCell className={`border border-gray-300 p-1 text-center sticky left-0 z-10 ${isModified ? "bg-yellow-50" : "bg-white"} group-hover:bg-blue-50/50 text-[11px] text-gray-500`}>
                            {index + 1}
                          </TableCell>
-                         <TableCell className="border border-gray-300 p-1 sticky left-[30px] z-10 bg-white group-hover:bg-blue-50/50 font-medium truncate min-w-[150px] w-[150px] text-[11px]" title={`${emp.employeeCode} ${emp.firstName} ${emp.lastName}`}>
+                         <TableCell className={`border border-gray-300 p-1 sticky left-[30px] z-10 ${isModified ? "bg-yellow-50" : "bg-white"} group-hover:bg-blue-50/50 font-medium truncate min-w-[150px] w-[150px] text-[11px]`} title={`${emp.employeeCode} ${emp.firstName} ${emp.lastName}`}>
                            <span className="text-[#1877f2] font-semibold">{emp.employeeCode}</span> {emp.firstName} {emp.lastName}
                          </TableCell>
-                         <TableCell className="border border-gray-300 p-1 text-center sticky left-[180px] z-10 bg-white group-hover:bg-blue-50/50 truncate min-w-[80px] w-[80px] text-[10px] text-gray-600" title={emp.position?.name || '-'}>
+                         <TableCell className={`border border-gray-300 p-1 text-center sticky left-[180px] z-10 ${isModified ? "bg-yellow-50" : "bg-white"} group-hover:bg-blue-50/50 truncate min-w-[80px] w-[80px] text-[10px] text-gray-600`} title={emp.position?.name || "-"}>
                            {emp.position?.name || '-'}
                          </TableCell>
-                         <TableCell className="border border-gray-300 p-1 text-center sticky left-[260px] z-10 bg-white group-hover:bg-blue-50/50 truncate min-w-[80px] w-[80px] text-[10px] text-gray-600 shadow-[1px_0_0_0_#e5e7eb]" title={emp.employeeType?.name || '-'}>
+                         <TableCell className={`border border-gray-300 p-1 text-center sticky left-[260px] z-10 ${isModified ? "bg-yellow-50" : "bg-white"} group-hover:bg-blue-50/50 truncate min-w-[80px] w-[80px] text-[10px] text-gray-600 shadow-[1px_0_0_0_#e5e7eb]`} title={emp.employeeType?.name || "-"}>
                            {emp.employeeType?.name || '-'}
                          </TableCell>
                          
                          {incomeItems.map(item => (
-                           <TableCell key={item.id} className="border border-gray-300 p-0 bg-white min-w-[95px] w-[95px]">
+                           <TableCell key={item.id} className={`border border-gray-300 p-0 min-w-[95px] w-[95px] ${isModified ? "bg-yellow-50" : "bg-white"}`}>
                              <Input 
                                type="number"
                                className="h-7 w-full text-right border-0 rounded-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-green-500 text-green-800 bg-transparent text-[11px] px-1"
@@ -488,7 +488,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                          ))}
                          
                          {deductionItems.map(item => (
-                           <TableCell key={item.id} className="border border-gray-300 p-0 bg-white min-w-[95px] w-[95px]">
+                           <TableCell key={item.id} className={`border border-gray-300 p-0 min-w-[95px] w-[95px] ${isModified ? "bg-yellow-50" : "bg-white"}`}>
                              <Input 
                                type="number"
                                className="h-7 w-full text-right border-0 rounded-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-red-500 text-red-800 bg-transparent text-[11px] px-1"
@@ -501,10 +501,10 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                            </TableCell>
                          ))}
                          
-                         <TableCell className="border border-gray-300 p-1 text-right font-bold text-gray-900 sticky right-[60px] z-10 bg-gray-100 group-hover:bg-gray-200 text-[11px] min-w-[100px] w-[100px]">
+                         <TableCell className={`border border-gray-300 p-1 text-right font-bold text-gray-900 sticky right-[60px] z-10 ${isModified ? "bg-yellow-100" : "bg-gray-100"} group-hover:bg-gray-200 text-[11px] min-w-[100px] w-[100px]`}>
                            {net.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                          </TableCell>
-                         <TableCell className="border border-gray-300 p-1 text-center sticky right-0 z-10 bg-gray-100 group-hover:bg-gray-200 shadow-[-1px_0_0_0_#e5e7eb] w-[60px]">
+                         <TableCell className={`border border-gray-300 p-1 text-center sticky right-0 z-10 ${isModified ? "bg-yellow-100" : "bg-gray-100"} group-hover:bg-gray-200 shadow-[-1px_0_0_0_#e5e7eb] w-[60px]`}>
                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setViewingEmp(emp)}>
                                <Eye className="h-4 w-4 text-blue-600" />
                              </Button>
