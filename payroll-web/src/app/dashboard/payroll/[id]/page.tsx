@@ -504,7 +504,12 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                          <TableCell className="border border-gray-300 p-1 text-right font-bold text-gray-900 sticky right-[60px] z-10 bg-gray-100 group-hover:bg-gray-200 text-[11px] min-w-[100px] w-[100px]">
                            {net.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                          </TableCell>
-                       </TableRow>
+                         <TableCell className="border border-gray-300 p-1 text-center sticky right-0 z-10 bg-gray-100 group-hover:bg-gray-200 shadow-[-1px_0_0_0_#e5e7eb] w-[60px]">
+                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setViewingEmp(emp)}>
+                               <Eye className="h-4 w-4 text-blue-600" />
+                             </Button>
+                           </TableCell>
+                         </TableRow>
                      )
                    })
                 )}
