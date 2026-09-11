@@ -159,6 +159,36 @@ export class PayrollService {
     return { message: 'อนุมัติเงินเดือนเรียบร้อยแล้ว' };
   }
 
+  async deletePayrollRecord(recordId: string, userId: string) {
+    const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
+    if (!record) throw new NotFoundException('ไม่พบข้อมูลรอบเงินเดือนที่ต้องการลบ');
+    if (record.status === 'APPROVED' || record.status === 'PAID') {
+      throw new BadRequestException('ไม่สามารถลบรอบเงินเดือนที่อนุมัติแล้วได้');
+    }
+
+    // Delete related transactions
+    await this.prisma.payrollTransaction.deleteMany({
+      where: { payrollRecordId: recordId }
+    });
+
+    // Delete the payroll record
+    await this.prisma.payrollRecord.delete({
+      where: { id: recordId }
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        action: 'DELETE_PAYROLL_RECORD',
+        tableName: 'PayrollRecord',
+        recordId: record.id,
+        userId,
+        reason: `ลบรอบเงินเดือนประจำเดือน ${record.month}/${record.year} (งวดที่ ${record.round || 1}: ${record.roundName || 'รอบปกติ'})`
+      }
+    });
+
+    return { message: 'ลบรอบเงินเดือนเรียบร้อยแล้ว' };
+  }
+
   async exportExcel(recordId: string, res: Response, employeeIds?: string[]) {
     const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
     if (!record) throw new NotFoundException('Record not found');

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, Patch, UseGuards, Req, Query, Res } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Patch, Delete, UseGuards, Req, Query, Res } from '@nestjs/common';
 import { PayrollService } from './payroll.service';
 import { ProcessPayrollDto } from './dto/process-payroll.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -41,6 +41,13 @@ export class PayrollController {
   @ApiOperation({ summary: 'Get a single payroll record by ID' })
   getRecordById(@Param('id') id: string) {
     return this.payrollService.getPayrollRecordById(id);
+  }
+
+  @Roles('System Administrator', 'Finance Officer')
+  @Delete('records/:id')
+  @ApiOperation({ summary: 'Delete a payroll record' })
+  deleteRecord(@Param('id') id: string, @Req() req: any) {
+    return this.payrollService.deletePayrollRecord(id, req.user.userId);
   }
 
   @Roles('System Administrator', 'Finance Officer', 'Executive')

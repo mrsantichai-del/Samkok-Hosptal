@@ -10,7 +10,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calculator, Eye, CheckCircle, Clock, AlertCircle, Edit, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Layers } from "lucide-react";
+import { Calculator, Eye, CheckCircle, Clock, AlertCircle, Edit, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Layers, Trash2 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -20,7 +20,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { showSuccess, showError } from "@/lib/swal";
+import { showSuccess, showError, showConfirm } from "@/lib/swal";
 
 export default function PayrollPage() {
   const [records, setRecords] = useState<any[]>([]);
@@ -94,6 +94,41 @@ export default function PayrollPage() {
       showError("เกิดข้อผิดพลาด", e.response?.data?.message || "เกิดข้อผิดพลาดในการประมวลผลเงินเดือน");
     } finally {
       setProcessing(false);
+    }
+  };
+
+  const handleDeleteRecord = async (rec: any) => {
+    if (rec.status === 'APPROVED' || rec.status === 'PAID') {
+      showError("ไม่สามารถลบได้", "รอบเงินเดือนที่ได้รับการอนุมัติแล้ว ไม่สามารถลบได้");
+      return;
+    }
+
+    const roundNum = rec.round || 1;
+    const roundLabel = rec.roundName || (roundNum === 1 ? 'รอบปกติ' : `งวดที่ ${roundNum}`);
+    const monthLabel = `${monthNames[rec.month - 1]} ${rec.year + 543}`;
+
+    const result = await showConfirm({
+      title: "ยืนยันการลบรอบเงินเดือน",
+      text: `คุณต้องการลบรอบเงินเดือน ประจำเดือน ${monthLabel} (${roundLabel}) ใช่หรือไม่? ข้อมูลตัวเลขและรายการในรอบนี้ทั้งหมดจะถูกลบและไม่สามารถกู้คืนได้`,
+      icon: "warning",
+      confirmButtonText: "ยืนยันลบข้อมูล",
+      confirmButtonColor: "#dc2626",
+    });
+
+    if (!result.isConfirmed) return;
+
+    const toastId = toast.loading("กำลังลบรอบเงินเดือน...");
+    try {
+      const token = Cookies.get("token");
+      await axios.delete(`${API_URL}/payroll/records/${rec.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.dismiss(toastId);
+      showSuccess("ลบข้อมูลสำเร็จ", `ลบรอบเงินเดือน ${monthLabel} (${roundLabel}) เรียบร้อยแล้ว`);
+      fetchRecords();
+    } catch (err: any) {
+      toast.dismiss(toastId);
+      showError("เกิดข้อผิดพลาด", err.response?.data?.message || "ไม่สามารถลบรอบเงินเดือนได้");
     }
   };
 
@@ -198,6 +233,17 @@ export default function PayrollPage() {
                         <Button variant="outline" size="sm" className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 border-blue-200" onClick={() => router.push(`/dashboard/payroll/${rec.id}`)}>
                           <Eye className="h-4 w-4 mr-1" /> ดูรายละเอียด
                         </Button>
+                        {rec.status !== 'APPROVED' && rec.status !== 'PAID' && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200" 
+                            onClick={() => handleDeleteRecord(rec)}
+                            title="ลบรอบเงินเดือนนี้"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" /> ลบ
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

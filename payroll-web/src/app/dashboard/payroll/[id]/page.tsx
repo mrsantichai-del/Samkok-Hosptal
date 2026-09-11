@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFoo
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Download, Save, Upload, Search, FileX2, Eye, Clock, CheckCircle, AlertCircle, Edit, Send, Check } from "lucide-react";
+import { ArrowLeft, Download, Save, Upload, Search, FileX2, Eye, Clock, CheckCircle, AlertCircle, Edit, Send, Check, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -38,6 +38,7 @@ export default function PayrollDetailPage() {
   const [user, setUser] = useState<any>(null);
   const [requestingApproval, setRequestingApproval] = useState(false);
   const [approving, setApproving] = useState(false);
+  const [deletingRecord, setDeletingRecord] = useState(false);
 
   // Filters & Sorting
   const [searchTerm, setSearchTerm] = useState("");
@@ -60,20 +61,27 @@ export default function PayrollDetailPage() {
 
   const getDisplayName = (val: any): string => {
     if (!val) return '-';
-    if (typeof val === 'string') return val;
+    if (typeof val === 'string') {
+      if (val === '[object Object]' || val.trim() === '') return '-';
+      return val;
+    }
+    if (typeof val === 'number') return String(val);
     if (typeof val === 'object') {
-      if (val.name) return typeof val.name === 'object' ? getDisplayName(val.name) : String(val.name);
-      if (val.title) return typeof val.title === 'object' ? getDisplayName(val.title) : String(val.title);
-      if (val.label) return typeof val.label === 'object' ? getDisplayName(val.label) : String(val.label);
-      if (val.code) return typeof val.code === 'object' ? getDisplayName(val.code) : String(val.code);
+      if (val.name) return getDisplayName(val.name);
+      if (val.title) return getDisplayName(val.title);
+      if (val.label) return getDisplayName(val.label);
+      if (val.code) return getDisplayName(val.code);
       return '-';
     }
-    return String(val);
+    return '-';
   };
 
   const getEmpCode = (val: any): string => {
     if (!val) return '-';
-    if (typeof val === 'string') return val;
+    if (typeof val === 'string') {
+      if (val === '[object Object]' || val.trim() === '') return '-';
+      return val;
+    }
     if (typeof val === 'object') {
       if (val.employeeCode) return getEmpCode(val.employeeCode);
       if (val.code) return getEmpCode(val.code);
@@ -202,6 +210,44 @@ export default function PayrollDetailPage() {
       showError("เกิดข้อผิดพลาด", err.response?.data?.message || "ไม่สามารถอนุมัติเงินเดือนได้");
     } finally {
       setApproving(false);
+    }
+  };
+
+  const handleDeletePayroll = async () => {
+    if (!id || !record) return;
+    if (record.status === 'APPROVED' || record.status === 'PAID') {
+      showError("ไม่สามารถลบได้", "รอบเงินเดือนที่ได้รับการอนุมัติแล้ว ไม่สามารถลบได้");
+      return;
+    }
+
+    const roundNum = record.round || 1;
+    const roundLabel = record.roundName || (roundNum === 1 ? 'รอบปกติ' : `งวดที่ ${roundNum}`);
+    const monthLabel = `${monthNames[record.month - 1]} ${record.year + 543}`;
+
+    const result = await showConfirm({
+      title: "ยืนยันการลบรอบเงินเดือนนี้",
+      text: `คุณต้องการลบรอบเงินเดือน ${monthLabel} (${roundLabel}) ใช่หรือไม่? ข้อมูลตัวเลขและรายการในงวดนี้ทั้งหมดจะถูกลบและไม่สามารถกู้คืนได้`,
+      icon: "warning",
+      confirmButtonText: "ยืนยันลบข้อมูล",
+      confirmButtonColor: "#dc2626",
+    });
+
+    if (!result.isConfirmed) return;
+
+    setDeletingRecord(true);
+    const toastId = toast.loading("กำลังลบรอบเงินเดือน...");
+    try {
+      const token = Cookies.get("token");
+      await axios.delete(`${API_URL}/payroll/records/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.dismiss(toastId);
+      showSuccess("ลบข้อมูลสำเร็จ", `ลบรอบเงินเดือน ${monthLabel} (${roundLabel}) เรียบร้อยแล้ว`);
+      router.push('/dashboard/payroll');
+    } catch (err: any) {
+      toast.dismiss(toastId);
+      showError("เกิดข้อผิดพลาด", err.response?.data?.message || "ไม่สามารถลบรอบเงินเดือนได้");
+      setDeletingRecord(false);
     }
   };
 
@@ -561,6 +607,19 @@ export default function PayrollDetailPage() {
           <Button className="h-8 text-xs bg-green-600 hover:bg-green-700 text-white" onClick={handleExportExcel} disabled={isExportingExcel}>
             <Download className="mr-1 h-3 w-3" /> {isExportingExcel ? "กำลังส่งออก..." : "Export Excel"}
           </Button>
+
+          {record && record.status !== 'APPROVED' && record.status !== 'PAID' && (
+            <Button 
+              variant="outline"
+              className="h-8 text-xs border-red-300 text-red-700 bg-red-50 hover:bg-red-100 hover:text-red-800"
+              onClick={handleDeletePayroll}
+              disabled={deletingRecord || savingGlobal}
+              title="ลบรอบเงินเดือนนี้"
+            >
+              <Trash2 className="mr-1 h-3 w-3 text-red-600" />
+              {deletingRecord ? "กำลังลบ..." : "ลบรอบนี้"}
+            </Button>
+          )}
         </div>
       </div>
 

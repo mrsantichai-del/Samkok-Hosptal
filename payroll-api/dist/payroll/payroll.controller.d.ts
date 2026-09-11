@@ -28,6 +28,9 @@ export declare class PayrollController {
         editRequestReason: string | null;
         editRequestedAt: Date | null;
     }>;
+    deleteRecord(id: string, req: any): Promise<{
+        message: string;
+    }>;
     getTransactions(id: string, employeeId?: string): Promise<({
         employee: {
             employeeType: {

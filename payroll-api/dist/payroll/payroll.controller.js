@@ -37,6 +37,9 @@ let PayrollController = class PayrollController {
     getRecordById(id) {
         return this.payrollService.getPayrollRecordById(id);
     }
+    deleteRecord(id, req) {
+        return this.payrollService.deletePayrollRecord(id, req.user.userId);
+    }
     getTransactions(id, employeeId) {
         return this.payrollService.getPayrollTransactions(id, employeeId);
     }
@@ -102,6 +105,16 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], PayrollController.prototype, "getRecordById", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer'),
+    (0, common_1.Delete)('records/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete a payroll record' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], PayrollController.prototype, "deleteRecord", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
     (0, common_1.Get)('records/:id/transactions'),
