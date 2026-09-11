@@ -9,10 +9,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFoo
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Download, Save, Upload, Search, FileX2, Eye, Clock, CheckCircle, AlertCircle, Edit } from "lucide-react";
+import { ArrowLeft, Download, Save, Upload, Search, FileX2, Eye, Clock, CheckCircle, AlertCircle, Edit, Send, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { jwtDecode } from "jwt-decode";
 
 export default function PayrollDetailPage() {
   const router = useRouter();
@@ -33,6 +34,9 @@ export default function PayrollDetailPage() {
   const [savingGlobal, setSavingGlobal] = useState(false);
   const [isExportingExcel, setIsExportingExcel] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [requestingApproval, setRequestingApproval] = useState(false);
+  const [approving, setApproving] = useState(false);
 
   // Filters & Sorting
   const [searchTerm, setSearchTerm] = useState("");
@@ -99,10 +103,65 @@ export default function PayrollDetailPage() {
   };
 
   useEffect(() => {
+    const token = Cookies.get("token");
+    if (token) {
+      try {
+        const decoded: any = jwtDecode(token);
+        setUser(decoded);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (id) {
       fetchData();
     }
   }, [id]);
+
+  const isExecutiveOrAdmin = user?.roles?.some((r: string) => ['Executive', 'System Administrator'].includes(r));
+  const isFinanceOrAdmin = user?.roles?.some((r: string) => ['Finance Officer', 'System Administrator'].includes(r));
+
+  const handleRequestApproval = async () => {
+    if (modifiedRows.size > 0) {
+      toast.warning("กรุณากดบันทึกการแก้ไขข้อมูลก่อนส่งขออนุมัติ");
+      return;
+    }
+    if (!confirm("คุณต้องการส่งรอบเงินเดือนนี้เพื่อขออนุมัติใช่หรือไม่? เมื่อส่งแล้วจะไม่สามารถแก้ไขข้อมูลได้จนกว่าจะได้รับอนุมัติหรือขอแก้ไข")) return;
+    setRequestingApproval(true);
+    const toastId = toast.loading("กำลังส่งขออนุมัติ...");
+    try {
+      const token = Cookies.get("token");
+      await axios.patch(`${API_URL}/payroll/records/${id}/request-approval`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("ส่งคำขออนุมัติเรียบร้อยแล้ว", { id: toastId });
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "เกิดข้อผิดพลาดในการส่งขออนุมัติ", { id: toastId });
+    } finally {
+      setRequestingApproval(false);
+    }
+  };
+
+  const handleApprovePayroll = async () => {
+    if (!confirm("ยืนยันการอนุมัติการจ่ายเงินเดือนประจำรอบนี้? เมื่ออนุมัติแล้วข้อมูลจะถูกล็อกอย่างเป็นทางการ")) return;
+    setApproving(true);
+    const toastId = toast.loading("กำลังอนุมัติเงินเดือน...");
+    try {
+      const token = Cookies.get("token");
+      await axios.patch(`${API_URL}/payroll/records/${id}/approve`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("อนุมัติเงินเดือนเรียบร้อยแล้ว", { id: toastId });
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "เกิดข้อผิดพลาดในการอนุมัติ", { id: toastId });
+    } finally {
+      setApproving(false);
+    }
+  };
 
   const handleSaveAll = async () => {
     if (modifiedRows.size === 0 || !id || record?.status !== 'DRAFT') return;
@@ -410,15 +469,40 @@ export default function PayrollDetailPage() {
           </div>
           {renderStatusBadge()}
         </div>
-        <div className="flex gap-2">
-          <Button 
-            className={`h-8 text-xs ${modifiedRows.size > 0 && isEditable ? 'bg-[#1877f2] hover:bg-[#166fe5] animate-pulse' : 'bg-gray-400'} text-white`} 
-            onClick={handleSaveAll}
-            disabled={modifiedRows.size === 0 || savingGlobal || !isEditable}
-          >
-            <Save className="mr-1 h-3 w-3" /> 
-            {savingGlobal ? "บันทึก..." : `บันทึกทั้งหมด (${modifiedRows.size})`}
-          </Button>
+        <div className="flex gap-2 items-center">
+          {isEditable && (
+            <Button 
+              className={`h-8 text-xs ${modifiedRows.size > 0 ? 'bg-[#1877f2] hover:bg-[#166fe5] animate-pulse' : 'bg-gray-400'} text-white`} 
+              onClick={handleSaveAll}
+              disabled={modifiedRows.size === 0 || savingGlobal}
+            >
+              <Save className="mr-1 h-3 w-3" /> 
+              {savingGlobal ? "บันทึก..." : `บันทึกทั้งหมด (${modifiedRows.size})`}
+            </Button>
+          )}
+
+          {record?.status === 'DRAFT' && (
+            <Button 
+              className="h-8 text-xs bg-amber-600 hover:bg-amber-700 text-white font-medium shadow-sm"
+              onClick={handleRequestApproval}
+              disabled={requestingApproval || savingGlobal}
+            >
+              <Send className="mr-1 h-3 w-3" /> 
+              {requestingApproval ? "กำลังส่ง..." : "ส่งขออนุมัติ"}
+            </Button>
+          )}
+
+          {record?.status === 'PENDING_APPROVAL' && isExecutiveOrAdmin && (
+            <Button 
+              className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm animate-pulse"
+              onClick={handleApprovePayroll}
+              disabled={approving}
+            >
+              <Check className="mr-1 h-3.5 w-3.5" /> 
+              {approving ? "กำลังอนุมัติ..." : "อนุมัติเงินเดือน"}
+            </Button>
+          )}
+
           <div className="w-px h-8 bg-gray-300 mx-1"></div>
           <Button className="h-8 text-xs bg-red-600 hover:bg-red-700 text-white" onClick={handleExportPdf} disabled={isExportingPdf}>
             <Download className="mr-1 h-3 w-3" /> {isExportingPdf ? "กำลังสร้าง PDF..." : "สลิป (PDF)"}

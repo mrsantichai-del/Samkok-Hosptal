@@ -70,6 +70,9 @@ export declare class PayrollService {
     }[], userId: string): Promise<{
         message: string;
     }>;
+    requestApproval(recordId: string, userId: string): Promise<{
+        message: string;
+    }>;
     approvePayroll(recordId: string, userId: string): Promise<{
         message: string;
     }>;

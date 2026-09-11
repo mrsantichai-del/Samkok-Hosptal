@@ -43,6 +43,9 @@ let PayrollController = class PayrollController {
     updateEmployeeTransactions(id, empId, body, req) {
         return this.payrollService.updateEmployeeTransactions(id, empId, body.transactions, req.user.userId);
     }
+    requestApproval(id, req) {
+        return this.payrollService.requestApproval(id, req.user.userId);
+    }
     approvePayrollExec(id, req) {
         return this.payrollService.approvePayroll(id, req.user.userId);
     }
@@ -122,6 +125,16 @@ __decorate([
     __metadata("design:paramtypes", [String, String, Object, Object]),
     __metadata("design:returntype", void 0)
 ], PayrollController.prototype, "updateEmployeeTransactions", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer'),
+    (0, common_1.Patch)('records/:id/request-approval'),
+    (0, swagger_1.ApiOperation)({ summary: 'Request approval for a payroll record' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], PayrollController.prototype, "requestApproval", null);
 __decorate([
     (0, roles_decorator_1.Roles)('Executive', 'System Administrator'),
     (0, common_1.Patch)('records/:id/approve'),

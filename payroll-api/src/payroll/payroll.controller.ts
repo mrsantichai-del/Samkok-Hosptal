@@ -58,6 +58,13 @@ export class PayrollController {
     return this.payrollService.updateEmployeeTransactions(id, empId, body.transactions, req.user.userId);
   }
 
+  @Roles('System Administrator', 'Finance Officer')
+  @Patch('records/:id/request-approval')
+  @ApiOperation({ summary: 'Request approval for a payroll record' })
+  requestApproval(@Param('id') id: string, @Req() req: any) {
+    return this.payrollService.requestApproval(id, req.user.userId);
+  }
+
   @Roles('Executive', 'System Administrator')
   @Patch('records/:id/approve')
   @ApiOperation({ summary: 'Approve a payroll record (Executive only)' })

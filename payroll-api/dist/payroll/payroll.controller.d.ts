@@ -75,6 +75,9 @@ export declare class PayrollController {
     }, req: any): Promise<{
         message: string;
     }>;
+    requestApproval(id: string, req: any): Promise<{
+        message: string;
+    }>;
     approvePayrollExec(id: string, req: any): Promise<{
         message: string;
     }>;

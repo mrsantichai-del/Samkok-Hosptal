@@ -88,12 +88,50 @@ export class PayrollService {
     return { message: 'Transactions updated successfully' };
   }
 
+  async requestApproval(recordId: string, userId: string) {
+    const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
+    if (!record) throw new NotFoundException('Record not found');
+    if (record.status !== 'DRAFT') throw new BadRequestException('Can only request approval for draft payroll');
+
+    await this.prisma.payrollRecord.update({
+      where: { id: recordId },
+      data: { status: 'PENDING_APPROVAL' }
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        action: 'REQUEST_APPROVAL',
+        tableName: 'PayrollRecord',
+        recordId: record.id,
+        userId,
+        reason: `ส่งคำขออนุมัติเงินเดือนประจำเดือน ${record.month}/${record.year}`
+      }
+    });
+
+    return { message: 'ส่งคำขออนุมัติเรียบร้อยแล้ว' };
+  }
+
   async approvePayroll(recordId: string, userId: string) {
     const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
     if (!record) throw new NotFoundException('Record not found');
-    await this.prisma.payrollRecord.update({ where: { id: recordId }, data: { status: 'APPROVED', approvedById: userId } });
-    await this.prisma.auditLog.create({ data: { action: 'APPROVE_PAYROLL', tableName: 'PayrollRecord', recordId: record.id, userId } });
-    return { message: 'Payroll approved' };
+    if (record.status === 'APPROVED') throw new BadRequestException('รอบเงินเดือนนี้ได้รับการอนุมัติแล้ว');
+
+    await this.prisma.payrollRecord.update({
+      where: { id: recordId },
+      data: { status: 'APPROVED', approvedById: userId }
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        action: 'APPROVE_PAYROLL',
+        tableName: 'PayrollRecord',
+        recordId: record.id,
+        userId,
+        reason: `อนุมัติการจ่ายเงินเดือนประจำเดือน ${record.month}/${record.year}`
+      }
+    });
+
+    return { message: 'อนุมัติเงินเดือนเรียบร้อยแล้ว' };
   }
 
   async exportExcel(recordId: string, res: Response, employeeIds?: string[]) {
