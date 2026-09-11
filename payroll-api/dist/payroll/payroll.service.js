@@ -168,6 +168,14 @@ let PayrollService = class PayrollService {
                 reason: `ส่งคำขออนุมัติเงินเดือนประจำเดือน ${record.month}/${record.year}`
             }
         });
+        await this.prisma.notification.create({
+            data: {
+                roleName: 'Executive',
+                title: 'มีการส่งคำขออนุมัติเงินเดือน',
+                message: `รอบเดือน ${record.month}/${record.year} (งวดที่ ${record.round || 1}) รอการตรวจสอบและอนุมัติ`,
+                linkUrl: `/dashboard/payroll/${record.id}`
+            }
+        });
         return { message: 'ส่งคำขออนุมัติเรียบร้อยแล้ว' };
     }
     async approvePayroll(recordId, userId) {
@@ -187,6 +195,14 @@ let PayrollService = class PayrollService {
                 recordId: record.id,
                 userId,
                 reason: `อนุมัติการจ่ายเงินเดือนประจำเดือน ${record.month}/${record.year}`
+            }
+        });
+        await this.prisma.notification.create({
+            data: {
+                roleName: 'Finance Officer',
+                title: 'รอบเงินเดือนได้รับการอนุมัติแล้ว',
+                message: `รอบเดือน ${record.month}/${record.year} (งวดที่ ${record.round || 1}) ได้รับการอนุมัติเรียบร้อยแล้ว`,
+                linkUrl: `/dashboard/payroll/${record.id}`
             }
         });
         return { message: 'อนุมัติเงินเดือนเรียบร้อยแล้ว' };
@@ -279,6 +295,14 @@ let PayrollService = class PayrollService {
                 recordId: record.id,
                 userId,
                 reason: `ปฏิเสธคำขอแก้ไขเงินเดือนประจำเดือน ${record.month}/${record.year} (งวดที่ ${record.round || 1})${rejectReason ? `: ${rejectReason}` : ''}`
+            }
+        });
+        await this.prisma.notification.create({
+            data: {
+                roleName: 'Finance Officer',
+                title: 'คำขอแก้ไขเงินเดือนถูกปฏิเสธ',
+                message: `รอบเดือน ${record.month}/${record.year} (งวดที่ ${record.round || 1}) คำขอแก้ไขไม่ได้รับการอนุมัติ`,
+                linkUrl: `/dashboard/payroll/${record.id}`
             }
         });
         return { message: 'ปฏิเสธคำขอแก้ไขเรียบร้อยแล้ว (สถานะกลับเป็นอนุมัติแล้ว)' };

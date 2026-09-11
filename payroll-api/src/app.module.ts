@@ -8,6 +8,7 @@ import { PayItemModule } from './pay-item/pay-item.module';
 import { PayrollModule } from './payroll/payroll.module';
 import { SettingsModule } from './settings/settings.module';
 import { UsersModule } from './users/users.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { UsersModule } from './users/users.module';
     PayItemModule, 
     PayrollModule,
     SettingsModule,
-    UsersModule
+    UsersModule,
+    NotificationsModule
   ],
   controllers: [AppController],
   providers: [AppService],

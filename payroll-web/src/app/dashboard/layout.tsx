@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -80,9 +81,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Button variant="ghost" size="icon" className="rounded-full bg-[#e4e6eb] hover:bg-[#d8dadf] w-10 h-10">
             <Menu className="h-5 w-5 text-black" />
           </Button>
-          <Button variant="ghost" size="icon" className="rounded-full bg-[#e4e6eb] hover:bg-[#d8dadf] w-10 h-10">
-            <Bell className="h-5 w-5 text-black" />
-          </Button>
+          <NotificationBell />
           <div className="flex items-center gap-2 ml-2 pl-2 border-l border-gray-300">
             <div className="text-right hidden sm:block">
               <div className="text-sm font-bold">{user.username}</div>
