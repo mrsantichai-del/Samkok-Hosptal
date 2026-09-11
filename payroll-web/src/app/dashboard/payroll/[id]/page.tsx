@@ -499,15 +499,24 @@ export default function PayrollDetailPage() {
     }
   };
 
+  const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+
   return (
     <div className="fixed top-14 left-0 lg:left-[280px] right-0 bottom-0 bg-[#f0f2f5] flex flex-col p-2 lg:p-4 z-30">
       <div className="flex justify-between items-center mb-2 flex-shrink-0">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/payroll')} className="h-8 w-8">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-xl font-bold">รายละเอียดการจ่ายเงินเดือน</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold">รายละเอียดการจ่ายเงินเดือน</h1>
+              {record && (
+                <span className="text-xs font-semibold text-blue-900 bg-blue-100 border border-blue-200 px-2.5 py-0.5 rounded-md">
+                  {monthNames[record.month - 1]} {record.year + 543} (งวดที่ {record.round || 1}: {record.roundName || (record.round === 1 ? 'รอบปกติ' : `งวดที่ ${record.round || 1}`)})
+                </span>
+              )}
+            </div>
           </div>
           {renderStatusBadge()}
         </div>

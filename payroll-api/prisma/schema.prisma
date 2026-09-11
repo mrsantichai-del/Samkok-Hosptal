@@ -143,7 +143,9 @@ model PayrollRecord {
   id          String      @id @default(uuid())
   month       Int
   year        Int
-  status      String      @default("DRAFT") // DRAFT, APPROVED, PAID
+  round       Int         @default(1)
+  roundName   String?     // e.g. "รอบปกติ", "รอบค่าเวร/OT", "รอบตกเบิก"
+  status      String      @default("DRAFT") // DRAFT, PENDING_APPROVAL, APPROVED, EDIT_REQUESTED
   notes       String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -157,7 +159,7 @@ model PayrollRecord {
   editRequestReason String?
   editRequestedAt   DateTime?
 
-  @@unique([month, year])
+  @@unique([month, year, round])
 }
 
 model PayrollTransaction {

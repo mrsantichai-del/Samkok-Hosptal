@@ -15,6 +15,8 @@ const swagger_1 = require("@nestjs/swagger");
 class ProcessPayrollDto {
     month;
     year;
+    round;
+    roundName;
 }
 exports.ProcessPayrollDto = ProcessPayrollDto;
 __decorate([
@@ -32,4 +34,17 @@ __decorate([
     (0, class_validator_1.Min)(2000),
     __metadata("design:type", Number)
 ], ProcessPayrollDto.prototype, "year", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false, default: 1 }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(1),
+    __metadata("design:type", Number)
+], ProcessPayrollDto.prototype, "round", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false, default: 'รอบปกติ' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], ProcessPayrollDto.prototype, "roundName", void 0);
 //# sourceMappingURL=process-payroll.dto.js.map

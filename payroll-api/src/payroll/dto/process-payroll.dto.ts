@@ -1,4 +1,4 @@
-import { IsNumber, IsNotEmpty, Min, Max } from 'class-validator';
+import { IsNumber, IsNotEmpty, Min, Max, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ProcessPayrollDto {
@@ -14,4 +14,15 @@ export class ProcessPayrollDto {
   @IsNotEmpty()
   @Min(2000)
   year: number;
+
+  @ApiProperty({ required: false, default: 1 })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  round?: number;
+
+  @ApiProperty({ required: false, default: 'รอบปกติ' })
+  @IsOptional()
+  @IsString()
+  roundName?: string;
 }

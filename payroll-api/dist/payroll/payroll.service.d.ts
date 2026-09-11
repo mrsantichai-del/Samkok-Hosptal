@@ -16,6 +16,8 @@ export declare class PayrollService {
         updatedAt: Date;
         month: number;
         year: number;
+        round: number;
+        roundName: string | null;
         status: string;
         notes: string | null;
         approvedById: string | null;
@@ -29,6 +31,8 @@ export declare class PayrollService {
         updatedAt: Date;
         month: number;
         year: number;
+        round: number;
+        roundName: string | null;
         status: string;
         notes: string | null;
         approvedById: string | null;

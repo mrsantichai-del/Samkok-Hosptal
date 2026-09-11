@@ -18,15 +18,22 @@ export class PayrollService {
   // ... existing methods (processPayroll, getPayrollRecords, getPayrollTransactions, approvePayroll)
   async processPayroll(dto: ProcessPayrollDto, userId: string) {
     const { month, year } = dto;
-    const existing = await this.prisma.payrollRecord.findUnique({ where: { month_year: { month, year } } });
+    const round = dto.round && Number(dto.round) > 0 ? Number(dto.round) : 1;
+    const roundName = dto.roundName ? dto.roundName.trim() : (round === 1 ? 'รอบปกติ' : `งวดที่ ${round}`);
+
+    const existing = await this.prisma.payrollRecord.findUnique({ 
+      where: { month_year_round: { month, year, round } } 
+    });
     if (existing) {
-      if (existing.status === 'APPROVED' || existing.status === 'PAID') throw new BadRequestException('Payroll already approved');
+      if (existing.status === 'APPROVED' || existing.status === 'PAID') throw new BadRequestException('รอบเงินเดือนนี้ได้รับการอนุมัติแล้ว ไม่สามารถประมวลผลซ้ำได้');
       await this.prisma.payrollTransaction.deleteMany({ where: { payrollRecordId: existing.id } });
       await this.prisma.payrollRecord.delete({ where: { id: existing.id } });
     }
     const employees = await this.prisma.employee.findMany({ where: { deletedAt: null } });
     const payItems = await this.prisma.payItem.findMany({ where: { deletedAt: null } });
-    const record = await this.prisma.payrollRecord.create({ data: { month, year, status: 'DRAFT' } });
+    const record = await this.prisma.payrollRecord.create({ 
+      data: { month, year, round, roundName, status: 'DRAFT' } 
+    });
     const transactions = [];
     for (const emp of employees) {
       for (const item of payItems) {
@@ -37,12 +44,16 @@ export class PayrollService {
     }
     await this.prisma.payrollTransaction.createMany({ data: transactions });
     await this.prisma.auditLog.create({
-       data: { action: 'PROCESS_PAYROLL', tableName: 'PayrollRecord', recordId: record.id, userId, reason: `Processed payroll for ${month}/${year}` }
+       data: { action: 'PROCESS_PAYROLL', tableName: 'PayrollRecord', recordId: record.id, userId, reason: `Processed payroll for ${month}/${year} (งวดที่ ${round}: ${roundName})` }
     });
     return { message: 'Payroll processed successfully', recordId: record.id, count: transactions.length };
   }
 
-  async getPayrollRecords() { return this.prisma.payrollRecord.findMany({ orderBy: [{ year: 'desc' }, { month: 'desc' }] }); }
+  async getPayrollRecords() { 
+    return this.prisma.payrollRecord.findMany({ 
+      orderBy: [{ year: 'desc' }, { month: 'desc' }, { round: 'desc' }] 
+    }); 
+  }
 
   async getPayrollRecordById(id: string) {
     const record = await this.prisma.payrollRecord.findUnique({ where: { id } });
