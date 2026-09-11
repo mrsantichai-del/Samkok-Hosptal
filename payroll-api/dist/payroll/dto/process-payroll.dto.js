@@ -17,6 +17,8 @@ class ProcessPayrollDto {
     year;
     round;
     roundName;
+    payPeriodStart;
+    payPeriodEnd;
 }
 exports.ProcessPayrollDto = ProcessPayrollDto;
 __decorate([
@@ -47,4 +49,14 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], ProcessPayrollDto.prototype, "roundName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], ProcessPayrollDto.prototype, "payPeriodStart", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], ProcessPayrollDto.prototype, "payPeriodEnd", void 0);
 //# sourceMappingURL=process-payroll.dto.js.map

@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFoo
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Download, Save, Upload, Search, FileX2, Eye, Clock, CheckCircle, AlertCircle, Edit, Send, Check, Trash2, History } from "lucide-react";
+import { ArrowLeft, Download, Save, Upload, Search, FileX2, Eye, Clock, CheckCircle, AlertCircle, Edit, Send, Check, Trash2, History, Users, UserPlus, UserMinus, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -28,6 +28,11 @@ export default function PayrollDetailPage() {
   const [employeeTypes, setEmployeeTypes] = useState<any[]>([]);
   const [employeeList, setEmployeeList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Headcount Summary State
+  const [headcountSummary, setHeadcountSummary] = useState<any>(null);
+  const [headcountModalOpen, setHeadcountModalOpen] = useState(false);
+  const [headcountModalTab, setHeadcountModalTab] = useState<'new_hires' | 'resigned'>('new_hires');
 
   // Spreadsheet state
   const [gridData, setGridData] = useState<Record<string, Record<string, string>>>({});
@@ -108,16 +113,20 @@ export default function PayrollDetailPage() {
     setLoading(true);
     try {
       const token = Cookies.get("token");
-      const [recRes, txRes, itemsRes, typeRes] = await Promise.all([
+      const [recRes, txRes, itemsRes, typeRes, hcRes] = await Promise.all([
         axios.get(`${API_URL}/payroll/records/${id}`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/payroll/records/${id}/transactions`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/pay-items`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/employees/types`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_URL}/employees/types`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/payroll/records/${id}/headcount-summary`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: null }))
       ]);
       setRecord(recRes.data);
       setTransactions(txRes.data);
       setAllPayItems(itemsRes.data);
       setEmployeeTypes(typeRes.data);
+      if (hcRes?.data) {
+        setHeadcountSummary(hcRes.data);
+      }
 
       const initialGrid: Record<string, Record<string, string>> = {};
       const empMap = new Map<string, any>();
@@ -809,6 +818,76 @@ export default function PayrollDetailPage() {
         </div>
       )}
 
+      {/* Headcount Movement Summary Banner */}
+      {headcountSummary && (
+        <div className="bg-white border rounded-lg p-2.5 px-3 mb-2 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs flex-shrink-0">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-1.5 font-bold text-gray-800">
+              <Users className="w-4 h-4 text-blue-600" />
+              <span>พนักงานในงวดนี้:</span>
+              <span className="text-sm text-blue-700 font-extrabold">{headcountSummary.totalCurrentCount}</span>
+              <span className="text-gray-500 font-normal">คน</span>
+            </div>
+
+            {headcountSummary.previousRecord && (
+              <span className="text-[11px] text-gray-500 border-l pl-3 hidden sm:inline">
+                เทียบกับรอบก่อน ({monthNames[headcountSummary.previousRecord.month - 1]} {headcountSummary.previousRecord.year + 543}: {headcountSummary.previousRecord.totalCount} คน)
+              </span>
+            )}
+
+            <div className="flex items-center gap-2">
+              <button 
+                type="button"
+                onClick={() => {
+                  if (headcountSummary.newHiresCount > 0) {
+                    setHeadcountModalTab('new_hires');
+                    setHeadcountModalOpen(true);
+                  }
+                }}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold border transition-colors ${
+                  headcountSummary.newHiresCount > 0 
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100 cursor-pointer shadow-xs' 
+                    : 'bg-gray-50 text-gray-400 border-gray-200 cursor-default'
+                }`}
+                title={headcountSummary.newHiresCount > 0 ? "คลิกเพื่อดูรายชื่อพนักงานเข้าใหม่" : "ไม่มีพนักงานเข้าใหม่"}
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>เข้าใหม่ +{headcountSummary.newHiresCount} คน</span>
+              </button>
+
+              <button 
+                type="button"
+                onClick={() => {
+                  if (headcountSummary.resignedCount > 0) {
+                    setHeadcountModalTab('resigned');
+                    setHeadcountModalOpen(true);
+                  }
+                }}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold border transition-colors ${
+                  headcountSummary.resignedCount > 0 
+                    ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100 cursor-pointer shadow-xs' 
+                    : 'bg-gray-50 text-gray-400 border-gray-200 cursor-default'
+                }`}
+                title={headcountSummary.resignedCount > 0 ? "คลิกเพื่อดูรายชื่อพนักงานที่ลาออก" : "ไม่มีพนักงานลาออก"}
+              >
+                <UserMinus className="w-3.5 h-3.5" />
+                <span>ลาออก -{headcountSummary.resignedCount} คน</span>
+              </button>
+            </div>
+          </div>
+
+          {headcountSummary.payPeriod?.start && (
+            <div className="flex items-center gap-1.5 text-gray-600 bg-gray-50 px-2.5 py-1 rounded border border-gray-200 text-[11px]">
+              <Calendar className="w-3.5 h-3.5 text-gray-500" />
+              <span>รอบการทำงาน:</span>
+              <span className="font-semibold text-gray-800">
+                {new Date(headcountSummary.payPeriod.start).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })} - {new Date(headcountSummary.payPeriod.end).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="flex gap-4 mb-2 items-center text-sm flex-shrink-0 bg-white p-2 rounded-md shadow-sm border">
          <div className="relative w-64">
             <Search className="absolute left-2 top-2 h-4 w-4 text-gray-400" />
@@ -1252,6 +1331,127 @@ export default function PayrollDetailPage() {
 
           <DialogFooter className="p-3 border-t bg-gray-50 flex-shrink-0">
             <Button variant="outline" size="sm" onClick={() => setHistoryOpen(false)}>
+              ปิดหน้าต่าง
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Headcount Movement Details Modal */}
+      <Dialog open={headcountModalOpen} onOpenChange={setHeadcountModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {headcountModalTab === 'new_hires' ? (
+                <>
+                  <UserPlus className="w-5 h-5 text-emerald-600" />
+                  <span>รายชื่อพนักงานเข้าใหม่ในรอบนี้ ({headcountSummary?.newHiresCount || 0} คน)</span>
+                </>
+              ) : (
+                <>
+                  <UserMinus className="w-5 h-5 text-rose-600" />
+                  <span>รายชื่อพนักงานที่ลาออก/สิ้นสุดสัญญา ({headcountSummary?.resignedCount || 0} คน)</span>
+                </>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              {headcountModalTab === 'new_hires' 
+                ? 'พนักงานที่เริ่มงานในรอบนี้ หรือไม่มีในรอบก่อนหน้า' 
+                : 'พนักงานที่มีในรอบก่อนหน้า แต่ไม่มีการคำนวณเงินเดือนในรอบนี้ (ลาออกแล้ว)'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex gap-2 border-b pb-2 mb-2">
+            <Button 
+              size="sm" 
+              variant={headcountModalTab === 'new_hires' ? 'default' : 'outline'}
+              className={headcountModalTab === 'new_hires' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+              onClick={() => setHeadcountModalTab('new_hires')}
+            >
+              <UserPlus className="w-4 h-4 mr-1.5" />
+              พนักงานเข้าใหม่ ({headcountSummary?.newHiresCount || 0})
+            </Button>
+            <Button 
+              size="sm" 
+              variant={headcountModalTab === 'resigned' ? 'default' : 'outline'}
+              className={headcountModalTab === 'resigned' ? 'bg-rose-600 hover:bg-rose-700' : ''}
+              onClick={() => setHeadcountModalTab('resigned')}
+            >
+              <UserMinus className="w-4 h-4 mr-1.5" />
+              พนักงานลาออก ({headcountSummary?.resignedCount || 0})
+            </Button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto border rounded-md">
+            {headcountModalTab === 'new_hires' ? (
+              (headcountSummary?.newHiresList?.length || 0) === 0 ? (
+                <div className="py-12 text-center text-gray-400 text-sm">ไม่มีข้อมูลพนักงานเข้าใหม่</div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="w-12 text-center">#</TableHead>
+                      <TableHead>รหัส</TableHead>
+                      <TableHead>ชื่อ - นามสกุล</TableHead>
+                      <TableHead>กลุ่มงาน / ตำแหน่ง</TableHead>
+                      <TableHead>วันที่เริ่มงาน</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {headcountSummary.newHiresList.map((emp: any, idx: number) => (
+                      <TableRow key={emp.id || idx}>
+                        <TableCell className="text-center text-xs text-gray-400">{idx + 1}</TableCell>
+                        <TableCell className="font-semibold text-xs text-gray-800">{emp.employeeCode}</TableCell>
+                        <TableCell className="text-xs font-medium text-gray-900">{emp.firstName} {emp.lastName}</TableCell>
+                        <TableCell className="text-xs text-gray-600">
+                          <div>{emp.department?.name || '-'}</div>
+                          <div className="text-[11px] text-gray-400">{emp.position?.name || '-'}</div>
+                        </TableCell>
+                        <TableCell className="text-xs text-emerald-700 font-medium whitespace-nowrap">
+                          {emp.startDate ? new Date(emp.startDate).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )
+            ) : (
+              (headcountSummary?.resignedList?.length || 0) === 0 ? (
+                <div className="py-12 text-center text-gray-400 text-sm">ไม่มีข้อมูลพนักงานลาออก</div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="w-12 text-center">#</TableHead>
+                      <TableHead>รหัส</TableHead>
+                      <TableHead>ชื่อ - นามสกุล</TableHead>
+                      <TableHead>กลุ่มงาน / ตำแหน่ง</TableHead>
+                      <TableHead>วันที่ลาออก</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {headcountSummary.resignedList.map((emp: any, idx: number) => (
+                      <TableRow key={emp.id || idx}>
+                        <TableCell className="text-center text-xs text-gray-400">{idx + 1}</TableCell>
+                        <TableCell className="font-semibold text-xs text-gray-800">{emp.employeeCode}</TableCell>
+                        <TableCell className="text-xs font-medium text-gray-900">{emp.firstName} {emp.lastName}</TableCell>
+                        <TableCell className="text-xs text-gray-600">
+                          <div>{emp.department?.name || '-'}</div>
+                          <div className="text-[11px] text-gray-400">{emp.position?.name || '-'}</div>
+                        </TableCell>
+                        <TableCell className="text-xs text-rose-700 font-medium whitespace-nowrap">
+                          {emp.endDate ? new Date(emp.endDate).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) : 'ลาออก'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )
+            )}
+          </div>
+
+          <DialogFooter className="p-3 border-t bg-gray-50 flex-shrink-0">
+            <Button variant="outline" size="sm" onClick={() => setHeadcountModalOpen(false)}>
               ปิดหน้าต่าง
             </Button>
           </DialogFooter>

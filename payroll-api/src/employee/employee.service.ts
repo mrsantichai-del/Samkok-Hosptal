@@ -13,6 +13,7 @@ export class EmployeeService {
       skip: skip ? Number(skip) : 0,
       take: take ? Number(take) : 10000,
       where: { deletedAt: null },
+      orderBy: { employeeCode: 'asc' },
       include: {
         position: true,
         department: true,
@@ -47,11 +48,22 @@ export class EmployeeService {
       employeeCode = `EMP-${Date.now().toString().slice(-6)}`;
     }
     
+    const { startDate, endDate, baseSalary, ...rest } = createEmployeeDto as any;
+
     return this.prisma.employee.create({
       data: {
-        ...createEmployeeDto,
+        ...rest,
         employeeCode,
+        baseSalary: baseSalary !== undefined && baseSalary !== null && baseSalary !== '' ? Number(baseSalary) : null,
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
+        status: rest.status || 'ACTIVE',
       },
+      include: {
+        position: true,
+        department: true,
+        employeeType: true,
+      }
     });
   }
 
@@ -65,9 +77,27 @@ export class EmployeeService {
       if (existing) throw new BadRequestException('รหัสพนักงานนี้มีอยู่ในระบบแล้ว');
     }
 
+    const { startDate, endDate, baseSalary, ...rest } = updateEmployeeDto as any;
+
+    const dataToUpdate: any = { ...rest };
+    if (baseSalary !== undefined) {
+      dataToUpdate.baseSalary = baseSalary !== null && baseSalary !== '' ? Number(baseSalary) : null;
+    }
+    if (startDate !== undefined) {
+      dataToUpdate.startDate = startDate ? new Date(startDate) : null;
+    }
+    if (endDate !== undefined) {
+      dataToUpdate.endDate = endDate ? new Date(endDate) : null;
+    }
+
     return this.prisma.employee.update({
       where: { id },
-      data: updateEmployeeDto,
+      data: dataToUpdate,
+      include: {
+        position: true,
+        department: true,
+        employeeType: true,
+      }
     });
   }
 
@@ -127,7 +157,6 @@ export class EmployeeService {
     });
   }
 
-
   async getDepartments() {
     return this.prisma.department.findMany({
       where: { deletedAt: null },
@@ -149,7 +178,6 @@ export class EmployeeService {
       data: { deletedAt: new Date() }
     });
   }
-
   
   async createUserAccount(id: string) {
     const employee = await this.prisma.employee.findUnique({

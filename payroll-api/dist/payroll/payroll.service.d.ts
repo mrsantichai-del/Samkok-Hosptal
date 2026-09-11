@@ -8,6 +8,41 @@ export declare class PayrollService {
         message: string;
         recordId: string;
         count: number;
+        eligibleEmployeesCount: number;
+    }>;
+    getHeadcountSummary(recordId: string): Promise<{
+        currentRecordId: string;
+        payPeriodStart: Date | null;
+        payPeriodEnd: Date | null;
+        totalCurrentCount: number;
+        newHiresCount: number;
+        newHires: {
+            id: string;
+            employeeCode: string;
+            fullName: string;
+            position: string;
+            department: string;
+            startDate: Date | null;
+        }[];
+        resignedCount: number;
+        resigned: {
+            id: any;
+            employeeCode: any;
+            fullName: string;
+            position: any;
+            department: any;
+            endDate: any;
+            status: any;
+        }[];
+        continuousCount: number;
+        previousRecord: {
+            id: string;
+            month: number;
+            year: number;
+            round: number;
+            roundName: string | null;
+            totalCount: number;
+        } | null;
     }>;
     getPayrollRecords(): Promise<any>;
     getPayrollRecordById(id: string): Promise<{
@@ -21,6 +56,8 @@ export declare class PayrollService {
         roundName: string | null;
         status: string;
         notes: string | null;
+        payPeriodStart: Date | null;
+        payPeriodEnd: Date | null;
         approvedById: string | null;
         editRequestReason: string | null;
         editRequestedAt: Date | null;

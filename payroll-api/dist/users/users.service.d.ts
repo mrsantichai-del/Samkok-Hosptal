@@ -10,6 +10,7 @@ export declare class UsersService {
             deletedAt: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            status: string;
             employeeCode: string;
             firstName: string;
             lastName: string;
@@ -17,6 +18,8 @@ export declare class UsersService {
             bankAccount: string | null;
             bankName: string | null;
             baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
+            startDate: Date | null;
+            endDate: Date | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;
@@ -64,6 +67,7 @@ export declare class UsersService {
             deletedAt: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            status: string;
             employeeCode: string;
             firstName: string;
             lastName: string;
@@ -71,6 +75,8 @@ export declare class UsersService {
             bankAccount: string | null;
             bankName: string | null;
             baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
+            startDate: Date | null;
+            endDate: Date | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;
@@ -110,6 +116,7 @@ export declare class UsersService {
             deletedAt: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            status: string;
             employeeCode: string;
             firstName: string;
             lastName: string;
@@ -117,6 +124,8 @@ export declare class UsersService {
             bankAccount: string | null;
             bankName: string | null;
             baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
+            startDate: Date | null;
+            endDate: Date | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;
@@ -156,6 +165,7 @@ export declare class UsersService {
             deletedAt: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            status: string;
             employeeCode: string;
             firstName: string;
             lastName: string;
@@ -163,6 +173,8 @@ export declare class UsersService {
             bankAccount: string | null;
             bankName: string | null;
             baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
+            startDate: Date | null;
+            endDate: Date | null;
             departmentId: string | null;
             positionId: string | null;
             employeeTypeId: string | null;

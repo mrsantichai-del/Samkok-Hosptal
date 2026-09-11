@@ -11,6 +11,7 @@ export declare class PayrollController {
         message: string;
         recordId: string;
         count: number;
+        eligibleEmployeesCount: number;
     }>;
     getRecords(): Promise<any>;
     getRecordById(id: string): Promise<{
@@ -24,6 +25,8 @@ export declare class PayrollController {
         roundName: string | null;
         status: string;
         notes: string | null;
+        payPeriodStart: Date | null;
+        payPeriodEnd: Date | null;
         approvedById: string | null;
         editRequestReason: string | null;
         editRequestedAt: Date | null;
@@ -114,6 +117,40 @@ export declare class PayrollController {
         amount: number;
         type: string;
     }>>>;
+    getHeadcountSummary(id: string): Promise<{
+        currentRecordId: string;
+        payPeriodStart: Date | null;
+        payPeriodEnd: Date | null;
+        totalCurrentCount: number;
+        newHiresCount: number;
+        newHires: {
+            id: string;
+            employeeCode: string;
+            fullName: string;
+            position: string;
+            department: string;
+            startDate: Date | null;
+        }[];
+        resignedCount: number;
+        resigned: {
+            id: any;
+            employeeCode: any;
+            fullName: string;
+            position: any;
+            department: any;
+            endDate: any;
+            status: any;
+        }[];
+        continuousCount: number;
+        previousRecord: {
+            id: string;
+            month: number;
+            year: number;
+            round: number;
+            roundName: string | null;
+            totalCount: number;
+        } | null;
+    }>;
     exportExcel(id: string, body: {
         employeeIds?: string[];
     }, res: Response): Promise<void>;

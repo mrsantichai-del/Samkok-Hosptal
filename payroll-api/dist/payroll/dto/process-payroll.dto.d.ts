@@ -3,4 +3,6 @@ export declare class ProcessPayrollDto {
     year: number;
     round?: number;
     roundName?: string;
+    payPeriodStart?: Date | string;
+    payPeriodEnd?: Date | string;
 }

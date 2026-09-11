@@ -25,4 +25,12 @@ export class ProcessPayrollDto {
   @IsOptional()
   @IsString()
   roundName?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  payPeriodStart?: Date | string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  payPeriodEnd?: Date | string;
 }

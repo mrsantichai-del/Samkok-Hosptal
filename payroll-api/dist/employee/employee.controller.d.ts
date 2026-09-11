@@ -5,10 +5,37 @@ export declare class EmployeeController {
     private readonly employeeService;
     constructor(employeeService: EmployeeService);
     create(createEmployeeDto: CreateEmployeeDto): Promise<{
+        employeeType: {
+            name: string;
+            id: string;
+            deletedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+            description: string | null;
+        } | null;
+        position: {
+            name: string;
+            id: string;
+            deletedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+            departmentId: string | null;
+            description: string | null;
+        } | null;
+        department: {
+            name: string;
+            id: string;
+            deletedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+            description: string | null;
+        } | null;
+    } & {
         id: string;
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
         employeeCode: string;
         firstName: string;
         lastName: string;
@@ -16,6 +43,8 @@ export declare class EmployeeController {
         bankAccount: string | null;
         bankName: string | null;
         baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
+        startDate: Date | null;
+        endDate: Date | null;
         departmentId: string | null;
         positionId: string | null;
         employeeTypeId: string | null;
@@ -64,6 +93,7 @@ export declare class EmployeeController {
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
         employeeCode: string;
         firstName: string;
         lastName: string;
@@ -71,6 +101,8 @@ export declare class EmployeeController {
         bankAccount: string | null;
         bankName: string | null;
         baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
+        startDate: Date | null;
+        endDate: Date | null;
         departmentId: string | null;
         positionId: string | null;
         employeeTypeId: string | null;
@@ -263,6 +295,7 @@ export declare class EmployeeController {
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
         employeeCode: string;
         firstName: string;
         lastName: string;
@@ -270,15 +303,44 @@ export declare class EmployeeController {
         bankAccount: string | null;
         bankName: string | null;
         baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
+        startDate: Date | null;
+        endDate: Date | null;
         departmentId: string | null;
         positionId: string | null;
         employeeTypeId: string | null;
     }>;
     update(id: string, updateEmployeeDto: UpdateEmployeeDto): Promise<{
+        employeeType: {
+            name: string;
+            id: string;
+            deletedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+            description: string | null;
+        } | null;
+        position: {
+            name: string;
+            id: string;
+            deletedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+            departmentId: string | null;
+            description: string | null;
+        } | null;
+        department: {
+            name: string;
+            id: string;
+            deletedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+            description: string | null;
+        } | null;
+    } & {
         id: string;
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
         employeeCode: string;
         firstName: string;
         lastName: string;
@@ -286,6 +348,8 @@ export declare class EmployeeController {
         bankAccount: string | null;
         bankName: string | null;
         baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
+        startDate: Date | null;
+        endDate: Date | null;
         departmentId: string | null;
         positionId: string | null;
         employeeTypeId: string | null;

@@ -114,6 +114,13 @@ export class PayrollController {
     return this.payrollService.getAccumulatedTotalsForRecord(id);
   }
 
+  @Roles('System Administrator', 'Finance Officer', 'Executive', 'Employee')
+  @Get('records/:id/headcount-summary')
+  @ApiOperation({ summary: 'Get headcount movement summary comparing to previous payroll record' })
+  async getHeadcountSummary(@Param('id') id: string) {
+    return this.payrollService.getHeadcountSummary(id);
+  }
+
   @Roles('System Administrator', 'Finance Officer', 'Executive')
   @Post('records/:id/export/excel')
   @ApiOperation({ summary: 'Export Payroll to Excel' })

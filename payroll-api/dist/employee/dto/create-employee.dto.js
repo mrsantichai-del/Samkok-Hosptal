@@ -22,6 +22,10 @@ class CreateEmployeeDto {
     departmentId;
     positionId;
     employeeTypeId;
+    baseSalary;
+    startDate;
+    endDate;
+    status;
 }
 exports.CreateEmployeeDto = CreateEmployeeDto;
 __decorate([
@@ -76,4 +80,25 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateEmployeeDto.prototype, "employeeTypeId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], CreateEmployeeDto.prototype, "baseSalary", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateEmployeeDto.prototype, "startDate", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateEmployeeDto.prototype, "endDate", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false, default: 'ACTIVE' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateEmployeeDto.prototype, "status", void 0);
 //# sourceMappingURL=create-employee.dto.js.map

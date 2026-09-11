@@ -44,4 +44,21 @@ export class CreateEmployeeDto {
   @IsString()
   @IsOptional()
   employeeTypeId?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  baseSalary?: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  startDate?: Date | string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  endDate?: Date | string;
+
+  @ApiProperty({ required: false, default: 'ACTIVE' })
+  @IsString()
+  @IsOptional()
+  status?: string;
 }

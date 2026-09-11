@@ -8,4 +8,8 @@ export declare class CreateEmployeeDto {
     departmentId?: string;
     positionId?: string;
     employeeTypeId?: string;
+    baseSalary?: number;
+    startDate?: Date | string;
+    endDate?: Date | string;
+    status?: string;
 }

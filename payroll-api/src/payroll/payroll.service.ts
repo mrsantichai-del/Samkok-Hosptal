@@ -21,6 +21,13 @@ export class PayrollService {
     const round = dto.round && Number(dto.round) > 0 ? Number(dto.round) : 1;
     const roundName = dto.roundName ? dto.roundName.trim() : (round === 1 ? 'รอบปกติ' : `งวดที่ ${round}`);
 
+    const calcYear = year > 2400 ? year - 543 : year;
+    const defaultStart = new Date(Date.UTC(calcYear, month - 1, 1));
+    const defaultEnd = new Date(Date.UTC(calcYear, month, 0, 23, 59, 59, 999));
+
+    const payPeriodStart = dto.payPeriodStart ? new Date(dto.payPeriodStart) : defaultStart;
+    const payPeriodEnd = dto.payPeriodEnd ? new Date(dto.payPeriodEnd) : defaultEnd;
+
     const existing = await this.prisma.payrollRecord.findUnique({ 
       where: { month_year_round: { month, year, round } } 
     });
@@ -29,24 +36,147 @@ export class PayrollService {
       await this.prisma.payrollTransaction.deleteMany({ where: { payrollRecordId: existing.id } });
       await this.prisma.payrollRecord.delete({ where: { id: existing.id } });
     }
-    const employees = await this.prisma.employee.findMany({ where: { deletedAt: null } });
+    
+    // Fetch active/eligible employees based on hire/resign dates
+    const allEmployees = await this.prisma.employee.findMany({ 
+      where: { deletedAt: null },
+      orderBy: { employeeCode: 'asc' }
+    });
+
+    const eligibleEmployees = allEmployees.filter(emp => {
+      if (emp.startDate && new Date(emp.startDate) > payPeriodEnd) {
+        return false; // Joined after this pay period ended
+      }
+      if (emp.endDate && new Date(emp.endDate) < payPeriodStart) {
+        return false; // Resigned before this pay period started
+      }
+      if (emp.status === 'RESIGNED' && emp.endDate && new Date(emp.endDate) < payPeriodStart) {
+        return false;
+      }
+      return true;
+    });
+
     const payItems = await this.prisma.payItem.findMany({ where: { deletedAt: null } });
     const record = await this.prisma.payrollRecord.create({ 
-      data: { month, year, round, roundName, status: 'DRAFT' } 
+      data: { 
+        month, 
+        year, 
+        round, 
+        roundName, 
+        status: 'DRAFT',
+        payPeriodStart,
+        payPeriodEnd,
+      } 
     });
+
     const transactions = [];
-    for (const emp of employees) {
+    for (const emp of eligibleEmployees) {
       for (const item of payItems) {
         let amount = 0;
-        if (item.name === 'เงินเดือน') amount = 15000; // Mock calculation
+        if (item.name === 'เงินเดือน') amount = Number(emp.baseSalary) || 15000;
         transactions.push({ payrollRecordId: record.id, employeeId: emp.id, payItemId: item.id, amount, formulaUsed: item.defaultFormula || 'MANUAL' });
       }
     }
     await this.prisma.payrollTransaction.createMany({ data: transactions });
     await this.prisma.auditLog.create({
-       data: { action: 'PROCESS_PAYROLL', tableName: 'PayrollRecord', recordId: record.id, userId, reason: `Processed payroll for ${month}/${year} (งวดที่ ${round}: ${roundName})` }
+       data: { action: 'PROCESS_PAYROLL', tableName: 'PayrollRecord', recordId: record.id, userId, reason: `Processed payroll for ${month}/${year} (งวดที่ ${round}: ${roundName}) with ${eligibleEmployees.length} employees` }
     });
-    return { message: 'Payroll processed successfully', recordId: record.id, count: transactions.length };
+    return { message: 'Payroll processed successfully', recordId: record.id, count: transactions.length, eligibleEmployeesCount: eligibleEmployees.length };
+  }
+
+  async getHeadcountSummary(recordId: string) {
+    const currentRecord = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
+    if (!currentRecord) throw new NotFoundException('Record not found');
+
+    const currentTx = await this.prisma.payrollTransaction.findMany({
+      where: { payrollRecordId: recordId },
+      select: { employeeId: true },
+      distinct: ['employeeId']
+    });
+    const currentEmpIds = new Set(currentTx.map(t => t.employeeId));
+
+    const currentEmployees = await this.prisma.employee.findMany({
+      where: { id: { in: Array.from(currentEmpIds) } },
+      include: { position: true, department: true }
+    });
+
+    const previousRecords = await this.prisma.payrollRecord.findMany({
+      where: {
+        deletedAt: null,
+        id: { not: recordId },
+        OR: [
+          { year: { lt: currentRecord.year } },
+          { year: currentRecord.year, month: { lt: currentRecord.month } },
+          { year: currentRecord.year, month: currentRecord.month, round: { lt: currentRecord.round || 1 } }
+        ]
+      },
+      orderBy: [{ year: 'desc' }, { month: 'desc' }, { round: 'desc' }],
+      take: 1
+    });
+
+    const prevRecord = previousRecords.length > 0 ? previousRecords[0] : null;
+    let prevEmpIds = new Set<string>();
+
+    if (prevRecord) {
+      const prevTx = await this.prisma.payrollTransaction.findMany({
+        where: { payrollRecordId: prevRecord.id },
+        select: { employeeId: true },
+        distinct: ['employeeId']
+      });
+      prevEmpIds = new Set(prevTx.map(t => t.employeeId));
+    }
+
+    const newHires = currentEmployees.filter(emp => !prevEmpIds.has(emp.id) && prevRecord !== null);
+    
+    const continuousCount = prevRecord 
+      ? currentEmployees.filter(emp => prevEmpIds.has(emp.id)).length 
+      : currentEmployees.length;
+
+    let resignedEmployees: any[] = [];
+    if (prevRecord) {
+      const missingFromCurrent = Array.from(prevEmpIds).filter(id => !currentEmpIds.has(id));
+      if (missingFromCurrent.length > 0) {
+        resignedEmployees = await this.prisma.employee.findMany({
+          where: { id: { in: missingFromCurrent } },
+          include: { position: true, department: true }
+        });
+      }
+    }
+
+    return {
+      currentRecordId: recordId,
+      payPeriodStart: currentRecord.payPeriodStart,
+      payPeriodEnd: currentRecord.payPeriodEnd,
+      totalCurrentCount: currentEmployees.length,
+      newHiresCount: newHires.length,
+      newHires: newHires.map(e => ({
+        id: e.id,
+        employeeCode: e.employeeCode,
+        fullName: `${e.firstName} ${e.lastName}`,
+        position: e.position?.name || '-',
+        department: e.department?.name || '-',
+        startDate: e.startDate
+      })),
+      resignedCount: resignedEmployees.length,
+      resigned: resignedEmployees.map(e => ({
+        id: e.id,
+        employeeCode: e.employeeCode,
+        fullName: `${e.firstName} ${e.lastName}`,
+        position: e.position?.name || '-',
+        department: e.department?.name || '-',
+        endDate: e.endDate,
+        status: e.status
+      })),
+      continuousCount,
+      previousRecord: prevRecord ? {
+        id: prevRecord.id,
+        month: prevRecord.month,
+        year: prevRecord.year,
+        round: prevRecord.round,
+        roundName: prevRecord.roundName,
+        totalCount: prevEmpIds.size
+      } : null
+    };
   }
 
   async getPayrollRecords() { 

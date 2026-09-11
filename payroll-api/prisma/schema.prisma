@@ -99,6 +99,10 @@ model Employee {
   bankName     String?
   baseSalary   Decimal?   @db.Decimal(12, 2)
   
+  startDate    DateTime?  // วันที่เริ่มงาน / บรรจุ
+  endDate      DateTime?  // วันที่ลาออก / พ้นสภาพ
+  status       String     @default("ACTIVE") // ACTIVE, RESIGNED, ON_LEAVE
+
   departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id])
   
@@ -144,16 +148,18 @@ model PayItem {
 }
 
 model PayrollRecord {
-  id          String      @id @default(uuid())
-  month       Int
-  year        Int
-  round       Int         @default(1)
-  roundName   String?     // e.g. "รอบปกติ", "รอบค่าเวร/OT", "รอบตกเบิก"
-  status      String      @default("DRAFT") // DRAFT, PENDING_APPROVAL, APPROVED, EDIT_REQUESTED
-  notes       String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  deletedAt   DateTime?
+  id              String      @id @default(uuid())
+  month           Int
+  year            Int
+  round           Int         @default(1)
+  roundName       String?     // e.g. "รอบปกติ", "รอบค่าเวร/OT", "รอบตกเบิก"
+  status          String      @default("DRAFT") // DRAFT, PENDING_APPROVAL, APPROVED, EDIT_REQUESTED
+  notes           String?
+  payPeriodStart  DateTime?   // วันเริ่มต้นรอบการจ่ายเงินเดือน
+  payPeriodEnd    DateTime?   // วันสิ้นสุดรอบการจ่ายเงินเดือน
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?
 
   transactions PayrollTransaction[]
 

@@ -10,7 +10,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calculator, Eye, CheckCircle, Clock, AlertCircle, Edit, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Layers, Trash2 } from "lucide-react";
+import { Calculator, Eye, CheckCircle, Clock, AlertCircle, Edit, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Layers, Trash2, Calendar } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -33,7 +33,22 @@ export default function PayrollPage() {
   const [round, setRound] = useState("1");
   const [roundPreset, setRoundPreset] = useState("รอบปกติ (เงินเดือนหลัก)");
   const [customRoundName, setCustomRoundName] = useState("");
+  const [payPeriodStart, setPayPeriodStart] = useState("");
+  const [payPeriodEnd, setPayPeriodEnd] = useState("");
   const [processing, setProcessing] = useState(false);
+
+  // Update default pay period dates whenever month or year changes
+  useEffect(() => {
+    const m = parseInt(month);
+    const y = parseInt(year);
+    if (!isNaN(m) && !isNaN(y)) {
+      const startStr = `${y}-${String(m).padStart(2, '0')}-01`;
+      const lastDay = new Date(y, m, 0).getDate();
+      const endStr = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+      setPayPeriodStart(startStr);
+      setPayPeriodEnd(endStr);
+    }
+  }, [month, year]);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -82,6 +97,8 @@ export default function PayrollPage() {
         year: parseInt(year),
         round: roundNumber,
         roundName: finalRoundName,
+        payPeriodStart: payPeriodStart || undefined,
+        payPeriodEnd: payPeriodEnd || undefined,
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -401,6 +418,34 @@ export default function PayrollPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 p-3 bg-blue-50/50 rounded-lg border border-blue-100">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-blue-900 flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5 text-blue-600" /> วันที่เริ่มรอบเงินเดือน
+                </Label>
+                <Input 
+                  type="date" 
+                  className="h-9 bg-white text-xs" 
+                  value={payPeriodStart} 
+                  onChange={(e) => setPayPeriodStart(e.target.value)} 
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-blue-900 flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5 text-blue-600" /> วันที่สิ้นสุดรอบเงินเดือน
+                </Label>
+                <Input 
+                  type="date" 
+                  className="h-9 bg-white text-xs" 
+                  value={payPeriodEnd} 
+                  onChange={(e) => setPayPeriodEnd(e.target.value)} 
+                />
+              </div>
+              <p className="text-[11px] text-blue-600/80 col-span-2">
+                * ระบบจะนำพนักงานที่มีสถานะทำงานอยู่ในช่วงวันที่นี้มาคำนวณเงินเดือนอัตโนมัติ (ไม่รวมคนที่ลาออกก่อนเริ่มรอบ)
+              </p>
             </div>
 
             {roundPreset === "custom" && (
