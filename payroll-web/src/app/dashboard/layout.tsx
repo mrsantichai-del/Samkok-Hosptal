@@ -17,7 +17,8 @@ import {
   FolderKanban,
   Briefcase,
   BarChart3,
-  FileSpreadsheet
+  FileSpreadsheet,
+  FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const navItems = [
     { name: "แดชบอร์ดหลัก", href: "/dashboard", icon: LayoutDashboard },
+    { name: "สลิปของฉัน (My Payslips)", href: "/dashboard/my-payslips", icon: FileText },
     { name: "แดชบอร์ดผู้บริหาร (Analytics)", href: "/dashboard/analytics", icon: BarChart3 },
     { name: "ศูนย์รวมรายงาน (Reports)", href: "/dashboard/reports", icon: FileSpreadsheet },
     { name: "ประมวลผลเงินเดือน", href: "/dashboard/payroll", icon: Calculator },

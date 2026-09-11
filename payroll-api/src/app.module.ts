@@ -10,6 +10,7 @@ import { SettingsModule } from './settings/settings.module';
 import { UsersModule } from './users/users.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ReportsModule } from './reports/reports.module';
+import { TaxReportsModule } from './tax-reports/tax-reports.module';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { ReportsModule } from './reports/reports.module';
     SettingsModule,
     UsersModule,
     NotificationsModule,
-    ReportsModule
+    ReportsModule,
+    TaxReportsModule
   ],
   controllers: [AppController],
   providers: [AppService],
