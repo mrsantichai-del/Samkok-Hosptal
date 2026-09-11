@@ -1,0 +1,10 @@
+﻿{
+  "name": "samkok-hospital",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "cd payroll-api && npm install && npx prisma generate",
+    "build": "cd payroll-api && npm install && npx prisma generate && npm run build",
+    "start": "cd payroll-api && npm run start:prod"
+  }
+}
