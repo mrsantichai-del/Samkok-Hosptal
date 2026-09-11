@@ -11,7 +11,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calculator, Eye, CheckCircle, Clock, AlertCircle, Edit } from "lucide-react";
+import { Calculator, Eye, CheckCircle } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -19,14 +19,10 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
-import { jwtDecode } from "jwt-decode";
 
 export default function PayrollPage() {
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
   
   // Dialog State
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -36,24 +32,16 @@ export default function PayrollPage() {
 
   const router = useRouter();
 
-  const isExecutiveOrAdmin = user?.roles?.some((r: string) => ['Executive', 'System Administrator'].includes(r));
-
   const fetchRecords = async () => {
     setLoading(true);
     try {
       const token = Cookies.get("token");
-      if (token) {
-        try {
-          setUser(jwtDecode(token));
-        } catch (e) {}
-      }
       const res = await axios.get(`${API_URL}/payroll/records`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setRecords(Array.isArray(res.data) ? res.data : []);
+      setRecords(res.data);
     } catch (e) {
       console.error(e);
-      toast.error("ไม่สามารถดึงข้อมูลรอบเงินเดือนได้");
     } finally {
       setLoading(false);
     }
@@ -65,7 +53,6 @@ export default function PayrollPage() {
 
   const handleProcess = async () => {
     setProcessing(true);
-    const toastId = toast.loading("ระบบกำลังคำนวณและสร้างรอบเงินเดือน...");
     try {
       const token = Cookies.get("token");
       await axios.post(`${API_URL}/payroll/process`, {
@@ -74,11 +61,10 @@ export default function PayrollPage() {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success("ประมวลผลเงินเดือนรอบใหม่สำเร็จ", { id: toastId });
       setIsDialogOpen(false);
       fetchRecords();
     } catch (e: any) {
-      toast.error(e.response?.data?.message || "เกิดข้อผิดพลาดในการประมวลผล", { id: toastId });
+      alert(e.response?.data?.message || "เกิดข้อผิดพลาดในการประมวลผล");
     } finally {
       setProcessing(false);
     }
@@ -86,51 +72,18 @@ export default function PayrollPage() {
 
   const handleApprove = async (id: string) => {
     if (!confirm("คุณต้องการอนุมัติรายการเงินเดือนนี้ใช่หรือไม่? หลังจากอนุมัติแล้วจะไม่สามารถแก้ไขได้อีก")) return;
-    const toastId = toast.loading("กำลังอนุมัติเงินเดือน...");
     try {
       const token = Cookies.get("token");
       await axios.patch(`${API_URL}/payroll/records/${id}/approve`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success("อนุมัติเงินเดือนเรียบร้อยแล้ว", { id: toastId });
       fetchRecords();
     } catch (e: any) {
-      toast.error(e.response?.data?.message || "เกิดข้อผิดพลาดในการอนุมัติ", { id: toastId });
+      alert(e.response?.data?.message || "เกิดข้อผิดพลาดในการอนุมัติ (คุณอาจไม่มีสิทธิ์ Executive)");
     }
   };
 
   const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-
-  const renderStatusBadge = (status: string) => {
-    switch (status) {
-      case 'DRAFT':
-        return (
-          <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300 font-semibold px-2 py-0.5 flex items-center gap-1 w-fit">
-            <Edit className="w-3 h-3 text-gray-600" /> ฉบับร่าง
-          </Badge>
-        );
-      case 'PENDING_APPROVAL':
-        return (
-          <Badge variant="outline" className="bg-amber-100 text-amber-900 border-amber-300 font-semibold px-2 py-0.5 flex items-center gap-1 w-fit">
-            <Clock className="w-3 h-3 text-amber-700 animate-spin" /> รอการอนุมัติ
-          </Badge>
-        );
-      case 'APPROVED':
-        return (
-          <Badge variant="outline" className="bg-emerald-100 text-emerald-900 border-emerald-300 font-semibold px-2 py-0.5 flex items-center gap-1 w-fit">
-            <CheckCircle className="w-3 h-3 text-emerald-700" /> อนุมัติแล้ว
-          </Badge>
-        );
-      case 'EDIT_REQUESTED':
-        return (
-          <Badge variant="outline" className="bg-orange-100 text-orange-900 border-orange-300 font-semibold px-2 py-0.5 flex items-center gap-1 w-fit">
-            <AlertCircle className="w-3 h-3 text-orange-700" /> ร้องขอแก้ไข
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
 
   return (
     <div className="space-y-4 max-w-6xl mx-auto">
@@ -161,23 +114,27 @@ export default function PayrollPage() {
               <TableRow><TableCell colSpan={4} className="text-center py-10 text-gray-500">ยังไม่มีประวัติการประมวลผลเงินเดือน</TableCell></TableRow>
             ) : (
               records.map((rec) => (
-                <TableRow key={rec.id} className="hover:bg-gray-50">
-                  <TableCell className="font-bold text-gray-800">
+                <TableRow key={rec.id}>
+                  <TableCell className="font-bold text-gray-700">
                     {monthNames[rec.month - 1]} {rec.year + 543}
                   </TableCell>
                   <TableCell>
-                    {renderStatusBadge(rec.status)}
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                      rec.status === 'APPROVED' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
+                    }`}>
+                      {rec.status === 'APPROVED' ? 'อนุมัติแล้ว' : 'ฉบับร่าง (Draft)'}
+                    </span>
                   </TableCell>
-                  <TableCell className="text-gray-500 text-sm">
-                    {new Date(rec.createdAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })}
+                  <TableCell className="text-gray-500">
+                    {new Date(rec.createdAt).toLocaleDateString('th-TH')}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Button variant="outline" size="sm" className="text-blue-600 hover:text-blue-800" onClick={() => router.push(`/dashboard/payroll/${rec.id}`)}>
                         <Eye className="h-4 w-4 mr-1" /> ดูรายละเอียด
                       </Button>
-                      {rec.status === 'PENDING_APPROVAL' && isExecutiveOrAdmin && (
-                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium" onClick={() => handleApprove(rec.id)}>
+                      {rec.status === 'DRAFT' && (
+                        <Button variant="outline" size="sm" className="text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleApprove(rec.id)}>
                           <CheckCircle className="h-4 w-4 mr-1" /> อนุมัติ
                         </Button>
                       )}

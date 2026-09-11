@@ -6,35 +6,6 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-
-  async getNotifications(userId: string, roles: string[]) {
-    // Get notifications where userId is null (global), or userId matches, or roleName matches
-    const notifs = await this.prisma.notification.findMany({
-      where: {
-        OR: [
-          { userId: null, roleName: null }, // global
-          { userId: userId },               // direct
-          { roleName: { in: roles } }       // role based
-        ],
-        isRead: false
-      },
-      orderBy: { createdAt: 'desc' }
-    });
-    return notifs;
-  }
-
-  async markAllNotificationsRead(userId: string) {
-    // This is a bit tricky because global notifications can't be marked read for everyone if just one reads it.
-    // Ideally we need a NotificationRead table, but for now we just mark the ones directly for the user as read.
-    // Or we just delete them?
-    // Let's just mark the ones that have userId = this user.
-    await this.prisma.notification.updateMany({
-      where: { userId: userId },
-      data: { isRead: true }
-    });
-    return { success: true };
-  }
-
   constructor(private prisma: PrismaService) {}
 
   async findAll() {
