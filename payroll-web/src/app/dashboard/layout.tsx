@@ -55,11 +55,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return Array.isArray(user.roles) ? user.roles : [user.roles];
   }, [user]);
 
-  const isAdmin = userRoles.includes('Admin');
+  // System Administrator has 100% full access to everything
+  const isAdmin = useMemo(() => {
+    return userRoles.some(r => {
+      const s = String(r || '').toLowerCase();
+      return s.includes('admin') || s.includes('administrator') || s.includes('ผู้ดูแลระบบ');
+    });
+  }, [userRoles]);
+
+  const isHR = useMemo(() => {
+    if (isAdmin) return true;
+    return userRoles.some(r => {
+      const s = String(r || '').toLowerCase();
+      return s.includes('hr') || s.includes('บุคคล') || s.includes('การเงิน');
+    });
+  }, [userRoles, isAdmin]);
+
+  const isExecutive = useMemo(() => {
+    if (isAdmin) return true;
+    return userRoles.some(r => {
+      const s = String(r || '').toLowerCase();
+      return s.includes('exec') || s.includes('ผู้บริหาร') || s.includes('director');
+    });
+  }, [userRoles, isAdmin]);
 
   const allNavItems = [
-    { name: "แดชบอร์ดหลัก", href: "/dashboard", icon: LayoutDashboard, roles: ['ALL', 'Employee', 'HR', 'Admin', 'Executive'] },
-    { name: "สลิปของฉัน (My Payslips)", href: "/dashboard/my-payslips", icon: FileText, roles: ['ALL', 'Employee', 'HR', 'Admin', 'Executive'] },
+    { name: "แดชบอร์ดหลัก", href: "/dashboard", icon: LayoutDashboard, roles: ['ALL'] },
+    { name: "สลิปของฉัน (My Payslips)", href: "/dashboard/my-payslips", icon: FileText, roles: ['ALL'] },
     { name: "แดชบอร์ดผู้บริหาร (Analytics)", href: "/dashboard/analytics", icon: BarChart3, roles: ['Admin', 'Executive', 'HR'] },
     { name: "ศูนย์รวมรายงาน (Reports)", href: "/dashboard/reports", icon: FileSpreadsheet, roles: ['Admin', 'Executive', 'HR'] },
     { name: "ประมวลผลเงินเดือน", href: "/dashboard/payroll", icon: Calculator, roles: ['Admin', 'HR'] },
@@ -72,15 +94,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "ตั้งค่าระบบ", href: "/dashboard/settings", icon: Settings, roles: ['Admin'] },
   ];
 
+  // Administrator sees ALL items
   const visibleNavItems = useMemo(() => {
     if (isAdmin) return allNavItems;
     return allNavItems.filter(item => {
       if (item.roles.includes('ALL')) return true;
+      if (isHR && item.roles.includes('HR')) return true;
+      if (isExecutive && item.roles.includes('Executive')) return true;
       return item.roles.some(r => userRoles.includes(r));
     });
-  }, [userRoles, isAdmin]);
+  }, [userRoles, isAdmin, isHR, isExecutive]);
 
-  if (!user) return null; // Avoid hydration mismatch or flashing
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-[#f0f2f5] flex flex-col">
@@ -108,7 +133,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex items-center gap-2 ml-2 pl-2 border-l border-gray-300">
             <div className="text-right hidden sm:block">
               <div className="text-sm font-bold text-gray-900">{user.username}</div>
-              <div className="text-xs text-gray-500 font-medium">{user.roles?.[0] || 'Employee'}</div>
+              <div className="text-xs text-emerald-700 font-bold">{isAdmin ? 'System Administrator' : user.roles?.[0] || 'Employee'}</div>
             </div>
             <Button variant="ghost" size="icon" className="rounded-full bg-[#e4e6eb] hover:bg-[#d8dadf] w-10 h-10 cursor-pointer" onClick={handleLogout} title="ออกจากระบบ">
               <LogOut className="h-5 w-5 text-black" />

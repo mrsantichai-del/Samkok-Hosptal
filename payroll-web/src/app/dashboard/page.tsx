@@ -23,7 +23,8 @@ import {
   ShieldCheck,
   Building2,
   Sparkles,
-  ArrowUpRight
+  ArrowUpRight,
+  ShieldAlert
 } from "lucide-react";
 
 interface MenuItem {
@@ -40,7 +41,7 @@ interface MenuItem {
     hoverBorder: string;
     badge: string;
   };
-  roles: string[]; // Allowed roles: 'ALL', 'Admin', 'HR', 'Executive', 'Employee'
+  roles: string[]; // 'ALL', 'Admin', 'HR', 'Executive', 'Employee'
 }
 
 export default function DashboardHome() {
@@ -77,12 +78,35 @@ export default function DashboardHome() {
     }
   }, []);
 
+  // Comprehensive Role Detection
   const userRoles: string[] = useMemo(() => {
     if (!user?.roles) return ['Employee'];
     return Array.isArray(user.roles) ? user.roles : [user.roles];
   }, [user]);
 
-  const isAdmin = userRoles.includes('Admin');
+  // System Administrator has 100% full access to everything without needing to be an employee
+  const isAdmin = useMemo(() => {
+    return userRoles.some(r => {
+      const s = String(r || '').toLowerCase();
+      return s.includes('admin') || s.includes('administrator') || s.includes('ผู้ดูแลระบบ');
+    });
+  }, [userRoles]);
+
+  const isHR = useMemo(() => {
+    if (isAdmin) return true;
+    return userRoles.some(r => {
+      const s = String(r || '').toLowerCase();
+      return s.includes('hr') || s.includes('บุคคล') || s.includes('การเงิน');
+    });
+  }, [userRoles, isAdmin]);
+
+  const isExecutive = useMemo(() => {
+    if (isAdmin) return true;
+    return userRoles.some(r => {
+      const s = String(r || '').toLowerCase();
+      return s.includes('exec') || s.includes('ผู้บริหาร') || s.includes('director');
+    });
+  }, [userRoles, isAdmin]);
 
   // All Menu Modules
   const allMenuItems: MenuItem[] = [
@@ -271,14 +295,16 @@ export default function DashboardHome() {
     }
   ];
 
-  // Filter menu items by user roles
+  // Filter menu items: System Administrator sees 100% of all items
   const visibleMenuItems = useMemo(() => {
     if (isAdmin) return allMenuItems;
     return allMenuItems.filter(item => {
       if (item.roles.includes('ALL')) return true;
+      if (isHR && item.roles.includes('HR')) return true;
+      if (isExecutive && item.roles.includes('Executive')) return true;
       return item.roles.some(r => userRoles.includes(r));
     });
-  }, [userRoles, isAdmin]);
+  }, [userRoles, isAdmin, isHR, isExecutive]);
 
   // Group by category
   const categories = useMemo(() => {
@@ -294,7 +320,7 @@ export default function DashboardHome() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
-      {/* 1. Hospital Greeting Banner (Clean & Welcoming without money numbers) */}
+      {/* 1. Hospital Greeting Banner */}
       <div className="bg-white rounded-2xl p-5 sm:p-6 border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <img 
@@ -312,12 +338,12 @@ export default function DashboardHome() {
               </Badge>
             </div>
             <p className="text-xs sm:text-sm text-gray-600 flex items-center gap-2 flex-wrap">
-              <span>สวัสดีคุณ <b>{employeeProfile?.fullName || user?.username || 'บุคลากร'}</b></span>
+              <span>สวัสดีคุณ <b>{employeeProfile?.fullName || user?.username || 'ผู้ดูแลระบบ'}</b></span>
               <span className="text-gray-300">•</span>
               <span className="text-gray-500">
                 {employeeProfile?.position 
                   ? `${employeeProfile.position} (${employeeProfile.department})` 
-                  : user?.roles?.[0] || 'ผู้ใช้งานระบบ'}
+                  : isAdmin ? 'ผู้ดูแลระบบสูงสุด (System Administrator)' : user?.roles?.[0] || 'ผู้ใช้งานระบบ'}
               </span>
               <span className="text-gray-300">•</span>
               <span className="text-blue-600 font-medium">{currentDateThai}</span>
@@ -327,14 +353,21 @@ export default function DashboardHome() {
 
         {/* Role Badge */}
         <div className="flex items-center gap-2">
-          <Badge className="bg-blue-50 text-blue-800 border border-blue-200 text-xs px-3 py-1 font-medium">
-            <Sparkles className="w-3.5 h-3.5 mr-1 text-blue-600" />
-            สิทธิ์การใช้งาน: {userRoles.join(', ')}
-          </Badge>
+          {isAdmin ? (
+            <Badge className="bg-emerald-600 text-white border-none text-xs px-3 py-1 font-bold shadow-xs">
+              <ShieldCheck className="w-3.5 h-3.5 mr-1" />
+              สิทธิ์: ผู้ดูแลระบบสูงสุด (System Administrator)
+            </Badge>
+          ) : (
+            <Badge className="bg-blue-50 text-blue-800 border border-blue-200 text-xs px-3 py-1 font-medium">
+              <Sparkles className="w-3.5 h-3.5 mr-1 text-blue-600" />
+              สิทธิ์การใช้งาน: {userRoles.join(', ')}
+            </Badge>
+          )}
         </div>
       </div>
 
-      {/* 2. Menu Launcher Cards (Grouped by Category with RBAC Filtering) */}
+      {/* 2. Menu Launcher Cards */}
       <div className="space-y-6">
         {categories.map((cat, catIdx) => (
           <div key={catIdx} className="space-y-3">
