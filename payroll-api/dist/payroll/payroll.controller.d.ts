@@ -12,21 +12,7 @@ export declare class PayrollController {
         recordId: string;
         count: number;
     }>;
-    getRecords(): Promise<{
-        id: string;
-        deletedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-        month: number;
-        year: number;
-        round: number;
-        roundName: string | null;
-        status: string;
-        notes: string | null;
-        approvedById: string | null;
-        editRequestReason: string | null;
-        editRequestedAt: Date | null;
-    }[]>;
+    getRecords(): Promise<any>;
     getRecordById(id: string): Promise<{
         id: string;
         deletedAt: Date | null;

@@ -91,9 +91,26 @@ let PayrollService = class PayrollService {
         return { message: 'Payroll processed successfully', recordId: record.id, count: transactions.length };
     }
     async getPayrollRecords() {
-        return this.prisma.payrollRecord.findMany({
-            orderBy: [{ year: 'desc' }, { month: 'desc' }, { round: 'desc' }]
-        });
+        try {
+            const records = await this.prisma.payrollRecord.findMany({
+                where: { deletedAt: null },
+                orderBy: [{ year: 'desc' }, { month: 'desc' }, { createdAt: 'desc' }]
+            });
+            return records.sort((a, b) => {
+                if (b.year !== a.year)
+                    return b.year - a.year;
+                if (b.month !== a.month)
+                    return b.month - a.month;
+                return (b.round || 1) - (a.round || 1);
+            });
+        }
+        catch (err) {
+            console.error('getPayrollRecords fallback to queryRaw:', err);
+            const rawRecords = await this.prisma.client.$queryRawUnsafe(`
+        SELECT * FROM "PayrollRecord" WHERE "deletedAt" IS NULL ORDER BY "year" DESC, "month" DESC, "createdAt" DESC
+      `);
+            return rawRecords;
+        }
     }
     async getPayrollRecordById(id) {
         const record = await this.prisma.payrollRecord.findUnique({ where: { id } });
