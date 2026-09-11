@@ -3,6 +3,9 @@ import { ProcessPayrollDto } from './dto/process-payroll.dto';
 import type { Response } from 'express';
 export declare class PayrollController {
     private readonly payrollService;
+    approvePayrollLegacy(id: string, req: any): Promise<{
+        message: string;
+    }>;
     constructor(payrollService: PayrollService);
     processPayroll(processPayrollDto: ProcessPayrollDto, req: any): Promise<{
         message: string;
@@ -22,39 +25,6 @@ export declare class PayrollController {
         editRequestReason: string | null;
         editRequestedAt: Date | null;
     }[]>;
-    getRecordById(id: string): Promise<{
-        id: string;
-        deletedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-        month: number;
-        year: number;
-        status: string;
-        notes: string | null;
-        approvedById: string | null;
-        editRequestReason: string | null;
-        editRequestedAt: Date | null;
-    }>;
-    getAuditLogs(id: string): Promise<({
-        user: {
-            employee: {
-                firstName: string;
-                lastName: string;
-            } | null;
-            username: string;
-        } | null;
-    } & {
-        id: string;
-        createdAt: Date;
-        userId: string | null;
-        action: string;
-        tableName: string;
-        recordId: string;
-        oldData: import("@prisma/client/runtime/client").JsonValue | null;
-        newData: import("@prisma/client/runtime/client").JsonValue | null;
-        reason: string | null;
-        ipAddress: string | null;
-    })[]>;
     getTransactions(id: string, employeeId?: string): Promise<({
         employee: {
             employeeType: {
@@ -92,16 +62,7 @@ export declare class PayrollController {
     }, req: any): Promise<{
         message: string;
     }>;
-    requestApproval(id: string, req: any): Promise<{
-        message: string;
-    }>;
-    approvePayroll(id: string, req: any): Promise<{
-        message: string;
-    }>;
-    requestEdit(id: string, reason: string, req: any): Promise<{
-        message: string;
-    }>;
-    grantEdit(id: string, req: any): Promise<{
+    approvePayrollExec(id: string, req: any): Promise<{
         message: string;
     }>;
     exportExcel(id: string, body: {

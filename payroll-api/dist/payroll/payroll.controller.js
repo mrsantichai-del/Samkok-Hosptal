@@ -22,6 +22,9 @@ const roles_decorator_1 = require("../auth/decorators/roles.decorator");
 const swagger_1 = require("@nestjs/swagger");
 let PayrollController = class PayrollController {
     payrollService;
+    approvePayrollLegacy(id, req) {
+        return this.payrollService.approvePayroll(id, req.user.userId);
+    }
     constructor(payrollService) {
         this.payrollService = payrollService;
     }
@@ -31,31 +34,14 @@ let PayrollController = class PayrollController {
     getRecords() {
         return this.payrollService.getPayrollRecords();
     }
-    getRecordById(id) {
-        return this.payrollService.getPayrollRecordById(id);
-    }
-    getAuditLogs(id) {
-        return this.payrollService.getAuditLogs(id);
-    }
     getTransactions(id, employeeId) {
         return this.payrollService.getPayrollTransactions(id, employeeId);
     }
     updateEmployeeTransactions(id, empId, body, req) {
         return this.payrollService.updateEmployeeTransactions(id, empId, body.transactions, req.user.userId);
     }
-    requestApproval(id, req) {
-        return this.payrollService.requestApproval(id, req.user.userId);
-    }
-    approvePayroll(id, req) {
+    approvePayrollExec(id, req) {
         return this.payrollService.approvePayroll(id, req.user.userId);
-    }
-    requestEdit(id, reason, req) {
-        if (!reason)
-            throw new common_1.BadRequestException('Reason is required');
-        return this.payrollService.requestEdit(id, req.user.userId, reason);
-    }
-    grantEdit(id, req) {
-        return this.payrollService.grantEdit(id, req.user.userId);
     }
     async exportExcel(id, body, res) {
         await this.payrollService.exportExcel(id, res, body.employeeIds);
@@ -74,6 +60,16 @@ let PayrollController = class PayrollController {
 };
 exports.PayrollController = PayrollController;
 __decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
+    (0, common_1.Patch)(':id/approve'),
+    (0, swagger_1.ApiOperation)({ summary: 'Approve a payroll record' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], PayrollController.prototype, "approvePayrollLegacy", null);
+__decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer'),
     (0, common_1.Post)('process'),
     (0, swagger_1.ApiOperation)({ summary: 'Process payroll for a given month and year (Draft)' }),
@@ -91,24 +87,6 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], PayrollController.prototype, "getRecords", null);
-__decorate([
-    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
-    (0, common_1.Get)('records/:id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Get a single payroll record by ID' }),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
-], PayrollController.prototype, "getRecordById", null);
-__decorate([
-    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
-    (0, common_1.Get)('records/:id/audit-logs'),
-    (0, swagger_1.ApiOperation)({ summary: 'Get audit logs for a payroll record' }),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
-], PayrollController.prototype, "getAuditLogs", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
     (0, common_1.Get)('records/:id/transactions'),
@@ -133,44 +111,15 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], PayrollController.prototype, "updateEmployeeTransactions", null);
 __decorate([
-    (0, common_1.Patch)('records/:id/request-approval'),
-    (0, swagger_1.ApiOperation)({ summary: 'Request approval for a payroll record' }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Req)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", void 0)
-], PayrollController.prototype, "requestApproval", null);
-__decorate([
-    (0, roles_decorator_1.Roles)('System Administrator', 'Executive'),
+    (0, roles_decorator_1.Roles)('Executive', 'System Administrator'),
     (0, common_1.Patch)('records/:id/approve'),
-    (0, swagger_1.ApiOperation)({ summary: 'Approve a payroll record' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Approve a payroll record (Executive only)' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
-], PayrollController.prototype, "approvePayroll", null);
-__decorate([
-    (0, common_1.Patch)('records/:id/request-edit'),
-    (0, swagger_1.ApiOperation)({ summary: 'Request edit for an approved payroll record' }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)('reason')),
-    __param(2, (0, common_1.Req)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, Object]),
-    __metadata("design:returntype", void 0)
-], PayrollController.prototype, "requestEdit", null);
-__decorate([
-    (0, roles_decorator_1.Roles)('System Administrator', 'Executive'),
-    (0, common_1.Patch)('records/:id/grant-edit'),
-    (0, swagger_1.ApiOperation)({ summary: 'Grant edit access for a payroll record' }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Req)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", void 0)
-], PayrollController.prototype, "grantEdit", null);
+], PayrollController.prototype, "approvePayrollExec", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
     (0, common_1.Post)('records/:id/export/excel'),

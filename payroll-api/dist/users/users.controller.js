@@ -27,15 +27,6 @@ const path_1 = require("path");
 const supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL || 'https://wjjewbltlwvsqljeazlz.supabase.co', process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqamV3Ymx0bHd2c3FsamVhemx6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NzczOTkxNCwiZXhwIjoyMTAzMzE1OTE0fQ.j2TyaPGhFOIvoO7RhO7i6CKJspjMoia4gMPJ5VVMKH4');
 let UsersController = class UsersController {
     usersService;
-    async getMyNotifications(req) {
-        const userId = req.user.userId;
-        const roles = req.user.roles || [];
-        return this.usersService.getNotifications(userId, roles);
-    }
-    async markAllRead(req) {
-        const userId = req.user.userId;
-        return this.usersService.markAllNotificationsRead(userId);
-    }
     constructor(usersService) {
         this.usersService = usersService;
     }
@@ -119,22 +110,6 @@ let UsersController = class UsersController {
     }
 };
 exports.UsersController = UsersController;
-__decorate([
-    (0, common_1.Get)('my-notifications'),
-    (0, swagger_1.ApiOperation)({ summary: 'Get notifications for current user' }),
-    __param(0, (0, common_1.Req)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], UsersController.prototype, "getMyNotifications", null);
-__decorate([
-    (0, common_1.Patch)('notifications/read-all'),
-    (0, swagger_1.ApiOperation)({ summary: 'Mark all notifications as read' }),
-    __param(0, (0, common_1.Req)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], UsersController.prototype, "markAllRead", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator'),
     (0, common_1.Post)(':id/upload-image'),

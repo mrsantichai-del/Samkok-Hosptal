@@ -1,9 +1,9 @@
 "use client";
 import { API_URL } from "@/lib/config";
-import { useEffect, useState, use, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import * as XLSX from 'xlsx';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,10 @@ import { ArrowLeft, Download, Save, Upload, Search, FileX2, Eye } from "lucide-r
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 
-export default function PayrollDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function PayrollDetailPage() {
   const router = useRouter();
-  const resolvedParams = use(params);
+  const routeParams = useParams();
+  const id = typeof routeParams?.id === "string" ? routeParams.id : Array.isArray(routeParams?.id) ? routeParams.id[0] : "";
 
   // Data
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -51,11 +52,12 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   const [viewingEmp, setViewingEmp] = useState<any>(null);
 
   const fetchData = async () => {
+    if (!id) return;
     setLoading(true);
     try {
       const token = Cookies.get("token");
       const [txRes, itemsRes, typeRes] = await Promise.all([
-        axios.get(`${API_URL}/payroll/records/${resolvedParams.id}/transactions`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/payroll/records/${id}/transactions`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/pay-items`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/employees/types`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
@@ -86,11 +88,13 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   };
 
   useEffect(() => {
-    fetchData();
-  }, [resolvedParams.id]);
+    if (id) {
+      fetchData();
+    }
+  }, [id]);
 
   const handleSaveAll = async () => {
-    if (modifiedRows.size === 0) return;
+    if (modifiedRows.size === 0 || !id) return;
     setSavingGlobal(true);
     const toastId = toast.loading("กำลังบันทึกข้อมูล...");
     try {
@@ -106,7 +110,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
              amount: Number(gridData[empId][payItemId])
            }));
          
-         return axios.patch(`${API_URL}/payroll/records/${resolvedParams.id}/employee/${empId}`, {
+         return axios.patch(`${API_URL}/payroll/records/${id}/employee/${empId}`, {
            transactions: txToSave
          }, { headers: { Authorization: `Bearer ${token}` } });
       });
@@ -123,16 +127,17 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   };
 
   const handleExportExcel = async () => {
+    if (!id) return;
     setIsExportingExcel(true);
     const toastId = toast.loading("กำลังสร้างไฟล์ Excel...");
     try {
       const token = Cookies.get("token");
       const employeeIds = filteredEmployees.map(e => e.employeeId);
-        const res = await axios.post(`${API_URL}/payroll/records/${resolvedParams.id}/export/excel`, { employeeIds }, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
+      const res = await axios.post(`${API_URL}/payroll/records/${id}/export/excel`, { employeeIds }, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Payroll_${resolvedParams.id}.xlsx`);
+      link.setAttribute('download', `Payroll_${id}.xlsx`);
       document.body.appendChild(link);
       link.click();
       toast.success("ดาวน์โหลดไฟล์ Excel สำเร็จ", { id: toastId });
@@ -156,12 +161,13 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   };
 
   const handleExportPdf = async () => {
+    if (!id) return;
     setIsExportingPdf(true);
     const toastId = toast.loading("กำลังสร้างสลิปเงินเดือน (PDF)...");
     try {
       const token = Cookies.get("token");
       const employeeIds = filteredEmployees.map(e => e.employeeId);
-        const res = await axios.post(`${API_URL}/payroll/records/${resolvedParams.id}/export/pdf`, { employeeIds }, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
+      const res = await axios.post(`${API_URL}/payroll/records/${id}/export/pdf`, { employeeIds }, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
       window.open(url);
       toast.success("สร้างสลิปเงินเดือนสำเร็จ", { id: toastId });
@@ -431,7 +437,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                   )}
                   
                   <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky right-[60px] top-0 z-50 bg-gray-200 min-w-[100px] w-[100px] font-bold">รับสุทธิ</TableHead>
-                    <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky right-0 top-0 z-50 bg-gray-200 min-w-[60px] w-[60px] shadow-[-1px_0_0_0_#d1d5db] font-bold">จัดการ</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-300 p-1 text-center sticky right-0 top-0 z-50 bg-gray-200 min-w-[60px] w-[60px] shadow-[-1px_0_0_0_#d1d5db] font-bold">จัดการ</TableHead>
                 </TableRow>
                 <TableRow>
                   {incomeItems.map(item => (
@@ -448,7 +454,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
               </TableHeader>
               <TableBody>
                 {filteredEmployees.length === 0 ? (
-                   <TableRow><TableCell colSpan={4 + incomeItems.length + deductionItems.length} className="text-center py-10 text-gray-400">ไม่มีข้อมูลตามเงื่อนไขที่กรอง</TableCell></TableRow>
+                   <TableRow><TableCell colSpan={4 + incomeItems.length + deductionItems.length + 2} className="text-center py-10 text-gray-400">ไม่มีข้อมูลตามเงื่อนไขที่กรอง</TableCell></TableRow>
                 ) : (
                    filteredEmployees.map((emp, index) => {
                      let totalIncome = 0;
@@ -476,7 +482,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                          {incomeItems.map(item => (
                            <TableCell key={item.id} className={`border border-gray-300 p-0 min-w-[95px] w-[95px] ${isModified ? "bg-yellow-50" : "bg-white"}`}>
                              <Input 
-                               type="number"
+                               type="number" 
                                className="h-7 w-full text-right border-0 rounded-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-green-500 text-green-800 bg-transparent text-[11px] px-1"
                                value={gridData[emp.employeeId]?.[item.id] || ''}
                                onChange={(e) => {
@@ -490,7 +496,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
                          {deductionItems.map(item => (
                            <TableCell key={item.id} className={`border border-gray-300 p-0 min-w-[95px] w-[95px] ${isModified ? "bg-yellow-50" : "bg-white"}`}>
                              <Input 
-                               type="number"
+                               type="number" 
                                className="h-7 w-full text-right border-0 rounded-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-red-500 text-red-800 bg-transparent text-[11px] px-1"
                                value={gridData[emp.employeeId]?.[item.id] || ''}
                                onChange={(e) => {
