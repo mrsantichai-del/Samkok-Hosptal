@@ -1,9 +1,11 @@
 import { PrismaService } from '../prisma/prisma.service';
+import { SettingsService } from '../settings/settings.service';
 export declare function thaiBahtText(num: number | string): string;
 export declare class TaxReportsService {
     private prisma;
-    constructor(prisma: PrismaService);
-    private hospitalInfo;
+    private settingsService;
+    constructor(prisma: PrismaService, settingsService: SettingsService);
+    private validateCitizenId;
     resolveEmployee(userId: string, employeeId?: string): Promise<({
         employeeType: {
             name: string;
@@ -52,11 +54,15 @@ export declare class TaxReportsService {
     get50Tawi(employeeId: string, year: number): Promise<{
         taxYear: number;
         ceYear: number;
+        hasValidIdCard: boolean;
+        idCardWarning: string | null;
         payer: {
             name: string;
+            nameEn: string;
             taxId: string;
             address: string;
             phone: string;
+            directorName: string;
             directorTitle: string;
         };
         payee: {
@@ -64,6 +70,9 @@ export declare class TaxReportsService {
             employeeCode: string;
             fullName: string;
             idCard: string;
+            idCardCleaned: string;
+            hasValidIdCard: boolean;
+            idCardWarning: string | null;
             department: string;
             position: string;
             employeeType: string;
@@ -111,11 +120,15 @@ export declare class TaxReportsService {
         round?: number;
         employeeId?: string;
     }): Promise<{
+        hospital: import("../settings/settings.service").HospitalSettings;
         employee: {
             id: string;
             employeeCode: string;
             fullName: string;
-            idCard: string | null;
+            idCard: string;
+            idCardCleaned: string;
+            hasValidIdCard: boolean;
+            idCardWarning: string | null;
             department: string;
             position: string;
             employeeType: string;
@@ -127,12 +140,16 @@ export declare class TaxReportsService {
         availableRecords: never[];
         currentPayslip: null;
     } | {
+        hospital: import("../settings/settings.service").HospitalSettings;
         hasRecords: boolean;
         employee: {
             id: string;
             employeeCode: string;
             fullName: string;
-            idCard: string | null;
+            idCard: string;
+            idCardCleaned: string;
+            hasValidIdCard: boolean;
+            idCardWarning: string | null;
             department: string;
             position: string;
             employeeType: string;

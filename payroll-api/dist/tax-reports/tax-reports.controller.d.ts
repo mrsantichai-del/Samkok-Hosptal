@@ -3,11 +3,15 @@ export declare class TaxReportsController {
     private readonly taxReportsService;
     constructor(taxReportsService: TaxReportsService);
     getMyPayslips(req: any, year?: number, month?: number, round?: number, employeeId?: string): Promise<{
+        hospital: import("../settings/settings.service").HospitalSettings;
         employee: {
             id: string;
             employeeCode: string;
             fullName: string;
-            idCard: string | null;
+            idCard: string;
+            idCardCleaned: string;
+            hasValidIdCard: boolean;
+            idCardWarning: string | null;
             department: string;
             position: string;
             employeeType: string;
@@ -19,12 +23,16 @@ export declare class TaxReportsController {
         availableRecords: never[];
         currentPayslip: null;
     } | {
+        hospital: import("../settings/settings.service").HospitalSettings;
         hasRecords: boolean;
         employee: {
             id: string;
             employeeCode: string;
             fullName: string;
-            idCard: string | null;
+            idCard: string;
+            idCardCleaned: string;
+            hasValidIdCard: boolean;
+            idCardWarning: string | null;
             department: string;
             position: string;
             employeeType: string;
@@ -71,11 +79,15 @@ export declare class TaxReportsController {
     getMy50Tawi(req: any, year?: number, employeeId?: string): Promise<{
         taxYear: number;
         ceYear: number;
+        hasValidIdCard: boolean;
+        idCardWarning: string | null;
         payer: {
             name: string;
+            nameEn: string;
             taxId: string;
             address: string;
             phone: string;
+            directorName: string;
             directorTitle: string;
         };
         payee: {
@@ -83,6 +95,9 @@ export declare class TaxReportsController {
             employeeCode: string;
             fullName: string;
             idCard: string;
+            idCardCleaned: string;
+            hasValidIdCard: boolean;
+            idCardWarning: string | null;
             department: string;
             position: string;
             employeeType: string;
@@ -127,11 +142,15 @@ export declare class TaxReportsController {
     get50TawiByEmployee(employeeId: string, year?: number): Promise<{
         taxYear: number;
         ceYear: number;
+        hasValidIdCard: boolean;
+        idCardWarning: string | null;
         payer: {
             name: string;
+            nameEn: string;
             taxId: string;
             address: string;
             phone: string;
+            directorName: string;
             directorTitle: string;
         };
         payee: {
@@ -139,6 +158,9 @@ export declare class TaxReportsController {
             employeeCode: string;
             fullName: string;
             idCard: string;
+            idCardCleaned: string;
+            hasValidIdCard: boolean;
+            idCardWarning: string | null;
             department: string;
             position: string;
             employeeType: string;

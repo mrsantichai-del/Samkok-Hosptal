@@ -1,4 +1,4 @@
-import { Controller, Post, UseInterceptors, UploadedFile, UseGuards, Get, Res, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Put, Body, UseInterceptors, UploadedFile, UseGuards, Get, Res, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -6,6 +6,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import type { Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
+import { SettingsService, HospitalSettings } from './settings.service';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || 'https://wjjewbltlwvsqljeazlz.supabase.co',
@@ -14,11 +15,33 @@ const supabase = createClient(
 
 @Controller('settings')
 export class SettingsController {
+  constructor(private readonly settingsService: SettingsService) {}
+
+  // 1. Get Hospital Master Settings
+  @Get('hospital')
+  getHospitalSettings() {
+    return this.settingsService.getHospitalSettings();
+  }
+
+  // 2. Update Hospital Master Settings
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('System Administrator', 'Admin', 'HR', 'Finance Officer')
+  @Put('hospital')
+  updateHospitalSettings(@Body() data: Partial<HospitalSettings>) {
+    return this.settingsService.updateHospitalSettings(data);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('System Administrator', 'Admin', 'HR', 'Finance Officer')
+  @Post('hospital')
+  updateHospitalSettingsPost(@Body() data: Partial<HospitalSettings>) {
+    return this.settingsService.updateHospitalSettings(data);
+  }
   
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('System Administrator', 'Finance Officer')
+  @Roles('System Administrator', 'Admin', 'HR', 'Finance Officer')
   @Post('upload-logo')
-  @UseInterceptors(FileInterceptor('file')) // Uses memoryStorage by default
+  @UseInterceptors(FileInterceptor('file'))
   async uploadLogo(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No file uploaded');
     
@@ -37,7 +60,7 @@ export class SettingsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('System Administrator', 'Finance Officer')
+  @Roles('System Administrator', 'Admin', 'HR', 'Finance Officer')
   @Post('upload-signature')
   @UseInterceptors(FileInterceptor('file'))
   async uploadSignature(@UploadedFile() file: Express.Multer.File) {
@@ -60,7 +83,6 @@ export class SettingsController {
   // Redirect the old endpoints to public URL
   @Get('logo')
   async getLogo(@Res() res: Response) {
-    // List files to find logo with its extension
     const { data, error } = await supabase.storage.from('uploads').list();
     if (error || !data) return res.status(404).send('Not found');
     

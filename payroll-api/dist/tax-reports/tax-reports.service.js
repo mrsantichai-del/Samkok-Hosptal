@@ -13,6 +13,7 @@ exports.TaxReportsService = void 0;
 exports.thaiBahtText = thaiBahtText;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const settings_service_1 = require("../settings/settings.service");
 function thaiBahtText(num) {
     const number = Number(num);
     if (isNaN(number) || number === 0)
@@ -81,16 +82,33 @@ function thaiBahtText(num) {
 }
 let TaxReportsService = class TaxReportsService {
     prisma;
-    constructor(prisma) {
+    settingsService;
+    constructor(prisma, settingsService) {
         this.prisma = prisma;
+        this.settingsService = settingsService;
     }
-    hospitalInfo = {
-        name: 'โรงพยาบาลสามโคก',
-        taxId: '0994000164821',
-        address: 'เลขที่ 99 หมู่ 3 ถนนปทุมธานี-เสนา ตำบลสามโคก อำเภอสามโคก จังหวัดปทุมธานี 12160',
-        phone: '02-593-1234',
-        directorTitle: 'ผู้อำนวยการโรงพยาบาลสามโคก'
-    };
+    validateCitizenId(idCard) {
+        if (!idCard) {
+            return {
+                isValid: false,
+                cleaned: '',
+                warning: 'ยังไม่ได้ระบุเลขประจำตัวประชาชน 13 หลักในระบบ'
+            };
+        }
+        const cleaned = idCard.replace(/\D/g, '');
+        if (cleaned.length !== 13) {
+            return {
+                isValid: false,
+                cleaned,
+                warning: `เลขประจำตัวประชาชนไม่ถูกต้อง (มี ${cleaned.length} หลัก ต้องมี 13 หลัก)`
+            };
+        }
+        return {
+            isValid: true,
+            cleaned,
+            warning: null
+        };
+    }
     async resolveEmployee(userId, employeeId) {
         if (employeeId && employeeId !== 'me') {
             const emp = await this.prisma.employee.findUnique({
@@ -143,6 +161,8 @@ let TaxReportsService = class TaxReportsService {
         if (!employee) {
             throw new common_1.NotFoundException('ไม่พบข้อมูลพนักงาน');
         }
+        const hospital = this.settingsService.getHospitalSettings();
+        const idValidation = this.validateCitizenId(employee.idCard);
         const records = await this.prisma.payrollRecord.findMany({
             where: {
                 year: ceYear,
@@ -226,12 +246,25 @@ let TaxReportsService = class TaxReportsService {
         return {
             taxYear: thaiYear,
             ceYear: ceYear,
-            payer: this.hospitalInfo,
+            hasValidIdCard: idValidation.isValid,
+            idCardWarning: idValidation.warning,
+            payer: {
+                name: hospital.name,
+                nameEn: hospital.nameEn || '',
+                taxId: hospital.taxId,
+                address: hospital.address,
+                phone: hospital.phone || '',
+                directorName: hospital.directorName || '',
+                directorTitle: hospital.directorTitle || 'ผู้อำนวยการโรงพยาบาลสามโคก'
+            },
             payee: {
                 id: employee.id,
                 employeeCode: employee.employeeCode,
                 fullName: employee.firstName + ' ' + employee.lastName,
-                idCard: employee.idCard || '3100100000000',
+                idCard: employee.idCard || '',
+                idCardCleaned: idValidation.cleaned,
+                hasValidIdCard: idValidation.isValid,
+                idCardWarning: idValidation.warning,
                 department: employee.department?.name || '-',
                 position: employee.position?.name || '-',
                 employeeType: employee.employeeType?.name || '-',
@@ -279,6 +312,8 @@ let TaxReportsService = class TaxReportsService {
         if (!employee) {
             throw new common_1.NotFoundException('ไม่พบข้อมูลประวัติบุคลากรที่เชื่อมโยงกับบัญชีผู้ใช้นี้');
         }
+        const idValidation = this.validateCitizenId(employee.idCard);
+        const hospital = this.settingsService.getHospitalSettings();
         const employeeTxs = await this.prisma.payrollTransaction.findMany({
             where: { employeeId: employee.id, deletedAt: null },
             select: {
@@ -307,20 +342,25 @@ let TaxReportsService = class TaxReportsService {
                 return b.month - a.month;
             return b.round - a.round;
         });
+        const employeePayload = {
+            id: employee.id,
+            employeeCode: employee.employeeCode,
+            fullName: employee.firstName + ' ' + employee.lastName,
+            idCard: employee.idCard || '',
+            idCardCleaned: idValidation.cleaned,
+            hasValidIdCard: idValidation.isValid,
+            idCardWarning: idValidation.warning,
+            department: employee.department?.name || '-',
+            position: employee.position?.name || '-',
+            employeeType: employee.employeeType?.name || '-',
+            bankAccount: employee.bankAccount,
+            bankName: employee.bankName,
+            baseSalary: Number(employee.baseSalary) || 0
+        };
         if (availableRecords.length === 0) {
             return {
-                employee: {
-                    id: employee.id,
-                    employeeCode: employee.employeeCode,
-                    fullName: employee.firstName + ' ' + employee.lastName,
-                    idCard: employee.idCard,
-                    department: employee.department?.name || '-',
-                    position: employee.position?.name || '-',
-                    employeeType: employee.employeeType?.name || '-',
-                    bankAccount: employee.bankAccount,
-                    bankName: employee.bankName,
-                    baseSalary: Number(employee.baseSalary) || 0
-                },
+                hospital,
+                employee: employeePayload,
                 hasRecords: false,
                 availableRecords: [],
                 currentPayslip: null
@@ -403,19 +443,9 @@ let TaxReportsService = class TaxReportsService {
         const thaiYear = targetRecord.year + 543;
         const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
         return {
+            hospital,
             hasRecords: true,
-            employee: {
-                id: employee.id,
-                employeeCode: employee.employeeCode,
-                fullName: employee.firstName + ' ' + employee.lastName,
-                idCard: employee.idCard,
-                department: employee.department?.name || '-',
-                position: employee.position?.name || '-',
-                employeeType: employee.employeeType?.name || '-',
-                bankAccount: employee.bankAccount,
-                bankName: employee.bankName,
-                baseSalary: Number(employee.baseSalary) || 0
-            },
+            employee: employeePayload,
             availableRecords: availableRecords.map(r => ({
                 id: r.id,
                 year: r.year,
@@ -457,6 +487,7 @@ let TaxReportsService = class TaxReportsService {
 exports.TaxReportsService = TaxReportsService;
 exports.TaxReportsService = TaxReportsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        settings_service_1.SettingsService])
 ], TaxReportsService);
 //# sourceMappingURL=tax-reports.service.js.map

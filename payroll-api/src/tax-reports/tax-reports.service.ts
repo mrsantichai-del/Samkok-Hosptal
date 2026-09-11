@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { SettingsService } from '../settings/settings.service';
 
 export function thaiBahtText(num: number | string): string {
   const number = Number(num);
@@ -66,16 +67,34 @@ export function thaiBahtText(num: number | string): string {
 
 @Injectable()
 export class TaxReportsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private settingsService: SettingsService
+  ) {}
 
-  // Hospital default info
-  private hospitalInfo = {
-    name: 'โรงพยาบาลสามโคก',
-    taxId: '0994000164821',
-    address: 'เลขที่ 99 หมู่ 3 ถนนปทุมธานี-เสนา ตำบลสามโคก อำเภอสามโคก จังหวัดปทุมธานี 12160',
-    phone: '02-593-1234',
-    directorTitle: 'ผู้อำนวยการโรงพยาบาลสามโคก'
-  };
+  // Helper to validate 13-digit Thai Citizen ID
+  private validateCitizenId(idCard?: string | null): { isValid: boolean; cleaned: string; warning: string | null } {
+    if (!idCard) {
+      return {
+        isValid: false,
+        cleaned: '',
+        warning: 'ยังไม่ได้ระบุเลขประจำตัวประชาชน 13 หลักในระบบ'
+      };
+    }
+    const cleaned = idCard.replace(/\D/g, '');
+    if (cleaned.length !== 13) {
+      return {
+        isValid: false,
+        cleaned,
+        warning: `เลขประจำตัวประชาชนไม่ถูกต้อง (มี ${cleaned.length} หลัก ต้องมี 13 หลัก)`
+      };
+    }
+    return {
+      isValid: true,
+      cleaned,
+      warning: null
+    };
+  }
 
   // Helper to find employee by userId or employeeId
   async resolveEmployee(userId: string, employeeId?: string) {
@@ -138,6 +157,9 @@ export class TaxReportsService {
     if (!employee) {
       throw new NotFoundException('ไม่พบข้อมูลพนักงาน');
     }
+
+    const hospital = this.settingsService.getHospitalSettings();
+    const idValidation = this.validateCitizenId(employee.idCard);
 
     // Find all payroll records for this year
     const records = await this.prisma.payrollRecord.findMany({
@@ -230,12 +252,25 @@ export class TaxReportsService {
     return {
       taxYear: thaiYear,
       ceYear: ceYear,
-      payer: this.hospitalInfo,
+      hasValidIdCard: idValidation.isValid,
+      idCardWarning: idValidation.warning,
+      payer: {
+        name: hospital.name,
+        nameEn: hospital.nameEn || '',
+        taxId: hospital.taxId,
+        address: hospital.address,
+        phone: hospital.phone || '',
+        directorName: hospital.directorName || '',
+        directorTitle: hospital.directorTitle || 'ผู้อำนวยการโรงพยาบาลสามโคก'
+      },
       payee: {
         id: employee.id,
         employeeCode: employee.employeeCode,
         fullName: employee.firstName + ' ' + employee.lastName,
-        idCard: employee.idCard || '3100100000000',
+        idCard: employee.idCard || '',
+        idCardCleaned: idValidation.cleaned,
+        hasValidIdCard: idValidation.isValid,
+        idCardWarning: idValidation.warning,
         department: employee.department?.name || '-',
         position: employee.position?.name || '-',
         employeeType: employee.employeeType?.name || '-',
@@ -286,6 +321,9 @@ export class TaxReportsService {
       throw new NotFoundException('ไม่พบข้อมูลประวัติบุคลากรที่เชื่อมโยงกับบัญชีผู้ใช้นี้');
     }
 
+    const idValidation = this.validateCitizenId(employee.idCard);
+    const hospital = this.settingsService.getHospitalSettings();
+
     // Get all available payroll records where this employee has transactions
     const employeeTxs = await this.prisma.payrollTransaction.findMany({
       where: { employeeId: employee.id, deletedAt: null },
@@ -315,20 +353,26 @@ export class TaxReportsService {
         return b.round - a.round;
       });
 
+    const employeePayload = {
+      id: employee.id,
+      employeeCode: employee.employeeCode,
+      fullName: employee.firstName + ' ' + employee.lastName,
+      idCard: employee.idCard || '',
+      idCardCleaned: idValidation.cleaned,
+      hasValidIdCard: idValidation.isValid,
+      idCardWarning: idValidation.warning,
+      department: employee.department?.name || '-',
+      position: employee.position?.name || '-',
+      employeeType: employee.employeeType?.name || '-',
+      bankAccount: employee.bankAccount,
+      bankName: employee.bankName,
+      baseSalary: Number(employee.baseSalary) || 0
+    };
+
     if (availableRecords.length === 0) {
       return {
-        employee: {
-          id: employee.id,
-          employeeCode: employee.employeeCode,
-          fullName: employee.firstName + ' ' + employee.lastName,
-          idCard: employee.idCard,
-          department: employee.department?.name || '-',
-          position: employee.position?.name || '-',
-          employeeType: employee.employeeType?.name || '-',
-          bankAccount: employee.bankAccount,
-          bankName: employee.bankName,
-          baseSalary: Number(employee.baseSalary) || 0
-        },
+        hospital,
+        employee: employeePayload,
         hasRecords: false,
         availableRecords: [],
         currentPayslip: null
@@ -417,19 +461,9 @@ export class TaxReportsService {
     const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 
     return {
+      hospital,
       hasRecords: true,
-      employee: {
-        id: employee.id,
-        employeeCode: employee.employeeCode,
-        fullName: employee.firstName + ' ' + employee.lastName,
-        idCard: employee.idCard,
-        department: employee.department?.name || '-',
-        position: employee.position?.name || '-',
-        employeeType: employee.employeeType?.name || '-',
-        bankAccount: employee.bankAccount,
-        bankName: employee.bankName,
-        baseSalary: Number(employee.baseSalary) || 0
-      },
+      employee: employeePayload,
       availableRecords: availableRecords.map(r => ({
         id: r.id,
         year: r.year,

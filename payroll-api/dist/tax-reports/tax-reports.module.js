@@ -11,12 +11,13 @@ const common_1 = require("@nestjs/common");
 const tax_reports_service_1 = require("./tax-reports.service");
 const tax_reports_controller_1 = require("./tax-reports.controller");
 const prisma_module_1 = require("../prisma/prisma.module");
+const settings_module_1 = require("../settings/settings.module");
 let TaxReportsModule = class TaxReportsModule {
 };
 exports.TaxReportsModule = TaxReportsModule;
 exports.TaxReportsModule = TaxReportsModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
+        imports: [prisma_module_1.PrismaModule, settings_module_1.SettingsModule],
         controllers: [tax_reports_controller_1.TaxReportsController],
         providers: [tax_reports_service_1.TaxReportsService],
         exports: [tax_reports_service_1.TaxReportsService],

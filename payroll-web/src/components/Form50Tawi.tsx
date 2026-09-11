@@ -1,17 +1,21 @@
 "use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Printer, Download, Building2, User, FileText, CheckCircle2 } from "lucide-react";
+import { Printer, Download, Building2, User, FileText, CheckCircle2, AlertTriangle } from "lucide-react";
 
 interface Form50TawiProps {
   data: {
     taxYear: number;
     ceYear: number;
+    hasValidIdCard?: boolean;
+    idCardWarning?: string | null;
     payer: {
       name: string;
+      nameEn?: string;
       taxId: string;
       address: string;
       phone?: string;
+      directorName?: string;
       directorTitle?: string;
     };
     payee: {
@@ -19,6 +23,9 @@ interface Form50TawiProps {
       employeeCode: string;
       fullName: string;
       idCard: string;
+      idCardCleaned?: string;
+      hasValidIdCard?: boolean;
+      idCardWarning?: string | null;
       department: string;
       position: string;
       employeeType: string;
@@ -49,29 +56,29 @@ interface Form50TawiProps {
 }
 
 // Helper to render 13 digit boxes
-const DigitsBox = ({ value }: { value: string }) => {
+const DigitsBox = ({ value, isWarning = false }: { value: string; isWarning?: boolean }) => {
   const clean = (value || "").replace(/\D/g, "");
   const chars = Array.from({ length: 13 }, (_, i) => clean[i] || "");
 
   return (
     <div className="inline-flex items-center gap-0.5 text-xs font-mono font-bold">
-      <div className="w-5 h-5 border border-black flex items-center justify-center bg-white">{chars[0]}</div>
+      <div className={`w-5 h-5 border flex items-center justify-center ${isWarning && !chars[0] ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-black bg-white'}`}>{chars[0]}</div>
       <span className="text-gray-400 font-normal">-</span>
-      <div className="w-5 h-5 border border-black flex items-center justify-center bg-white">{chars[1]}</div>
-      <div className="w-5 h-5 border border-black flex items-center justify-center bg-white">{chars[2]}</div>
-      <div className="w-5 h-5 border border-black flex items-center justify-center bg-white">{chars[3]}</div>
-      <div className="w-5 h-5 border border-black flex items-center justify-center bg-white">{chars[4]}</div>
+      <div className={`w-5 h-5 border flex items-center justify-center ${isWarning && !chars[1] ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-black bg-white'}`}>{chars[1]}</div>
+      <div className={`w-5 h-5 border flex items-center justify-center ${isWarning && !chars[2] ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-black bg-white'}`}>{chars[2]}</div>
+      <div className={`w-5 h-5 border flex items-center justify-center ${isWarning && !chars[3] ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-black bg-white'}`}>{chars[3]}</div>
+      <div className={`w-5 h-5 border flex items-center justify-center ${isWarning && !chars[4] ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-black bg-white'}`}>{chars[4]}</div>
       <span className="text-gray-400 font-normal">-</span>
-      <div className="w-5 h-5 border border-black flex items-center justify-center bg-white">{chars[5]}</div>
-      <div className="w-5 h-5 border border-black flex items-center justify-center bg-white">{chars[6]}</div>
-      <div className="w-5 h-5 border border-black flex items-center justify-center bg-white">{chars[7]}</div>
-      <div className="w-5 h-5 border border-black flex items-center justify-center bg-white">{chars[8]}</div>
-      <div className="w-5 h-5 border border-black flex items-center justify-center bg-white">{chars[9]}</div>
+      <div className={`w-5 h-5 border flex items-center justify-center ${isWarning && !chars[5] ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-black bg-white'}`}>{chars[5]}</div>
+      <div className={`w-5 h-5 border flex items-center justify-center ${isWarning && !chars[6] ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-black bg-white'}`}>{chars[6]}</div>
+      <div className={`w-5 h-5 border flex items-center justify-center ${isWarning && !chars[7] ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-black bg-white'}`}>{chars[7]}</div>
+      <div className={`w-5 h-5 border flex items-center justify-center ${isWarning && !chars[8] ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-black bg-white'}`}>{chars[8]}</div>
+      <div className={`w-5 h-5 border flex items-center justify-center ${isWarning && !chars[9] ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-black bg-white'}`}>{chars[9]}</div>
       <span className="text-gray-400 font-normal">-</span>
-      <div className="w-5 h-5 border border-black flex items-center justify-center bg-white">{chars[10]}</div>
-      <div className="w-5 h-5 border border-black flex items-center justify-center bg-white">{chars[11]}</div>
+      <div className={`w-5 h-5 border flex items-center justify-center ${isWarning && !chars[10] ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-black bg-white'}`}>{chars[10]}</div>
+      <div className={`w-5 h-5 border flex items-center justify-center ${isWarning && !chars[11] ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-black bg-white'}`}>{chars[11]}</div>
       <span className="text-gray-400 font-normal">-</span>
-      <div className="w-5 h-5 border border-black flex items-center justify-center bg-white">{chars[12]}</div>
+      <div className={`w-5 h-5 border flex items-center justify-center ${isWarning && !chars[12] ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-black bg-white'}`}>{chars[12]}</div>
     </div>
   );
 };
@@ -79,10 +86,29 @@ const DigitsBox = ({ value }: { value: string }) => {
 export default function Form50Tawi({ data, onPrint }: Form50TawiProps) {
   if (!data) return null;
 
+  const isCitizenIdValid = data.hasValidIdCard ?? ((data.payee.idCard || "").replace(/\D/g, "").length === 13);
+  const cleanId = (data.payee.idCard || "").replace(/\D/g, "");
+
   return (
     <div className="space-y-4">
+      {/* Alert Banner if ID Card is Missing/Invalid */}
+      {!isCitizenIdValid && (
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4 flex items-start gap-3 shadow-xs print:hidden">
+          <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h4 className="text-sm font-bold text-amber-900">
+              ⚠️ แจ้งเตือน: ยังไม่ได้ระบุเลขประจำตัวประชาชน 13 หลักของพนักงาน
+            </h4>
+            <p className="text-xs text-amber-800 mt-1">
+              {data.payee.fullName} (รหัส {data.payee.employeeCode}) {data.idCardWarning || 'ยังไม่มีเลขประจำตัวประชาชน 13 หลักที่ถูกต้องในฐานข้อมูล'} 
+              กรุณาบันทึกเลขบัตรประชาชนในเมนู <b>ทะเบียนประวัติบุคลากร (Employees)</b> ก่อนนำเอกสารนี้ไปใช้ยื่นแบบภาษีทางราชการ
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Action Header for Screen View */}
-      <div className="flex items-center justify-between print:hidden bg-blue-50/70 p-3 rounded-lg border border-blue-200">
+      <div className="flex items-center justify-between print:hidden bg-blue-50/80 p-3 rounded-lg border border-blue-200">
         <div className="flex items-center gap-2">
           <FileText className="w-5 h-5 text-blue-700" />
           <div>
@@ -131,8 +157,13 @@ export default function Form50Tawi({ data, onPrint }: Form50TawiProps) {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
             <div className="md:col-span-2">
-              <span>ชื่อ: <b>{data.payer.name}</b></span>
+              <span>ชื่อ: <b>{data.payer.name}</b> {data.payer.nameEn ? `(${data.payer.nameEn})` : ''}</span>
             </div>
+            {data.payer.phone && (
+              <div className="text-right text-gray-800">
+                <span>โทรศัพท์: {data.payer.phone}</span>
+              </div>
+            )}
           </div>
           <div className="mt-0.5 text-gray-800">
             <span>ที่อยู่: {data.payer.address}</span>
@@ -140,12 +171,15 @@ export default function Form50Tawi({ data, onPrint }: Form50TawiProps) {
         </div>
 
         {/* Section 2: Payee (ผู้ถูกหักภาษี ณ ที่จ่าย) */}
-        <div className="border border-black p-2.5 mb-2">
+        <div className={`border p-2.5 mb-2 ${!isCitizenIdValid ? 'border-amber-600 bg-amber-50/20' : 'border-black'}`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
             <span className="font-bold">2. ผู้ถูกหักภาษี ณ ที่จ่าย:</span>
             <div className="flex items-center gap-2">
               <span className="text-[10px]">เลขประจำตัวประชาชน:</span>
-              <DigitsBox value={data.payee.idCard} />
+              <DigitsBox value={cleanId} isWarning={!isCitizenIdValid} />
+              {!isCitizenIdValid && (
+                <span className="text-[9px] text-amber-700 font-bold print:hidden">(ยังไม่ได้กรอก)</span>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
@@ -292,8 +326,10 @@ export default function Form50Tawi({ data, onPrint }: Form50TawiProps) {
               <div className="h-9 flex items-center justify-center">
                 <span className="font-serif italic text-gray-400 text-xs">----------------------------------------------------</span>
               </div>
-              <p className="font-bold font-serif">({data.payer.directorTitle})</p>
-              <p className="text-[10px] text-gray-600">ผู้มีอำนาจลงนาม / ประทับตรานิติบุคคล</p>
+              <p className="font-bold font-serif">
+                ({data.payer.directorName || data.payer.directorTitle || 'ผู้อำนวยการโรงพยาบาลสามโคก'})
+              </p>
+              <p className="text-[10px] text-gray-600">{data.payer.directorTitle || 'ผู้อำนวยการโรงพยาบาลสามโคก'} / ผู้มีอำนาจลงนาม</p>
             </div>
           </div>
         </div>

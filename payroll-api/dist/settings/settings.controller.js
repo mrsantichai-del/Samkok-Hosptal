@@ -20,8 +20,22 @@ const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
 const supabase_js_1 = require("@supabase/supabase-js");
+const settings_service_1 = require("./settings.service");
 const supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL || 'https://wjjewbltlwvsqljeazlz.supabase.co', process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqamV3Ymx0bHd2c3FsamVhemx6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NzczOTkxNCwiZXhwIjoyMTAzMzE1OTE0fQ.j2TyaPGhFOIvoO7RhO7i6CKJspjMoia4gMPJ5VVMKH4');
 let SettingsController = class SettingsController {
+    settingsService;
+    constructor(settingsService) {
+        this.settingsService = settingsService;
+    }
+    getHospitalSettings() {
+        return this.settingsService.getHospitalSettings();
+    }
+    updateHospitalSettings(data) {
+        return this.settingsService.updateHospitalSettings(data);
+    }
+    updateHospitalSettingsPost(data) {
+        return this.settingsService.updateHospitalSettings(data);
+    }
     async uploadLogo(file) {
         if (!file)
             throw new common_1.BadRequestException('No file uploaded');
@@ -73,8 +87,32 @@ let SettingsController = class SettingsController {
 };
 exports.SettingsController = SettingsController;
 __decorate([
+    (0, common_1.Get)('hospital'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], SettingsController.prototype, "getHospitalSettings", null);
+__decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer'),
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin', 'HR', 'Finance Officer'),
+    (0, common_1.Put)('hospital'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], SettingsController.prototype, "updateHospitalSettings", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin', 'HR', 'Finance Officer'),
+    (0, common_1.Post)('hospital'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], SettingsController.prototype, "updateHospitalSettingsPost", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin', 'HR', 'Finance Officer'),
     (0, common_1.Post)('upload-logo'),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
     __param(0, (0, common_1.UploadedFile)()),
@@ -84,7 +122,7 @@ __decorate([
 ], SettingsController.prototype, "uploadLogo", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer'),
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin', 'HR', 'Finance Officer'),
     (0, common_1.Post)('upload-signature'),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
     __param(0, (0, common_1.UploadedFile)()),
@@ -107,6 +145,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SettingsController.prototype, "getSignature", null);
 exports.SettingsController = SettingsController = __decorate([
-    (0, common_1.Controller)('settings')
+    (0, common_1.Controller)('settings'),
+    __metadata("design:paramtypes", [settings_service_1.SettingsService])
 ], SettingsController);
 //# sourceMappingURL=settings.controller.js.map

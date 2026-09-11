@@ -214,6 +214,24 @@ export default function MyPayslipsPage() {
         </button>
       </div>
 
+      {/* Missing Citizen ID Alert Banner */}
+      {employeeInfo && (employeeInfo.hasValidIdCard === false || !employeeInfo.idCard) && (
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4 flex items-start gap-3 shadow-xs print:hidden">
+          <div className="p-2 bg-amber-100 rounded-lg text-amber-700">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div className="flex-1">
+            <h4 className="text-sm font-bold text-amber-900">
+              ⚠️ ยังไม่ได้ระบุเลขประจำตัวประชาชน 13 หลัก
+            </h4>
+            <p className="text-xs text-amber-800 mt-1">
+              ข้อมูลประวัติบุคลากรของ <b>{employeeInfo.fullName}</b> ยังไม่มีเลขประจำตัวประชาชน 13 หลักที่ถูกต้องในระบบ 
+              โปรดบันทึกเลขบัตรประชาชนในระบบทะเบียนประวัติพนักงาน เพื่อให้การออกหนังสือรับรองภาษี 50 ทวิ และเอกสารทางราชการถูกต้องตามกฎหมาย
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Employee Quick Info Card */}
       {employeeInfo && (
         <Card className="border shadow-xs bg-white print:hidden">

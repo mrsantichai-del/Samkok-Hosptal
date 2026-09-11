@@ -59,6 +59,7 @@ export default function EmployeesPage() {
   const [filterDepartmentId, setFilterDepartmentId] = useState("all");
   const [filterTypeId, setFilterTypeId] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterIdCard, setFilterIdCard] = useState("all");
 
   // Sort State
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
@@ -99,19 +100,25 @@ export default function EmployeesPage() {
   // Reset pagination on filter change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterPositionId, filterDepartmentId, filterTypeId, filterStatus]);
+  }, [searchTerm, filterPositionId, filterDepartmentId, filterTypeId, filterStatus, filterIdCard]);
 
   const filteredEmployees = employees.filter(emp => {
     const s = searchTerm.toLowerCase();
     const matchSearch = (emp.firstName || "").toLowerCase().includes(s) || 
                         (emp.lastName || "").toLowerCase().includes(s) || 
-                        (emp.employeeCode || "").toLowerCase().includes(s);
+                        (emp.employeeCode || "").toLowerCase().includes(s) ||
+                        (emp.idCard || "").includes(s);
     const matchPos = filterPositionId === "all" || emp.positionId === filterPositionId;
     const matchDept = filterDepartmentId === "all" || emp.departmentId === filterDepartmentId;
     const matchType = filterTypeId === "all" || emp.employeeTypeId === filterTypeId;
     const isEmpResigned = emp.status === "RESIGNED" || !!emp.endDate;
     const matchStatus = filterStatus === "all" || (filterStatus === "active" ? !isEmpResigned : isEmpResigned);
-    return matchSearch && matchPos && matchType && matchStatus && matchDept;
+    
+    const cleanId = (emp.idCard || "").replace(/\D/g, "");
+    const hasValidId = cleanId.length === 13;
+    const matchIdCard = filterIdCard === "all" || (filterIdCard === "missing" ? !hasValidId : hasValidId);
+
+    return matchSearch && matchPos && matchType && matchStatus && matchDept && matchIdCard;
   });
 
   const handleSort = (key: string) => {
@@ -478,6 +485,14 @@ export default function EmployeesPage() {
                  <option value="resigned">🔴 ลาออก</option>
               </select>
             </div>
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-semibold whitespace-nowrap">เลขบัตร ปชช.:</Label>
+              <select className="h-9 border rounded px-2 text-sm bg-gray-50" value={filterIdCard} onChange={e => setFilterIdCard(e.target.value)}>
+                 <option value="all">ทั้งหมด</option>
+                 <option value="missing">⚠️ ยังไม่ระบุ / ไม่ครบ 13 หลัก</option>
+                 <option value="valid">✓ ครบ 13 หลัก</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -520,11 +535,27 @@ export default function EmployeesPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedEmployees.map((emp, index) => (
+              paginatedEmployees.map((emp, index) => {
+                const cleanId = (emp.idCard || "").replace(/\D/g, "");
+                const isIdMissing = cleanId.length !== 13;
+                return (
                 <TableRow key={emp.id}>
                   <TableCell className="text-center text-gray-500 text-xs">{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
                   <TableCell className="font-medium text-xs">{emp.employeeCode}</TableCell>
-                  <TableCell className="text-xs font-semibold text-gray-900">{emp.firstName} {emp.lastName}</TableCell>
+                  <TableCell className="text-xs font-semibold text-gray-900">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span>{emp.firstName} {emp.lastName}</span>
+                      {isIdMissing && (
+                        <span 
+                          onClick={() => openEditDialog(emp)}
+                          className="inline-flex items-center gap-0.5 text-[10px] bg-amber-50 text-amber-800 border border-amber-300 rounded px-1.5 py-0.5 font-normal cursor-pointer hover:bg-amber-100" 
+                          title="คลิกเพื่อกรอกเลขประจำตัวประชาชน 13 หลัก"
+                        >
+                          ⚠️ ขาดเลข ปชช.
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-gray-600 text-xs max-w-[150px] truncate" title={emp.department?.name || "-"}>
                     {emp.department?.name || "-"}
                   </TableCell>
@@ -590,7 +621,8 @@ export default function EmployeesPage() {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
+              );
+            })
             )}
           </TableBody>
         </Table>
