@@ -339,8 +339,10 @@ export default function PayItemsPage() {
               <div className="space-y-1.5">
                 <Label htmlFor="type" className="text-xs font-semibold text-gray-700">ประเภท *</Label>
                 <Select value={type} onValueChange={(val) => setType(val as string)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกประเภท" />
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="เลือกประเภท">
+                      {type === "INCOME" ? "รายรับ (+)" : type === "DEDUCTION" ? "รายจ่าย (-)" : "เลือกประเภท"}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="INCOME">รายรับ (+)</SelectItem>
@@ -385,8 +387,18 @@ export default function PayItemsPage() {
                       รอบการตัดยอดและเริ่มสะสมใหม่
                     </Label>
                     <Select value={accumulateResetType} onValueChange={(val) => setAccumulateResetType(val as string)}>
-                      <SelectTrigger className="bg-white text-xs">
-                        <SelectValue placeholder="เลือกรอบการสะสม" />
+                      <SelectTrigger className="bg-white text-xs w-full">
+                        <SelectValue placeholder="เลือกรอบการสะสม">
+                          {accumulateResetType === "CALENDAR_YEAR"
+                            ? "📅 ปีปฏิทิน (1 ม.ค. - 31 ธ.ค.) - สำหรับภาษี, เงินได้, ประกันสังคม"
+                            : accumulateResetType === "FISCAL_YEAR"
+                            ? "🏛️ ปีงบประมาณราชการ (1 ต.ค. - 30 ก.ย.)"
+                            : accumulateResetType === "CUSTOM_MONTH"
+                            ? "⚙️ กำหนดเดือนเริ่มต้นเอง"
+                            : accumulateResetType === "NEVER"
+                            ? "♾️ สะสมต่อเนื่องตลอดไป (ไม่ตัดรอบ)"
+                            : "เลือกรอบการสะสม"}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="CALENDAR_YEAR">
@@ -414,8 +426,10 @@ export default function PayItemsPage() {
                         value={String(accumulateStartMonth)} 
                         onValueChange={(val) => setAccumulateStartMonth(Number(val))}
                       >
-                        <SelectTrigger className="bg-white text-xs">
-                          <SelectValue placeholder="เลือกเดือนเริ่มต้น" />
+                        <SelectTrigger className="bg-white text-xs w-full">
+                          <SelectValue placeholder="เลือกเดือนเริ่มต้น">
+                            {MONTH_NAMES[(Number(accumulateStartMonth) || 1) - 1] || "เลือกเดือนเริ่มต้น"}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           {MONTH_NAMES.map((m, idx) => (
