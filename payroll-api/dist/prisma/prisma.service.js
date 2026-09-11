@@ -64,7 +64,14 @@ let PrismaService = class PrismaService {
     auditLog;
     notification;
     constructor() {
-        const pool = new pg_1.Pool({ connectionString: process.env.DATABASE_URL || process.env.DIRECT_URL });
+        const connStr = process.env.DIRECT_URL || process.env.DATABASE_URL;
+        const pool = new pg_1.Pool({
+            connectionString: connStr,
+            ssl: { rejectUnauthorized: false },
+            max: 10,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 10000,
+        });
         const adapter = new adapter_pg_1.PrismaPg(pool);
         this.client = new client_1.PrismaClient({ adapter });
         this.user = this.client.user;

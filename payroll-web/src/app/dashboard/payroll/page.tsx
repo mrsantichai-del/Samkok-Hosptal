@@ -41,19 +41,24 @@ export default function PayrollPage() {
 
   const router = useRouter();
 
-  const fetchRecords = async () => {
-    setLoading(true);
+  const fetchRecords = async (retryCount = 0) => {
+    if (retryCount === 0) setLoading(true);
     try {
       const token = Cookies.get("token");
+      if (!token) return;
       const res = await axios.get(`${API_URL}/payroll/records`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRecords(res.data);
-    } catch (e) {
-      console.error(e);
-      toast.error("ดึงข้อมูลรอบเงินเดือนไม่สำเร็จ");
-    } finally {
       setLoading(false);
+    } catch (e: any) {
+      console.error(e);
+      if (retryCount < 2) {
+        setTimeout(() => fetchRecords(retryCount + 1), 1500);
+      } else {
+        toast.error("ดึงข้อมูลรอบเงินเดือนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+        setLoading(false);
+      }
     }
   };
 
