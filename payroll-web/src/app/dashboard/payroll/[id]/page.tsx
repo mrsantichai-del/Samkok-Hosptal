@@ -1,9 +1,9 @@
 "use client";
 import { API_URL } from "@/lib/config";
-import { useEffect, useState, use, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import * as XLSX from 'xlsx';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -15,9 +15,10 @@ import { jwtDecode } from "jwt-decode";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 
-export default function PayrollDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function PayrollDetailPage() {
   const router = useRouter();
-  const resolvedParams = use(params);
+  const routeParams = useParams();
+  const recordId = typeof routeParams?.id === "string" ? routeParams.id : Array.isArray(routeParams?.id) ? routeParams.id[0] : "";
 
   // Data
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -76,10 +77,11 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   };
 
   const handleViewHistory = async () => {
+    if (!recordId) return;
     setLoadingHistory(true);
     try {
       const token = Cookies.get("token");
-      const res = await axios.get(`${API_URL}/payroll/records/${resolvedParams.id}/audit-logs`, {
+      const res = await axios.get(`${API_URL}/payroll/records/${recordId}/audit-logs`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAuditLogs(Array.isArray(res.data) ? res.data : []);
@@ -92,6 +94,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   };
 
   const fetchData = async () => {
+    if (!recordId) return;
     setLoading(true);
     try {
       const token = Cookies.get("token");
@@ -101,10 +104,10 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
         } catch (e) {}
       }
       const [txRes, itemsRes, typeRes, recRes] = await Promise.all([
-        axios.get(`${API_URL}/payroll/records/${resolvedParams.id}/transactions`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/payroll/records/${recordId}/transactions`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/pay-items`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/employees/types`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/payroll/records/${resolvedParams.id}`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_URL}/payroll/records/${recordId}`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setTransactions(txRes.data);
       setAllPayItems(itemsRes.data);
@@ -134,11 +137,13 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   };
 
   useEffect(() => {
-    fetchData();
-  }, [resolvedParams.id]);
+    if (recordId) {
+      fetchData();
+    }
+  }, [recordId]);
 
   const handleSaveAll = async () => {
-    if (modifiedRows.size === 0) return;
+    if (modifiedRows.size === 0 || !recordId) return;
     setSavingGlobal(true);
     const toastId = toast.loading("กำลังบันทึกข้อมูล...");
     try {
@@ -154,7 +159,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
             amount: Number(gridData[empId][payItemId])
           }));
 
-        return axios.patch(`${API_URL}/payroll/records/${resolvedParams.id}/employee/${empId}`, {
+        return axios.patch(`${API_URL}/payroll/records/${recordId}/employee/${empId}`, {
           transactions: txToSave
         }, { headers: { Authorization: `Bearer ${token}` } });
       });
@@ -175,7 +180,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
     const toastId = toast.loading("กำลังส่งคำขออนุมัติ...");
     try {
       const token = Cookies.get("token");
-      await axios.patch(`${API_URL}/payroll/records/${resolvedParams.id}/request-approval`, {}, {
+      await axios.patch(`${API_URL}/payroll/records/${recordId}/request-approval`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('ส่งคำขออนุมัติเรียบร้อยแล้ว (แจ้งเตือนไปยังผู้มีอำนาจแล้ว)', { id: toastId });
@@ -190,7 +195,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
     const toastId = toast.loading("กำลังอนุมัติเงินเดือน...");
     try {
       const token = Cookies.get("token");
-      await axios.patch(`${API_URL}/payroll/records/${resolvedParams.id}/approve`, {}, {
+      await axios.patch(`${API_URL}/payroll/records/${recordId}/approve`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('อนุมัติเงินเดือนเรียบร้อยแล้ว (แจ้งเตือนไปยังพนักงานทุกคนแล้ว)', { id: toastId });
@@ -214,7 +219,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
     const toastId = toast.loading("กำลังส่งคำขอแก้ไข...");
     try {
       const token = Cookies.get("token");
-      await axios.patch(`${API_URL}/payroll/records/${resolvedParams.id}/request-edit`, {
+      await axios.patch(`${API_URL}/payroll/records/${recordId}/request-edit`, {
         reason: requestEditReason.trim()
       }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success('ส่งคำขอแก้ไขเรียบร้อยแล้ว กรุณารอการอนุญาตจากผู้มีอำนาจ', { id: toastId });
@@ -233,7 +238,7 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
     const toastId = toast.loading("กำลังปลดล็อกการแก้ไข...");
     try {
       const token = Cookies.get("token");
-      await axios.patch(`${API_URL}/payroll/records/${resolvedParams.id}/grant-edit`, {}, {
+      await axios.patch(`${API_URL}/payroll/records/${recordId}/grant-edit`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('ปลดล็อกให้แก้ไขข้อมูลเรียบร้อยแล้ว', { id: toastId });
@@ -276,16 +281,17 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   };
 
   const handleExportExcel = async () => {
+    if (!recordId) return;
     setIsExportingExcel(true);
     const toastId = toast.loading("กำลังสร้างไฟล์ Excel...");
     try {
       const token = Cookies.get("token");
       const employeeIds = filteredEmployees.map(e => e.employeeId);
-      const res = await axios.post(`${API_URL}/payroll/records/${resolvedParams.id}/export/excel`, { employeeIds }, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
+      const res = await axios.post(`${API_URL}/payroll/records/${recordId}/export/excel`, { employeeIds }, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Payroll_${resolvedParams.id}.xlsx`);
+      link.setAttribute('download', `Payroll_${recordId}.xlsx`);
       document.body.appendChild(link);
       link.click();
       toast.success("ดาวน์โหลดไฟล์ Excel สำเร็จ", { id: toastId });
@@ -309,12 +315,13 @@ export default function PayrollDetailPage({ params }: { params: Promise<{ id: st
   };
 
   const handleExportPdf = async () => {
+    if (!recordId) return;
     setIsExportingPdf(true);
     const toastId = toast.loading("กำลังสร้างสลิปเงินเดือน (PDF)...");
     try {
       const token = Cookies.get("token");
       const employeeIds = filteredEmployees.map(e => e.employeeId);
-      const res = await axios.post(`${API_URL}/payroll/records/${resolvedParams.id}/export/pdf`, { employeeIds }, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
+      const res = await axios.post(`${API_URL}/payroll/records/${recordId}/export/pdf`, { employeeIds }, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
       window.open(url);
       toast.success("สร้างสลิปเงินเดือนสำเร็จ", { id: toastId });
