@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFoo
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Download, Save, Upload, Search, FileX2, Eye } from "lucide-react";
+import { ArrowLeft, Download, Save, Upload, Search, FileX2, Eye, Clock, CheckCircle, AlertCircle, Edit } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 
@@ -19,6 +20,7 @@ export default function PayrollDetailPage() {
   const id = typeof routeParams?.id === "string" ? routeParams.id : Array.isArray(routeParams?.id) ? routeParams.id[0] : "";
 
   // Data
+  const [record, setRecord] = useState<any>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [allPayItems, setAllPayItems] = useState<any[]>([]);
   const [employeeTypes, setEmployeeTypes] = useState<any[]>([]);
@@ -51,16 +53,25 @@ export default function PayrollDetailPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [viewingEmp, setViewingEmp] = useState<any>(null);
 
+  const getDisplayName = (val: any) => {
+    if (!val) return '-';
+    if (typeof val === 'string') return val;
+    if (typeof val === 'object' && val.name) return val.name;
+    return '-';
+  };
+
   const fetchData = async () => {
     if (!id) return;
     setLoading(true);
     try {
       const token = Cookies.get("token");
-      const [txRes, itemsRes, typeRes] = await Promise.all([
+      const [recRes, txRes, itemsRes, typeRes] = await Promise.all([
+        axios.get(`${API_URL}/payroll/records/${id}`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/payroll/records/${id}/transactions`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/pay-items`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/employees/types`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
+      setRecord(recRes.data);
       setTransactions(txRes.data);
       setAllPayItems(itemsRes.data);
       setEmployeeTypes(typeRes.data);
@@ -94,7 +105,7 @@ export default function PayrollDetailPage() {
   }, [id]);
 
   const handleSaveAll = async () => {
-    if (modifiedRows.size === 0 || !id) return;
+    if (modifiedRows.size === 0 || !id || record?.status !== 'DRAFT') return;
     setSavingGlobal(true);
     const toastId = toast.loading("กำลังบันทึกข้อมูล...");
     try {
@@ -191,6 +202,7 @@ export default function PayrollDetailPage() {
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (record?.status !== 'DRAFT') return;
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -295,23 +307,24 @@ export default function PayrollDetailPage() {
     if (filterType !== "ALL" && emp.employeeType?.id !== filterType) return false;
     if (debouncedSearch) {
       const searchLower = debouncedSearch.toLowerCase();
-      return emp.firstName.toLowerCase().includes(searchLower) || 
-             emp.lastName.toLowerCase().includes(searchLower) || 
-             emp.employeeCode.toLowerCase().includes(searchLower);
+      const code = String(emp.employeeCode || '').toLowerCase();
+      const first = String(emp.firstName || '').toLowerCase();
+      const last = String(emp.lastName || '').toLowerCase();
+      return first.includes(searchLower) || last.includes(searchLower) || code.includes(searchLower);
     }
     return true;
   });
 
   filteredEmployees.sort((a, b) => {
-    let aValue: any = a.employeeCode;
-    let bValue: any = b.employeeCode;
+    let aValue: any = a.employeeCode || '';
+    let bValue: any = b.employeeCode || '';
 
     if (sortConfig.key === 'name') {
-       aValue = a.firstName; bValue = b.firstName;
+       aValue = a.firstName || ''; bValue = b.firstName || '';
     } else if (sortConfig.key === 'type') {
-       aValue = a.employeeType?.name || ''; bValue = b.employeeType?.name || '';
+       aValue = getDisplayName(a.employeeType); bValue = getDisplayName(b.employeeType);
     } else if (sortConfig.key === 'position') {
-       aValue = a.position?.name || ''; bValue = b.position?.name || '';
+       aValue = getDisplayName(a.position); bValue = getDisplayName(b.position);
     } else if (sortConfig.key === 'net') {
        let aInc=0, aDed=0, bInc=0, bDed=0;
        incomeItems.forEach(i => aInc += Number(gridData[a.employeeId]?.[i.id] || 0));
@@ -351,6 +364,40 @@ export default function PayrollDetailPage() {
      return sum;
   };
 
+  const isEditable = record?.status === 'DRAFT';
+
+  const renderStatusBadge = () => {
+    if (!record) return null;
+    switch (record.status) {
+      case 'DRAFT':
+        return (
+          <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300 font-semibold px-2.5 py-1 flex items-center gap-1.5 shadow-sm">
+            <Edit className="w-3.5 h-3.5 text-gray-600" /> ฉบับร่าง
+          </Badge>
+        );
+      case 'PENDING_APPROVAL':
+        return (
+          <Badge variant="outline" className="bg-amber-100 text-amber-900 border-amber-300 font-semibold px-2.5 py-1 flex items-center gap-1.5 shadow-sm">
+            <Clock className="w-3.5 h-3.5 text-amber-700 animate-spin" /> รอการอนุมัติ
+          </Badge>
+        );
+      case 'APPROVED':
+        return (
+          <Badge variant="outline" className="bg-emerald-100 text-emerald-900 border-emerald-300 font-semibold px-2.5 py-1 flex items-center gap-1.5 shadow-sm">
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-700" /> อนุมัติแล้ว
+          </Badge>
+        );
+      case 'EDIT_REQUESTED':
+        return (
+          <Badge variant="outline" className="bg-orange-100 text-orange-900 border-orange-300 font-semibold px-2.5 py-1 flex items-center gap-1.5 shadow-sm">
+            <AlertCircle className="w-3.5 h-3.5 text-orange-700" /> ร้องขอแก้ไข
+          </Badge>
+        );
+      default:
+        return <Badge variant="outline">{record.status}</Badge>;
+    }
+  };
+
   return (
     <div className="fixed top-14 left-0 lg:left-[280px] right-0 bottom-0 bg-[#f0f2f5] flex flex-col p-2 lg:p-4 z-30">
       <div className="flex justify-between items-center mb-2 flex-shrink-0">
@@ -361,12 +408,13 @@ export default function PayrollDetailPage() {
           <div>
             <h1 className="text-xl font-bold">รายละเอียดการจ่ายเงินเดือน</h1>
           </div>
+          {renderStatusBadge()}
         </div>
         <div className="flex gap-2">
           <Button 
-            className={`h-8 text-xs ${modifiedRows.size > 0 ? 'bg-[#1877f2] hover:bg-[#166fe5] animate-pulse' : 'bg-gray-400'} text-white`} 
+            className={`h-8 text-xs ${modifiedRows.size > 0 && isEditable ? 'bg-[#1877f2] hover:bg-[#166fe5] animate-pulse' : 'bg-gray-400'} text-white`} 
             onClick={handleSaveAll}
-            disabled={modifiedRows.size === 0 || savingGlobal}
+            disabled={modifiedRows.size === 0 || savingGlobal || !isEditable}
           >
             <Save className="mr-1 h-3 w-3" /> 
             {savingGlobal ? "บันทึก..." : `บันทึกทั้งหมด (${modifiedRows.size})`}
@@ -409,15 +457,28 @@ export default function PayrollDetailPage() {
          </div>
          
          <input type="file" accept=".xlsx, .xls" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
-         <Button variant="outline" className="h-8 text-xs ml-auto border-green-300 text-green-700 bg-green-50 hover:bg-green-100" onClick={() => fileInputRef.current?.click()}>
+         <Button 
+           variant="outline" 
+           className="h-8 text-xs ml-auto border-green-300 text-green-700 bg-green-50 hover:bg-green-100" 
+           onClick={() => fileInputRef.current?.click()}
+           disabled={!isEditable}
+           title={!isEditable ? "ไม่สามารถนำเข้าข้อมูลได้ในสถานะที่ไม่อนุญาตให้แก้ไข" : "นำเข้าตัวเลขจากไฟล์ Excel"}
+         >
             <Upload className="h-3 w-3 mr-1" /> นำเข้า Excel (Import)
          </Button>
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-gray-500 bg-white rounded-md flex-1">กำลังโหลดข้อมูลตาราง...</div>
+        <div className="text-center py-20 text-gray-500 bg-white rounded-md flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <Clock className="w-8 h-8 text-blue-500 animate-spin" />
+            <span className="text-sm font-medium">กำลังโหลดข้อมูลตาราง...</span>
+          </div>
+        </div>
       ) : employeeList.length === 0 ? (
-        <div className="text-center py-20 text-gray-500 bg-white rounded-md flex-1">ไม่พบรายการเงินเดือน</div>
+        <div className="text-center py-20 text-gray-500 bg-white rounded-md flex-1 flex items-center justify-center">
+          <span className="text-sm font-medium">ไม่พบรายการเงินเดือน</span>
+        </div>
       ) : (
         <div className="border rounded-md shadow-sm bg-white flex flex-col flex-1 overflow-hidden relative">
           <div className="overflow-auto flex-1 relative">
@@ -464,28 +525,33 @@ export default function PayrollDetailPage() {
                      const net = totalIncome - totalDeduct;
                      const isModified = modifiedRows.has(emp.employeeId);
 
+                     const posName = getDisplayName(emp.position);
+                     const typeName = getDisplayName(emp.employeeType);
+
                      return (
                        <TableRow key={emp.employeeId} className={`hover:bg-blue-50/50 group ${isModified ? "bg-yellow-50/40" : ""}`}>
                          <TableCell className={`border border-gray-300 p-1 text-center sticky left-0 z-10 ${isModified ? "bg-yellow-50" : "bg-white"} group-hover:bg-blue-50/50 text-[11px] text-gray-500`}>
                            {index + 1}
                          </TableCell>
-                         <TableCell className={`border border-gray-300 p-1 sticky left-[30px] z-10 ${isModified ? "bg-yellow-50" : "bg-white"} group-hover:bg-blue-50/50 font-medium truncate min-w-[150px] w-[150px] text-[11px]`} title={`${emp.employeeCode} ${emp.firstName} ${emp.lastName}`}>
-                           <span className="text-[#1877f2] font-semibold">{emp.employeeCode}</span> {emp.firstName} {emp.lastName}
+                         <TableCell className={`border border-gray-300 p-1 sticky left-[30px] z-10 ${isModified ? "bg-yellow-50" : "bg-white"} group-hover:bg-blue-50/50 font-medium truncate min-w-[150px] w-[150px] text-[11px]`} title={`${emp.employeeCode} ${emp.firstName || ''} ${emp.lastName || ''}`}>
+                           <span className="text-[#1877f2] font-semibold">{emp.employeeCode}</span> {emp.firstName || ''} {emp.lastName || ''}
                          </TableCell>
-                         <TableCell className={`border border-gray-300 p-1 text-center sticky left-[180px] z-10 ${isModified ? "bg-yellow-50" : "bg-white"} group-hover:bg-blue-50/50 truncate min-w-[80px] w-[80px] text-[10px] text-gray-600`} title={emp.position?.name || "-"}>
-                           {emp.position?.name || '-'}
+                         <TableCell className={`border border-gray-300 p-1 text-center sticky left-[180px] z-10 ${isModified ? "bg-yellow-50" : "bg-white"} group-hover:bg-blue-50/50 truncate min-w-[80px] w-[80px] text-[10px] text-gray-600`} title={posName}>
+                           {posName}
                          </TableCell>
-                         <TableCell className={`border border-gray-300 p-1 text-center sticky left-[260px] z-10 ${isModified ? "bg-yellow-50" : "bg-white"} group-hover:bg-blue-50/50 truncate min-w-[80px] w-[80px] text-[10px] text-gray-600 shadow-[1px_0_0_0_#e5e7eb]`} title={emp.employeeType?.name || "-"}>
-                           {emp.employeeType?.name || '-'}
+                         <TableCell className={`border border-gray-300 p-1 text-center sticky left-[260px] z-10 ${isModified ? "bg-yellow-50" : "bg-white"} group-hover:bg-blue-50/50 truncate min-w-[80px] w-[80px] text-[10px] text-gray-600 shadow-[1px_0_0_0_#e5e7eb]`} title={typeName}>
+                           {typeName}
                          </TableCell>
                          
                          {incomeItems.map(item => (
                            <TableCell key={item.id} className={`border border-gray-300 p-0 min-w-[95px] w-[95px] ${isModified ? "bg-yellow-50" : "bg-white"}`}>
                              <Input 
                                type="number" 
-                               className="h-7 w-full text-right border-0 rounded-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-green-500 text-green-800 bg-transparent text-[11px] px-1"
+                               readOnly={!isEditable}
+                               className={`h-7 w-full text-right border-0 rounded-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-green-500 text-green-800 bg-transparent text-[11px] px-1 ${!isEditable ? 'cursor-not-allowed opacity-90' : ''}`}
                                value={gridData[emp.employeeId]?.[item.id] || ''}
                                onChange={(e) => {
+                                 if (!isEditable) return;
                                  setGridData(prev => ({...prev, [emp.employeeId]: {...(prev[emp.employeeId]||{}), [item.id]: e.target.value}}));
                                  setModifiedRows(prev => new Set(prev).add(emp.employeeId));
                                }}
@@ -497,9 +563,11 @@ export default function PayrollDetailPage() {
                            <TableCell key={item.id} className={`border border-gray-300 p-0 min-w-[95px] w-[95px] ${isModified ? "bg-yellow-50" : "bg-white"}`}>
                              <Input 
                                type="number" 
-                               className="h-7 w-full text-right border-0 rounded-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-red-500 text-red-800 bg-transparent text-[11px] px-1"
+                               readOnly={!isEditable}
+                               className={`h-7 w-full text-right border-0 rounded-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-red-500 text-red-800 bg-transparent text-[11px] px-1 ${!isEditable ? 'cursor-not-allowed opacity-90' : ''}`}
                                value={gridData[emp.employeeId]?.[item.id] || ''}
                                onChange={(e) => {
+                                 if (!isEditable) return;
                                  setGridData(prev => ({...prev, [emp.employeeId]: {...(prev[emp.employeeId]||{}), [item.id]: e.target.value}}));
                                  setModifiedRows(prev => new Set(prev).add(emp.employeeId));
                                }}
@@ -511,7 +579,7 @@ export default function PayrollDetailPage() {
                            {net.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                          </TableCell>
                          <TableCell className={`border border-gray-300 p-1 text-center sticky right-0 z-10 ${isModified ? "bg-yellow-100" : "bg-gray-100"} group-hover:bg-gray-200 shadow-[-1px_0_0_0_#e5e7eb] w-[60px]`}>
-                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setViewingEmp(emp)}>
+                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setViewingEmp(emp)} title="ดูรายละเอียดรายบุคคล">
                                <Eye className="h-4 w-4 text-blue-600" />
                              </Button>
                            </TableCell>
@@ -589,9 +657,14 @@ export default function PayrollDetailPage() {
             <DialogHeader className="p-4 border-b bg-gray-50 flex-shrink-0">
               <DialogTitle className="text-lg flex justify-between items-center">
                 <span>รายละเอียดเงินเดือน: {viewingEmp.firstName} {viewingEmp.lastName}</span>
+                {!isEditable && (
+                  <span className="text-xs font-normal text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full mr-6">
+                    โหมดดูข้อมูลเท่านั้น (ไม่สามารถแก้ไขได้ในสถานะนี้)
+                  </span>
+                )}
               </DialogTitle>
               <DialogDescription>
-                รหัส: {viewingEmp.employeeCode} | ตำแหน่ง: {viewingEmp.position?.name || '-'} | ประเภท: {viewingEmp.employeeType?.name || '-'}
+                รหัส: {viewingEmp.employeeCode} | ตำแหน่ง: {getDisplayName(viewingEmp.position)} | ประเภท: {getDisplayName(viewingEmp.employeeType)}
               </DialogDescription>
             </DialogHeader>
             <div className="flex-1 overflow-y-auto p-4 bg-gray-50/50">
@@ -604,9 +677,11 @@ export default function PayrollDetailPage() {
                         <Label className="text-sm text-gray-700 font-medium mr-4 leading-snug" title={item.name}>{item.name}</Label>
                         <Input 
                           type="number" 
-                          className="h-9 w-32 md:w-40 flex-shrink-0 text-right text-sm focus-visible:ring-green-500"
+                          readOnly={!isEditable}
+                          className={`h-9 w-32 md:w-40 flex-shrink-0 text-right text-sm focus-visible:ring-green-500 ${!isEditable ? 'cursor-not-allowed bg-gray-100' : ''}`}
                           value={gridData[viewingEmp.employeeId]?.[item.id] || ''}
                           onChange={(e) => {
+                            if (!isEditable) return;
                             setGridData(prev => ({...prev, [viewingEmp.employeeId]: {...(prev[viewingEmp.employeeId]||{}), [item.id]: e.target.value}}));
                             setModifiedRows(prev => new Set(prev).add(viewingEmp.employeeId));
                           }}
@@ -623,9 +698,11 @@ export default function PayrollDetailPage() {
                         <Label className="text-sm text-gray-700 font-medium mr-4 leading-snug" title={item.name}>{item.name}</Label>
                         <Input 
                           type="number" 
-                          className="h-9 w-32 md:w-40 flex-shrink-0 text-right text-sm focus-visible:ring-red-500"
+                          readOnly={!isEditable}
+                          className={`h-9 w-32 md:w-40 flex-shrink-0 text-right text-sm focus-visible:ring-red-500 ${!isEditable ? 'cursor-not-allowed bg-gray-100' : ''}`}
                           value={gridData[viewingEmp.employeeId]?.[item.id] || ''}
                           onChange={(e) => {
+                            if (!isEditable) return;
                             setGridData(prev => ({...prev, [viewingEmp.employeeId]: {...(prev[viewingEmp.employeeId]||{}), [item.id]: e.target.value}}));
                             setModifiedRows(prev => new Set(prev).add(viewingEmp.employeeId));
                           }}
