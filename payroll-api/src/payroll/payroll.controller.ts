@@ -79,6 +79,27 @@ export class PayrollController {
     return this.payrollService.approvePayroll(id, req.user.userId);
   }
 
+  @Roles('System Administrator', 'Finance Officer')
+  @Patch('records/:id/request-edit')
+  @ApiOperation({ summary: 'Request edit for an approved/pending payroll record' })
+  requestEdit(@Param('id') id: string, @Body() body: { reason: string }, @Req() req: any) {
+    return this.payrollService.requestEdit(id, body?.reason, req.user.userId);
+  }
+
+  @Roles('Executive', 'System Administrator')
+  @Patch('records/:id/grant-edit')
+  @ApiOperation({ summary: 'Grant edit request and revert payroll to draft' })
+  grantEdit(@Param('id') id: string, @Req() req: any) {
+    return this.payrollService.grantEdit(id, req.user.userId);
+  }
+
+  @Roles('Executive', 'System Administrator')
+  @Patch('records/:id/reject-edit')
+  @ApiOperation({ summary: 'Reject edit request and keep approved status' })
+  rejectEdit(@Param('id') id: string, @Body() body: { reason?: string }, @Req() req: any) {
+    return this.payrollService.rejectEdit(id, req.user.userId, body?.reason);
+  }
+
   @Roles('System Administrator', 'Finance Officer', 'Executive')
   @Post('records/:id/export/excel')
   @ApiOperation({ summary: 'Export Payroll to Excel' })

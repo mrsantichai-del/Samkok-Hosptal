@@ -52,6 +52,15 @@ let PayrollController = class PayrollController {
     approvePayrollExec(id, req) {
         return this.payrollService.approvePayroll(id, req.user.userId);
     }
+    requestEdit(id, body, req) {
+        return this.payrollService.requestEdit(id, body?.reason, req.user.userId);
+    }
+    grantEdit(id, req) {
+        return this.payrollService.grantEdit(id, req.user.userId);
+    }
+    rejectEdit(id, body, req) {
+        return this.payrollService.rejectEdit(id, req.user.userId, body?.reason);
+    }
     async exportExcel(id, body, res) {
         await this.payrollService.exportExcel(id, res, body.employeeIds);
     }
@@ -158,6 +167,38 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], PayrollController.prototype, "approvePayrollExec", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer'),
+    (0, common_1.Patch)('records/:id/request-edit'),
+    (0, swagger_1.ApiOperation)({ summary: 'Request edit for an approved/pending payroll record' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", void 0)
+], PayrollController.prototype, "requestEdit", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('Executive', 'System Administrator'),
+    (0, common_1.Patch)('records/:id/grant-edit'),
+    (0, swagger_1.ApiOperation)({ summary: 'Grant edit request and revert payroll to draft' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], PayrollController.prototype, "grantEdit", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('Executive', 'System Administrator'),
+    (0, common_1.Patch)('records/:id/reject-edit'),
+    (0, swagger_1.ApiOperation)({ summary: 'Reject edit request and keep approved status' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", void 0)
+], PayrollController.prototype, "rejectEdit", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
     (0, common_1.Post)('records/:id/export/excel'),

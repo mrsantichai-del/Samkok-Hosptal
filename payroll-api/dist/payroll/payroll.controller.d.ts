@@ -74,6 +74,19 @@ export declare class PayrollController {
     approvePayrollExec(id: string, req: any): Promise<{
         message: string;
     }>;
+    requestEdit(id: string, body: {
+        reason: string;
+    }, req: any): Promise<{
+        message: string;
+    }>;
+    grantEdit(id: string, req: any): Promise<{
+        message: string;
+    }>;
+    rejectEdit(id: string, body: {
+        reason?: string;
+    }, req: any): Promise<{
+        message: string;
+    }>;
     exportExcel(id: string, body: {
         employeeIds?: string[];
     }, res: Response): Promise<void>;

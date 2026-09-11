@@ -40,6 +40,13 @@ export default function PayrollDetailPage() {
   const [approving, setApproving] = useState(false);
   const [deletingRecord, setDeletingRecord] = useState(false);
 
+  // Edit Request State
+  const [requestEditOpen, setRequestEditOpen] = useState(false);
+  const [requestEditReason, setRequestEditReason] = useState("");
+  const [submittingEditRequest, setSubmittingEditRequest] = useState(false);
+  const [grantingEdit, setGrantingEdit] = useState(false);
+  const [rejectingEdit, setRejectingEdit] = useState(false);
+
   // Filters & Sorting
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -248,6 +255,92 @@ export default function PayrollDetailPage() {
       toast.dismiss(toastId);
       showError("เกิดข้อผิดพลาด", err.response?.data?.message || "ไม่สามารถลบรอบเงินเดือนได้");
       setDeletingRecord(false);
+    }
+  };
+
+  const handleRequestEdit = async () => {
+    if (!requestEditReason.trim()) {
+      toast.error("กรุณาระบุเหตุผลในการขอแก้ไข");
+      return;
+    }
+
+    setSubmittingEditRequest(true);
+    const toastId = toast.loading("กำลังส่งคำขอแก้ไข...");
+    try {
+      const token = Cookies.get("token");
+      await axios.patch(`${API_URL}/payroll/records/${id}/request-edit`, {
+        reason: requestEditReason.trim()
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.dismiss(toastId);
+      setRequestEditOpen(false);
+      setRequestEditReason("");
+      showSuccess("ส่งคำขอแก้ไขสำเร็จ", "ระบบได้ส่งคำขอแก้ไขไปยังผู้บริหารเรียบร้อยแล้ว เมื่อได้รับการอนุมัติสถานะจะเปลี่ยนกลับเป็นฉบับร่างเพื่อให้แก้ไขได้");
+      fetchData();
+    } catch (err: any) {
+      toast.dismiss(toastId);
+      showError("เกิดข้อผิดพลาด", err.response?.data?.message || "ไม่สามารถส่งคำขอแก้ไขได้");
+    } finally {
+      setSubmittingEditRequest(false);
+    }
+  };
+
+  const handleGrantEdit = async () => {
+    const result = await showConfirm({
+      title: "อนุญาตให้แก้ไขเงินเดือน",
+      text: "คุณต้องการอนุญาตให้แก้ไขเงินเดือนรอบนี้ใช่หรือไม่? เมื่ออนุญาตแล้วสถานะจะถูกเปลี่ยนกลับเป็น 'ฉบับร่าง (DRAFT)' เพื่อให้เจ้าหน้าที่สามารถแก้ไขตัวเลขได้",
+      icon: "warning",
+      confirmButtonText: "ยินยอมให้แก้ไข",
+      confirmButtonColor: "#ea580c",
+    });
+
+    if (!result.isConfirmed) return;
+
+    setGrantingEdit(true);
+    const toastId = toast.loading("กำลังดำเนินการ...");
+    try {
+      const token = Cookies.get("token");
+      await axios.patch(`${API_URL}/payroll/records/${id}/grant-edit`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.dismiss(toastId);
+      showSuccess("ปลดล็อกสำเร็จ", "สถานะถูกเปลี่ยนเป็น 'ฉบับร่าง' เรียบร้อยแล้ว สามารถแก้ไขตัวเลขในตารางได้");
+      fetchData();
+    } catch (err: any) {
+      toast.dismiss(toastId);
+      showError("เกิดข้อผิดพลาด", err.response?.data?.message || "ไม่สามารถปลดล็อกได้");
+    } finally {
+      setGrantingEdit(false);
+    }
+  };
+
+  const handleRejectEdit = async () => {
+    const result = await showConfirm({
+      title: "ปฏิเสธคำขอแก้ไขเงินเดือน",
+      text: "คุณต้องการปฏิเสธคำขอแก้ไขและคงสถานะเป็น 'อนุมัติแล้ว' ใช่หรือไม่?",
+      icon: "question",
+      confirmButtonText: "ปฏิเสธคำขอ",
+      confirmButtonColor: "#4b5563",
+    });
+
+    if (!result.isConfirmed) return;
+
+    setRejectingEdit(true);
+    const toastId = toast.loading("กำลังดำเนินการ...");
+    try {
+      const token = Cookies.get("token");
+      await axios.patch(`${API_URL}/payroll/records/${id}/reject-edit`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.dismiss(toastId);
+      showSuccess("ดำเนินการสำเร็จ", "ปฏิเสธคำขอแก้ไขเรียบร้อยแล้ว สถานะยังคงเป็น 'อนุมัติแล้ว'");
+      fetchData();
+    } catch (err: any) {
+      toast.dismiss(toastId);
+      showError("เกิดข้อผิดพลาด", err.response?.data?.message || "เกิดข้อผิดพลาด");
+    } finally {
+      setRejectingEdit(false);
     }
   };
 
@@ -600,6 +693,18 @@ export default function PayrollDetailPage() {
             </Button>
           )}
 
+          {record?.status === 'APPROVED' && (
+            <Button 
+              variant="outline"
+              className="h-8 text-xs border-amber-400 text-amber-900 bg-amber-50 hover:bg-amber-100 hover:text-amber-950 font-medium shadow-sm"
+              onClick={() => setRequestEditOpen(true)}
+              title="ส่งคำขอแก้ไขข้อมูลเงินเดือนให้ผู้บริหารพิจารณา"
+            >
+              <AlertCircle className="mr-1 h-3.5 w-3.5 text-amber-600" />
+              ขอแก้ไขข้อมูล
+            </Button>
+          )}
+
           <div className="w-px h-8 bg-gray-300 mx-1"></div>
           <Button className="h-8 text-xs bg-red-600 hover:bg-red-700 text-white" onClick={handleExportPdf} disabled={isExportingPdf}>
             <Download className="mr-1 h-3 w-3" /> {isExportingPdf ? "กำลังสร้าง PDF..." : "สลิป (PDF)"}
@@ -622,6 +727,55 @@ export default function PayrollDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Alert Banner for EDIT_REQUESTED */}
+      {record?.status === 'EDIT_REQUESTED' && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-md shadow-sm mb-2 gap-3 flex-shrink-0">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-amber-900 text-sm">รอบเงินเดือนนี้อยู่ในสถานะ "ร้องขอแก้ไข"</span>
+                {record.editRequestedAt && (
+                  <span className="text-xs text-amber-700">
+                    ({new Date(record.editRequestedAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })})
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-amber-800 mt-0.5">
+                <span className="font-semibold">เหตุผล:</span> {record.editRequestReason || "ขอแก้ไขข้อมูลเงินเดือน"}
+              </p>
+            </div>
+          </div>
+
+          {isExecutiveOrAdmin ? (
+            <div className="flex items-center gap-2 flex-shrink-0 self-end sm:self-center">
+              <Button 
+                size="sm" 
+                className="h-8 text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-sm"
+                onClick={handleGrantEdit}
+                disabled={grantingEdit || rejectingEdit}
+              >
+                <Check className="w-3.5 h-3.5 mr-1" />
+                {grantingEdit ? "กำลังปลดล็อก..." : "อนุญาตให้แก้ไข (ปลดล็อก DRAFT)"}
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-8 text-xs border-gray-300 text-gray-700 hover:bg-gray-100"
+                onClick={handleRejectEdit}
+                disabled={grantingEdit || rejectingEdit}
+              >
+                {rejectingEdit ? "กำลังปฏิเสธ..." : "ปฏิเสธคำขอ"}
+              </Button>
+            </div>
+          ) : (
+            <span className="text-xs font-medium text-amber-800 bg-amber-100/90 px-2.5 py-1 rounded border border-amber-300">
+              รอผู้บริหารพิจารณาอนุญาตให้แก้ไข
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="flex gap-4 mb-2 items-center text-sm flex-shrink-0 bg-white p-2 rounded-md shadow-sm border">
          <div className="relative w-64">
@@ -927,6 +1081,36 @@ export default function PayrollDetailPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Request Edit Dialog */}
+      <Dialog open={requestEditOpen} onOpenChange={setRequestEditOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-800">
+              <AlertCircle className="w-5 h-5 text-amber-600" /> ร้องขอแก้ไขข้อมูลเงินเดือน
+            </DialogTitle>
+            <DialogDescription>
+              รอบเงินเดือนที่ได้รับการอนุมัติแล้ว หากต้องการแก้ไขตัวเลข จะต้องระบุเหตุผลเพื่อส่งให้ผู้บริหารพิจารณาปลดล็อก
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-3 space-y-2">
+            <Label className="text-xs font-semibold text-gray-700">เหตุผลในการขอแก้ไข (ระบุรายละเอียด):</Label>
+            <textarea
+              rows={3}
+              placeholder="เช่น มีการปรับเปลี่ยนชั่วโมง OT พนักงานแผนกทันตกรรม, คำนวณตกเบิกเพิ่มเติม..."
+              className="w-full text-sm border rounded-md p-2.5 focus:outline-none focus:ring-1 focus:ring-amber-500 bg-gray-50"
+              value={requestEditReason}
+              onChange={(e) => setRequestEditReason(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRequestEditOpen(false)} disabled={submittingEditRequest}>ยกเลิก</Button>
+            <Button className="bg-amber-600 hover:bg-amber-700 text-white font-medium" onClick={handleRequestEdit} disabled={submittingEditRequest}>
+              {submittingEditRequest ? "กำลังส่งคำขอ..." : "ส่งคำขอแก้ไข"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -66,6 +66,15 @@ export declare class PayrollService {
     approvePayroll(recordId: string, userId: string): Promise<{
         message: string;
     }>;
+    requestEdit(recordId: string, reason: string, userId: string): Promise<{
+        message: string;
+    }>;
+    grantEdit(recordId: string, userId: string): Promise<{
+        message: string;
+    }>;
+    rejectEdit(recordId: string, userId: string, rejectReason?: string): Promise<{
+        message: string;
+    }>;
     deletePayrollRecord(recordId: string, userId: string): Promise<{
         message: string;
     }>;

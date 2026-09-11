@@ -191,6 +191,98 @@ let PayrollService = class PayrollService {
         });
         return { message: 'อนุมัติเงินเดือนเรียบร้อยแล้ว' };
     }
+    async requestEdit(recordId, reason, userId) {
+        const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
+        if (!record)
+            throw new common_1.NotFoundException('Record not found');
+        if (record.status !== 'APPROVED' && record.status !== 'PENDING_APPROVAL') {
+            throw new common_1.BadRequestException('สามารถขอแก้ไขได้เฉพาะรอบที่อนุมัติแล้วหรือรออนุมัติเท่านั้น');
+        }
+        const trimmedReason = reason?.trim() || 'ขอแก้ไขข้อมูลเงินเดือน';
+        await this.prisma.payrollRecord.update({
+            where: { id: recordId },
+            data: {
+                status: 'EDIT_REQUESTED',
+                editRequestReason: trimmedReason,
+                editRequestedAt: new Date()
+            }
+        });
+        await this.prisma.auditLog.create({
+            data: {
+                action: 'REQUEST_EDIT_PAYROLL',
+                tableName: 'PayrollRecord',
+                recordId: record.id,
+                userId,
+                reason: `ขอแก้ไขเงินเดือนประจำเดือน ${record.month}/${record.year} (งวดที่ ${record.round || 1}): ${trimmedReason}`
+            }
+        });
+        await this.prisma.notification.create({
+            data: {
+                roleName: 'Executive',
+                title: 'มีการขอแก้ไขเงินเดือน',
+                message: `รอบเดือน ${record.month}/${record.year} (งวดที่ ${record.round || 1}) เหตุผล: ${trimmedReason}`,
+                linkUrl: `/dashboard/payroll/${record.id}`
+            }
+        });
+        return { message: 'ส่งคำขอแก้ไขเงินเดือนเรียบร้อยแล้ว' };
+    }
+    async grantEdit(recordId, userId) {
+        const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
+        if (!record)
+            throw new common_1.NotFoundException('Record not found');
+        if (record.status !== 'EDIT_REQUESTED') {
+            throw new common_1.BadRequestException('รอบเงินเดือนนี้ไม่ได้อยู่ในสถานะร้องขอแก้ไข');
+        }
+        await this.prisma.payrollRecord.update({
+            where: { id: recordId },
+            data: {
+                status: 'DRAFT',
+                approvedById: null
+            }
+        });
+        await this.prisma.auditLog.create({
+            data: {
+                action: 'GRANT_EDIT_PAYROLL',
+                tableName: 'PayrollRecord',
+                recordId: record.id,
+                userId,
+                reason: `อนุญาตให้แก้ไขเงินเดือนประจำเดือน ${record.month}/${record.year} (งวดที่ ${record.round || 1})`
+            }
+        });
+        await this.prisma.notification.create({
+            data: {
+                roleName: 'Finance Officer',
+                title: 'คำขอแก้ไขเงินเดือนได้รับการอนุมัติ',
+                message: `รอบเดือน ${record.month}/${record.year} (งวดที่ ${record.round || 1}) ถูกปลดล็อกกลับเป็นฉบับร่างแล้ว สามารถแก้ไขได้ทันที`,
+                linkUrl: `/dashboard/payroll/${record.id}`
+            }
+        });
+        return { message: 'อนุญาตให้แก้ไขเงินเดือนเรียบร้อยแล้ว (สถานะกลับเป็นฉบับร่าง)' };
+    }
+    async rejectEdit(recordId, userId, rejectReason) {
+        const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
+        if (!record)
+            throw new common_1.NotFoundException('Record not found');
+        if (record.status !== 'EDIT_REQUESTED') {
+            throw new common_1.BadRequestException('รอบเงินเดือนนี้ไม่ได้อยู่ในสถานะร้องขอแก้ไข');
+        }
+        await this.prisma.payrollRecord.update({
+            where: { id: recordId },
+            data: {
+                status: 'APPROVED'
+            }
+        });
+        await this.prisma.auditLog.create({
+            data: {
+                action: 'REJECT_EDIT_PAYROLL',
+                tableName: 'PayrollRecord',
+                recordId: record.id,
+                userId,
+                reason: `ปฏิเสธคำขอแก้ไขเงินเดือนประจำเดือน ${record.month}/${record.year} (งวดที่ ${record.round || 1})${rejectReason ? `: ${rejectReason}` : ''}`
+            }
+        });
+        return { message: 'ปฏิเสธคำขอแก้ไขเรียบร้อยแล้ว (สถานะกลับเป็นอนุมัติแล้ว)' };
+    }
     async deletePayrollRecord(recordId, userId) {
         const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
         if (!record)
