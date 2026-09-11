@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 export default function PayrollPage() {
   const [records, setRecords] = useState<any[]>([]);
@@ -54,6 +55,7 @@ export default function PayrollPage() {
 
   const handleProcess = async () => {
     setProcessing(true);
+    const toastId = toast.loading("กำลังประมวลผลเงินเดือน...");
     try {
       const token = Cookies.get("token");
       await axios.post(`${API_URL}/payroll/process`, {
@@ -63,9 +65,10 @@ export default function PayrollPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setIsDialogOpen(false);
+      toast.success("เริ่มประมวลผลเงินเดือนรอบใหม่สำเร็จ", { id: toastId });
       fetchRecords();
     } catch (e: any) {
-      alert(e.response?.data?.message || "เกิดข้อผิดพลาดในการประมวลผล");
+      toast.error(e.response?.data?.message || "เกิดข้อผิดพลาดในการประมวลผล", { id: toastId });
     } finally {
       setProcessing(false);
     }

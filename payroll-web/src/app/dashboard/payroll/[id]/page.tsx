@@ -37,6 +37,8 @@ export default function PayrollDetailPage() {
   const [user, setUser] = useState<any>(null);
   const [requestingApproval, setRequestingApproval] = useState(false);
   const [approving, setApproving] = useState(false);
+  const [requestApprovalDialogOpen, setRequestApprovalDialogOpen] = useState(false);
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
 
   // Filters & Sorting
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,11 +59,29 @@ export default function PayrollDetailPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [viewingEmp, setViewingEmp] = useState<any>(null);
 
-  const getDisplayName = (val: any) => {
+  const getDisplayName = (val: any): string => {
     if (!val) return '-';
     if (typeof val === 'string') return val;
-    if (typeof val === 'object' && val.name) return val.name;
-    return '-';
+    if (typeof val === 'object') {
+      if (val.name) return typeof val.name === 'object' ? getDisplayName(val.name) : String(val.name);
+      if (val.title) return typeof val.title === 'object' ? getDisplayName(val.title) : String(val.title);
+      if (val.label) return typeof val.label === 'object' ? getDisplayName(val.label) : String(val.label);
+      if (val.code) return typeof val.code === 'object' ? getDisplayName(val.code) : String(val.code);
+      return '-';
+    }
+    return String(val);
+  };
+
+  const getEmpCode = (val: any): string => {
+    if (!val) return '-';
+    if (typeof val === 'string') return val;
+    if (typeof val === 'object') {
+      if (val.employeeCode) return getEmpCode(val.employeeCode);
+      if (val.code) return getEmpCode(val.code);
+      if (val.name) return getDisplayName(val.name);
+      return '-';
+    }
+    return String(val);
   };
 
   const fetchData = async () => {
@@ -123,12 +143,15 @@ export default function PayrollDetailPage() {
   const isExecutiveOrAdmin = user?.roles?.some((r: string) => ['Executive', 'System Administrator'].includes(r));
   const isFinanceOrAdmin = user?.roles?.some((r: string) => ['Finance Officer', 'System Administrator'].includes(r));
 
-  const handleRequestApproval = async () => {
+  const handleRequestApproval = () => {
     if (modifiedRows.size > 0) {
       toast.warning("กรุณากดบันทึกการแก้ไขข้อมูลก่อนส่งขออนุมัติ");
       return;
     }
-    if (!confirm("คุณต้องการส่งรอบเงินเดือนนี้เพื่อขออนุมัติใช่หรือไม่? เมื่อส่งแล้วจะไม่สามารถแก้ไขข้อมูลได้จนกว่าจะได้รับอนุมัติหรือขอแก้ไข")) return;
+    setRequestApprovalDialogOpen(true);
+  };
+
+  const confirmRequestApproval = async () => {
     setRequestingApproval(true);
     const toastId = toast.loading("กำลังส่งขออนุมัติ...");
     try {
@@ -137,6 +160,7 @@ export default function PayrollDetailPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success("ส่งคำขออนุมัติเรียบร้อยแล้ว", { id: toastId });
+      setRequestApprovalDialogOpen(false);
       fetchData();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "เกิดข้อผิดพลาดในการส่งขออนุมัติ", { id: toastId });
@@ -145,8 +169,11 @@ export default function PayrollDetailPage() {
     }
   };
 
-  const handleApprovePayroll = async () => {
-    if (!confirm("ยืนยันการอนุมัติการจ่ายเงินเดือนประจำรอบนี้? เมื่ออนุมัติแล้วข้อมูลจะถูกล็อกอย่างเป็นทางการ")) return;
+  const handleApprovePayroll = () => {
+    setApproveDialogOpen(true);
+  };
+
+  const confirmApprovePayroll = async () => {
     setApproving(true);
     const toastId = toast.loading("กำลังอนุมัติเงินเดือน...");
     try {
@@ -155,6 +182,7 @@ export default function PayrollDetailPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success("อนุมัติเงินเดือนเรียบร้อยแล้ว", { id: toastId });
+      setApproveDialogOpen(false);
       fetchData();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "เกิดข้อผิดพลาดในการอนุมัติ", { id: toastId });
@@ -617,8 +645,8 @@ export default function PayrollDetailPage() {
                          <TableCell className={`border border-gray-300 p-1 text-center sticky left-0 z-10 ${isModified ? "bg-yellow-50" : "bg-white"} group-hover:bg-blue-50/50 text-[11px] text-gray-500`}>
                            {index + 1}
                          </TableCell>
-                         <TableCell className={`border border-gray-300 p-1 sticky left-[30px] z-10 ${isModified ? "bg-yellow-50" : "bg-white"} group-hover:bg-blue-50/50 font-medium truncate min-w-[150px] w-[150px] text-[11px]`} title={`${emp.employeeCode} ${emp.firstName || ''} ${emp.lastName || ''}`}>
-                           <span className="text-[#1877f2] font-semibold">{emp.employeeCode}</span> {emp.firstName || ''} {emp.lastName || ''}
+                         <TableCell className={`border border-gray-300 p-1 sticky left-[30px] z-10 ${isModified ? "bg-yellow-50" : "bg-white"} group-hover:bg-blue-50/50 font-medium truncate min-w-[150px] w-[150px] text-[11px]`} title={`${getEmpCode(emp.employeeCode)} ${getDisplayName(emp.firstName)} ${getDisplayName(emp.lastName)}`}>
+                           <span className="text-[#1877f2] font-semibold">{getEmpCode(emp.employeeCode)}</span> {getDisplayName(emp.firstName)} {getDisplayName(emp.lastName)}
                          </TableCell>
                          <TableCell className={`border border-gray-300 p-1 text-center sticky left-[180px] z-10 ${isModified ? "bg-yellow-50" : "bg-white"} group-hover:bg-blue-50/50 truncate min-w-[80px] w-[80px] text-[10px] text-gray-600`} title={posName}>
                            {posName}
@@ -817,6 +845,62 @@ export default function PayrollDetailPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Request Approval Confirmation Dialog */}
+      <Dialog open={requestApprovalDialogOpen} onOpenChange={setRequestApprovalDialogOpen}>
+        <DialogContent className="sm:max-w-[460px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-900">
+              <Send className="w-5 h-5 text-amber-600" /> ยืนยันการส่งขออนุมัติเงินเดือน
+            </DialogTitle>
+            <DialogDescription className="text-gray-600 pt-2 text-sm leading-relaxed">
+              คุณต้องการส่งรอบเงินเดือนประจำเดือนนี้เพื่อขออนุมัติใช่หรือไม่?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-xs text-amber-900 space-y-1">
+            <p className="font-semibold flex items-center gap-1.5 text-amber-950">
+              <AlertCircle className="w-4 h-4 text-amber-700 flex-shrink-0" /> ข้อควรทราบ:
+            </p>
+            <p>เมื่อส่งคำขอแล้ว สถานะจะเปลี่ยนเป็น <b>"รอการอนุมัติ"</b> และระบบจะล็อกการแก้ไขตัวเลขทั้งหมดในตาราง จนกว่าจะได้รับการอนุมัติจากผู้บริหาร หรือมีการขอแก้ไข</p>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0 mt-4">
+            <Button variant="outline" onClick={() => setRequestApprovalDialogOpen(false)} disabled={requestingApproval}>
+              ยกเลิก
+            </Button>
+            <Button className="bg-amber-600 hover:bg-amber-700 text-white font-medium" onClick={confirmRequestApproval} disabled={requestingApproval}>
+              {requestingApproval ? "กำลังส่ง..." : "ยืนยันส่งขออนุมัติ"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Approve Payroll Confirmation Dialog */}
+      <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
+        <DialogContent className="sm:max-w-[460px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-emerald-900">
+              <CheckCircle className="w-5 h-5 text-emerald-600" /> ยืนยันการอนุมัติเงินเดือน
+            </DialogTitle>
+            <DialogDescription className="text-gray-600 pt-2 text-sm leading-relaxed">
+              คุณต้องการอนุมัติการจ่ายเงินเดือนประจำรอบนี้ใช่หรือไม่?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-emerald-50 border border-emerald-200 rounded-md p-3 text-xs text-emerald-900 space-y-1">
+            <p className="font-semibold flex items-center gap-1.5 text-emerald-950">
+              <CheckCircle className="w-4 h-4 text-emerald-700 flex-shrink-0" /> ผลการดำเนินการ:
+            </p>
+            <p>รอบเงินเดือนจะเปลี่ยนสถานะเป็น <b>"อนุมัติแล้ว"</b> พร้อมบันทึกลายเซ็นและประวัติการอนุมัติของคุณอย่างเป็นทางการ</p>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0 mt-4">
+            <Button variant="outline" onClick={() => setApproveDialogOpen(false)} disabled={approving}>
+              ยกเลิก
+            </Button>
+            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium" onClick={confirmApprovePayroll} disabled={approving}>
+              {approving ? "กำลังอนุมัติ..." : "ยืนยันอนุมัติเงินเดือน"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
