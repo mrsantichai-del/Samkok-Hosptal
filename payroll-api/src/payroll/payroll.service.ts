@@ -263,6 +263,32 @@ export class PayrollService {
     return { message: 'ปฏิเสธคำขอแก้ไขเรียบร้อยแล้ว (สถานะกลับเป็นอนุมัติแล้ว)' };
   }
 
+  async getPayrollAuditLogs(recordId: string) {
+    return this.prisma.auditLog.findMany({
+      where: {
+        recordId: recordId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            employee: {
+              select: {
+                firstName: true,
+                lastName: true,
+                employeeCode: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+  }
+
   async deletePayrollRecord(recordId: string, userId: string) {
     const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
     if (!record) throw new NotFoundException('ไม่พบข้อมูลรอบเงินเดือนที่ต้องการลบ');

@@ -60,6 +60,28 @@ export declare class PayrollController {
         amount: import("@prisma/client-runtime-utils").Decimal;
         formulaUsed: string | null;
     })[]>;
+    getAuditLogs(id: string): Promise<({
+        user: {
+            employee: {
+                employeeCode: string;
+                firstName: string;
+                lastName: string;
+            } | null;
+            id: string;
+            username: string;
+        } | null;
+    } & {
+        id: string;
+        createdAt: Date;
+        userId: string | null;
+        action: string;
+        tableName: string;
+        recordId: string;
+        oldData: import("@prisma/client/runtime/client").JsonValue | null;
+        newData: import("@prisma/client/runtime/client").JsonValue | null;
+        reason: string | null;
+        ipAddress: string | null;
+    })[]>;
     updateEmployeeTransactions(id: string, empId: string, body: {
         transactions: {
             payItemId: string;

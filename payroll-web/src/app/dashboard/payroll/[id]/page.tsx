@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFoo
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Download, Save, Upload, Search, FileX2, Eye, Clock, CheckCircle, AlertCircle, Edit, Send, Check, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, Save, Upload, Search, FileX2, Eye, Clock, CheckCircle, AlertCircle, Edit, Send, Check, Trash2, History } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -46,6 +46,11 @@ export default function PayrollDetailPage() {
   const [submittingEditRequest, setSubmittingEditRequest] = useState(false);
   const [grantingEdit, setGrantingEdit] = useState(false);
   const [rejectingEdit, setRejectingEdit] = useState(false);
+
+  // History / Audit Log State
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   // Filters & Sorting
   const [searchTerm, setSearchTerm] = useState("");
@@ -341,6 +346,23 @@ export default function PayrollDetailPage() {
       showError("เกิดข้อผิดพลาด", err.response?.data?.message || "เกิดข้อผิดพลาด");
     } finally {
       setRejectingEdit(false);
+    }
+  };
+
+  const openHistoryModal = async () => {
+    setHistoryOpen(true);
+    setLoadingHistory(true);
+    try {
+      const token = Cookies.get("token");
+      const res = await axios.get(`${API_URL}/payroll/records/${id}/audit-logs`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAuditLogs(res.data);
+    } catch (err) {
+      console.error(err);
+      toast.error("ดึงประวัติการทำรายการไม่สำเร็จ");
+    } finally {
+      setLoadingHistory(false);
     }
   };
 
@@ -704,6 +726,16 @@ export default function PayrollDetailPage() {
               ขอแก้ไขข้อมูล
             </Button>
           )}
+
+          <Button 
+            variant="outline"
+            className="h-8 text-xs border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 shadow-sm"
+            onClick={openHistoryModal}
+            title="ดูประวัติการทำรายการและ Timeline ย้อนหลัง"
+          >
+            <History className="mr-1 h-3.5 w-3.5 text-blue-600" />
+            ดูประวัติ
+          </Button>
 
           <div className="w-px h-8 bg-gray-300 mx-1"></div>
           <Button className="h-8 text-xs bg-red-600 hover:bg-red-700 text-white" onClick={handleExportPdf} disabled={isExportingPdf}>
@@ -1107,6 +1139,120 @@ export default function PayrollDetailPage() {
             <Button variant="outline" onClick={() => setRequestEditOpen(false)} disabled={submittingEditRequest}>ยกเลิก</Button>
             <Button className="bg-amber-600 hover:bg-amber-700 text-white font-medium" onClick={handleRequestEdit} disabled={submittingEditRequest}>
               {submittingEditRequest ? "กำลังส่งคำขอ..." : "ส่งคำขอแก้ไข"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* History / Audit Log Modal */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="p-4 border-b bg-gray-50 flex-shrink-0">
+            <DialogTitle className="flex items-center gap-2 text-gray-800">
+              <History className="w-5 h-5 text-blue-600" /> ประวัติการทำรายการ (Audit Trail)
+            </DialogTitle>
+            <DialogDescription>
+              {record && (
+                <span>
+                  รอบเงินเดือน ประจำเดือน {monthNames[record.month - 1]} {record.year + 543} (งวดที่ {record.round || 1}: {record.roundName || (record.round === 1 ? 'รอบปกติ' : `งวดที่ ${record.round || 1}`)})
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-4 bg-gray-50/50">
+            {loadingHistory ? (
+              <div className="flex flex-col items-center justify-center py-16 text-gray-500 gap-2">
+                <Clock className="w-6 h-6 animate-spin text-blue-600" />
+                <span className="text-xs">กำลังโหลดประวัติ...</span>
+              </div>
+            ) : auditLogs.length === 0 ? (
+              <div className="text-center py-16 text-gray-400 text-sm">
+                ยังไม่มีประวัติการทำรายการสำหรับรอบนี้
+              </div>
+            ) : (
+              <div className="relative pl-6 border-l-2 border-blue-200 space-y-6 my-2">
+                {auditLogs.map((log: any, idx: number) => {
+                  const getActionMeta = (action: string) => {
+                    switch (action) {
+                      case 'PROCESS_PAYROLL':
+                        return { title: 'เริ่มประมวลผลรอบเงินเดือน', badge: 'bg-blue-100 text-blue-800 border-blue-200', dot: 'bg-blue-600' };
+                      case 'EDIT_PAYROLL_TX':
+                        return { title: 'แก้ไขตัวเลขเงินเดือน', badge: 'bg-yellow-100 text-yellow-800 border-yellow-200', dot: 'bg-yellow-500' };
+                      case 'REQUEST_APPROVAL':
+                        return { title: 'ส่งคำขออนุมัติ', badge: 'bg-amber-100 text-amber-900 border-amber-300', dot: 'bg-amber-600' };
+                      case 'APPROVE_PAYROLL':
+                        return { title: 'อนุมัติการจ่ายเงินเดือน', badge: 'bg-emerald-100 text-emerald-900 border-emerald-300', dot: 'bg-emerald-600' };
+                      case 'REQUEST_EDIT_PAYROLL':
+                        return { title: 'ร้องขอแก้ไขเงินเดือน', badge: 'bg-orange-100 text-orange-900 border-orange-300', dot: 'bg-orange-500' };
+                      case 'GRANT_EDIT_PAYROLL':
+                        return { title: 'อนุญาตให้แก้ไข (ปลดล็อก DRAFT)', badge: 'bg-indigo-100 text-indigo-900 border-indigo-300', dot: 'bg-indigo-600' };
+                      case 'REJECT_EDIT_PAYROLL':
+                        return { title: 'ปฏิเสธคำขอแก้ไข', badge: 'bg-rose-100 text-rose-900 border-rose-300', dot: 'bg-rose-600' };
+                      case 'DELETE_PAYROLL_RECORD':
+                        return { title: 'ลบรอบเงินเดือน', badge: 'bg-red-100 text-red-900 border-red-300', dot: 'bg-red-600' };
+                      default:
+                        return { title: action, badge: 'bg-gray-100 text-gray-800 border-gray-200', dot: 'bg-gray-400' };
+                    }
+                  };
+
+                  const meta = getActionMeta(log.action);
+                  const userName = log.user?.employee 
+                    ? `${log.user.employee.firstName} ${log.user.employee.lastName}` 
+                    : (log.user?.username || 'ระบบอัตโนมัติ');
+
+                  const logDate = new Date(log.createdAt);
+                  const thaiDateStr = logDate.toLocaleDateString('th-TH', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                  });
+
+                  return (
+                    <div key={log.id || idx} className="relative group">
+                      {/* Timeline Dot */}
+                      <div className={`absolute -left-[31px] top-1 w-3.5 h-3.5 rounded-full border-2 border-white ${meta.dot} shadow-sm`} />
+                      
+                      <div className="bg-white p-3 rounded-lg border shadow-xs hover:shadow-sm transition-shadow">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold text-gray-900 text-sm">{meta.title}</span>
+                            <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium border ${meta.badge}`}>
+                              {log.action}
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-gray-400 whitespace-nowrap">
+                            {thaiDateStr}
+                          </span>
+                        </div>
+
+                        {log.reason && (
+                          <div className="text-xs text-gray-700 bg-gray-50 p-2 rounded border border-gray-100 my-1.5 font-normal leading-relaxed">
+                            {log.reason}
+                          </div>
+                        )}
+
+                        <div className="flex items-center gap-1.5 text-[11px] text-gray-500 mt-1">
+                          <span className="font-medium text-gray-600">ผู้ทำรายการ:</span>
+                          <span className="text-blue-600 font-semibold">{userName}</span>
+                          {log.user?.employee?.employeeCode && (
+                            <span className="text-gray-400">({log.user.employee.employeeCode})</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="p-3 border-t bg-gray-50 flex-shrink-0">
+            <Button variant="outline" size="sm" onClick={() => setHistoryOpen(false)}>
+              ปิดหน้าต่าง
             </Button>
           </DialogFooter>
         </DialogContent>

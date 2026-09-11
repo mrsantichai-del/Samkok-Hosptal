@@ -58,6 +58,13 @@ export class PayrollController {
     return this.payrollService.getPayrollTransactions(id, employeeId);
   }
 
+  @Roles('System Administrator', 'Finance Officer', 'Executive')
+  @Get('records/:id/audit-logs')
+  @ApiOperation({ summary: 'Get all audit logs for a payroll record' })
+  getAuditLogs(@Param('id') id: string) {
+    return this.payrollService.getPayrollAuditLogs(id);
+  }
+
   @Roles('System Administrator', 'Finance Officer')
   @Patch('records/:id/employee/:empId')
   @ApiOperation({ summary: 'Update transactions for a specific employee in a payroll record' })

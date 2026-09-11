@@ -43,6 +43,9 @@ let PayrollController = class PayrollController {
     getTransactions(id, employeeId) {
         return this.payrollService.getPayrollTransactions(id, employeeId);
     }
+    getAuditLogs(id) {
+        return this.payrollService.getPayrollAuditLogs(id);
+    }
     updateEmployeeTransactions(id, empId, body, req) {
         return this.payrollService.updateEmployeeTransactions(id, empId, body.transactions, req.user.userId);
     }
@@ -135,6 +138,15 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], PayrollController.prototype, "getTransactions", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
+    (0, common_1.Get)('records/:id/audit-logs'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all audit logs for a payroll record' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], PayrollController.prototype, "getAuditLogs", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer'),
     (0, common_1.Patch)('records/:id/employee/:empId'),
