@@ -1,7 +1,12 @@
 FROM node:22-alpine AS builder
 
 WORKDIR /app
+
+RUN apk add --no-cache python3 make g++ gcc libc6-compat
+
 COPY package*.json ./
+COPY prisma ./prisma/
+
 RUN npm install
 
 COPY . .
@@ -18,3 +23,4 @@ COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 3000
 CMD ["npm", "run", "start:prod"]
+
