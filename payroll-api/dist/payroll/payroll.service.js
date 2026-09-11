@@ -415,6 +415,100 @@ let PayrollService = class PayrollService {
         await workbook.xlsx.write(res);
         res.end();
     }
+    async getAccumulatedTotalsForRecord(recordId, employeeIds) {
+        const currentRecord = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
+        if (!currentRecord)
+            throw new common_1.NotFoundException('Payroll record not found');
+        const accumPayItems = await this.prisma.payItem.findMany({
+            where: { isAccumulative: true, deletedAt: null }
+        });
+        if (accumPayItems.length === 0)
+            return {};
+        const accumItemIds = accumPayItems.map(p => p.id);
+        const allTx = await this.prisma.payrollTransaction.findMany({
+            where: {
+                payItemId: { in: accumItemIds },
+                ...(employeeIds && employeeIds.length > 0 ? { employeeId: { in: employeeIds } } : {}),
+                payrollRecord: {
+                    deletedAt: null,
+                    OR: [
+                        { id: recordId },
+                        { status: 'APPROVED' }
+                    ]
+                }
+            },
+            include: {
+                payrollRecord: true,
+                payItem: true
+            }
+        });
+        const result = {};
+        for (const tx of allTx) {
+            const r = tx.payrollRecord;
+            const item = tx.payItem;
+            if (!r || !item)
+                continue;
+            const curY = currentRecord.year;
+            const curM = currentRecord.month;
+            const curR = currentRecord.round || 1;
+            const recY = r.year;
+            const recM = r.month;
+            const recR = r.round || 1;
+            const isPastOrSame = (recY < curY) ||
+                (recY === curY && recM < curM) ||
+                (recY === curY && recM === curM && recR <= curR);
+            if (!isPastOrSame)
+                continue;
+            let isIncluded = false;
+            const resetType = item.accumulateResetType || 'CALENDAR_YEAR';
+            const startM = item.accumulateStartMonth || (resetType === 'FISCAL_YEAR' ? 10 : 1);
+            if (resetType === 'CALENDAR_YEAR') {
+                if (recY === curY) {
+                    isIncluded = true;
+                }
+            }
+            else if (resetType === 'FISCAL_YEAR') {
+                if (curM >= 10) {
+                    if (recY === curY && recM >= 10)
+                        isIncluded = true;
+                }
+                else {
+                    if ((recY === curY - 1 && recM >= 10) || (recY === curY && recM < 10)) {
+                        isIncluded = true;
+                    }
+                }
+            }
+            else if (resetType === 'CUSTOM_MONTH') {
+                if (curM >= startM) {
+                    if (recY === curY && recM >= startM)
+                        isIncluded = true;
+                }
+                else {
+                    if ((recY === curY - 1 && recM >= startM) || (recY === curY && recM < startM)) {
+                        isIncluded = true;
+                    }
+                }
+            }
+            else if (resetType === 'NEVER') {
+                isIncluded = true;
+            }
+            if (isIncluded) {
+                if (!result[tx.employeeId]) {
+                    result[tx.employeeId] = {};
+                }
+                const label = item.accumulateLabel?.trim() || `${item.name}สะสม`;
+                if (!result[tx.employeeId][item.id]) {
+                    result[tx.employeeId][item.id] = {
+                        label,
+                        amount: 0,
+                        type: item.type,
+                    };
+                }
+                result[tx.employeeId][item.id].amount += Number(tx.amount || 0);
+            }
+        }
+        return result;
+    }
     async exportPdf(recordId, res, employeeIds) {
         const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
         if (!record)
@@ -424,9 +518,11 @@ let PayrollService = class PayrollService {
             transactions = transactions.filter(tx => employeeIds.includes(tx.employeeId));
             transactions.sort((a, b) => employeeIds.indexOf(a.employeeId) - employeeIds.indexOf(b.employeeId));
         }
-        const allPayItems = await this.prisma.payItem.findMany({ orderBy: { createdAt: 'asc' } });
+        const allPayItems = await this.prisma.payItem.findMany({ where: { deletedAt: null }, orderBy: { createdAt: 'asc' } });
         const allIncomes = allPayItems.filter(p => p.type === 'INCOME');
         const allDeductions = allPayItems.filter(p => p.type === 'DEDUCTION');
+        const accumPayItems = allPayItems.filter(p => p.isAccumulative);
+        const accumData = await this.getAccumulatedTotalsForRecord(recordId, employeeIds);
         const doc = new pdfkit_1.default({ margin: 40, size: 'A4' });
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="Payslips_${record.month}_${record.year}.pdf"`);
@@ -488,7 +584,7 @@ let PayrollService = class PayrollService {
         }
         let i = 0;
         const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-        const monthStr = `${monthNames[record.month - 1]} ${record.year + 543}`;
+        const monthStr = `${monthNames[record.month - 1]} ${record.year + 543}${record.round && record.round > 1 ? ` (งวดที่ ${record.round}${record.roundName ? `: ${record.roundName}` : ''})` : ''}`;
         for (const e of empData.values()) {
             if (i > 0)
                 doc.addPage();
@@ -496,7 +592,19 @@ let PayrollService = class PayrollService {
             const rowHeight = 18;
             const startY = 150;
             const endY = startY + 20 + (maxRows * rowHeight) + 20;
-            doc.lineWidth(1).rect(40, 40, 515, endY - 40 + 50).stroke();
+            const empAccum = accumData[e.employee.id] || {};
+            const accumEntries = accumPayItems.map(item => {
+                const found = empAccum[item.id];
+                return {
+                    label: item.accumulateLabel?.trim() || `${item.name}สะสม`,
+                    amount: found ? found.amount : (e.txMap.get(item.name) || 0),
+                    type: item.type
+                };
+            });
+            const numAccumRows = Math.ceil(accumEntries.length / 2);
+            const accumBoxHeight = accumEntries.length > 0 ? 24 + (numAccumRows * 18) : 0;
+            const outerBoxHeight = endY + 40 + (accumEntries.length > 0 ? accumBoxHeight + 15 : 0) + (signatureBuffer ? 55 : 25) - 40;
+            doc.lineWidth(1).rect(40, 40, 515, outerBoxHeight).stroke();
             if (logoBuffer) {
                 try {
                     doc.image(logoBuffer, 50, 45, { height: 40 });
@@ -546,12 +654,35 @@ let PayrollService = class PayrollService {
             doc.text('รวมจ่าย', 297, endY - 15, { width: 158, align: 'center' });
             doc.text(e.totalDed > 0 ? e.totalDed.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '-', 455, endY - 15, { width: 90, align: 'right' });
             doc.moveTo(40, endY).lineTo(555, endY).stroke();
-            doc.fontSize(14).text(`คงเหลือสุทธิ`, 180, endY + 10, { continued: true });
+            doc.fontSize(13).text(`คงเหลือสุทธิ`, 180, endY + 8, { continued: true });
             doc.text(`${e.net.toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท`, { align: 'right' });
-            doc.fontSize(12).font('ThaiRegular').text(`(${bahttext(e.net)})`, 40, endY + 30, { align: 'center' });
+            doc.fontSize(11).font('ThaiRegular').text(`(${bahttext(e.net)})`, 40, endY + 26, { align: 'center' });
+            let currentSectionY = endY + 45;
+            if (accumEntries.length > 0) {
+                doc.lineWidth(0.5);
+                doc.rect(40, currentSectionY, 515, accumBoxHeight).stroke();
+                doc.font('ThaiBold').fontSize(11).text('สรุปยอดสะสม (Cumulative Summary / YTD)', 45, currentSectionY + 5);
+                doc.moveTo(40, currentSectionY + 20).lineTo(555, currentSectionY + 20).stroke();
+                doc.font('ThaiRegular').fontSize(10);
+                let accY = currentSectionY + 24;
+                for (let idx = 0; idx < accumEntries.length; idx += 2) {
+                    const item1 = accumEntries[idx];
+                    const item2 = accumEntries[idx + 1];
+                    if (item1) {
+                        doc.text(`${item1.label}:`, 50, accY, { width: 140 });
+                        doc.font('ThaiBold').text(`${item1.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท`, 190, accY, { width: 95, align: 'right' }).font('ThaiRegular');
+                    }
+                    if (item2) {
+                        doc.text(`${item2.label}:`, 305, accY, { width: 140 });
+                        doc.font('ThaiBold').text(`${item2.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท`, 445, accY, { width: 95, align: 'right' }).font('ThaiRegular');
+                    }
+                    accY += 18;
+                }
+                currentSectionY += accumBoxHeight + 15;
+            }
             if (signatureBuffer) {
                 try {
-                    doc.image(signatureBuffer, 300, endY + 50, { height: 40 });
+                    doc.image(signatureBuffer, 300, currentSectionY, { height: 40 });
                 }
                 catch (err) {
                     console.error("Failed to load signature image:", err);

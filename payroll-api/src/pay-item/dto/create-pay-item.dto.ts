@@ -27,4 +27,23 @@ export class CreatePayItemDto {
   @IsString()
   @IsOptional()
   defaultFormula?: string;
+
+  @ApiProperty({ required: false, default: false })
+  @IsBoolean()
+  @IsOptional()
+  isAccumulative?: boolean;
+
+  @ApiProperty({ required: false, default: 'CALENDAR_YEAR' })
+  @IsString()
+  @IsOptional()
+  accumulateResetType?: string;
+
+  @ApiProperty({ required: false, default: 1 })
+  @IsOptional()
+  accumulateStartMonth?: number;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  accumulateLabel?: string;
 }

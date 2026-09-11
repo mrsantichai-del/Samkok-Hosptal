@@ -14,6 +14,10 @@ export declare class PayItemController {
         type: import("@prisma/client").$Enums.PayItemType;
         isDefault: boolean;
         defaultFormula: string | null;
+        isAccumulative: boolean;
+        accumulateResetType: string;
+        accumulateStartMonth: number;
+        accumulateLabel: string | null;
     }>;
     findAll(): Promise<{
         name: string;
@@ -25,6 +29,10 @@ export declare class PayItemController {
         type: import("@prisma/client").$Enums.PayItemType;
         isDefault: boolean;
         defaultFormula: string | null;
+        isAccumulative: boolean;
+        accumulateResetType: string;
+        accumulateStartMonth: number;
+        accumulateLabel: string | null;
     }[]>;
     findOne(id: string): Promise<{
         name: string;
@@ -36,6 +44,10 @@ export declare class PayItemController {
         type: import("@prisma/client").$Enums.PayItemType;
         isDefault: boolean;
         defaultFormula: string | null;
+        isAccumulative: boolean;
+        accumulateResetType: string;
+        accumulateStartMonth: number;
+        accumulateLabel: string | null;
     }>;
     update(id: string, updatePayItemDto: UpdatePayItemDto): Promise<{
         name: string;
@@ -47,6 +59,10 @@ export declare class PayItemController {
         type: import("@prisma/client").$Enums.PayItemType;
         isDefault: boolean;
         defaultFormula: string | null;
+        isAccumulative: boolean;
+        accumulateResetType: string;
+        accumulateStartMonth: number;
+        accumulateLabel: string | null;
     }>;
     remove(id: string, req: any): Promise<{
         message: string;

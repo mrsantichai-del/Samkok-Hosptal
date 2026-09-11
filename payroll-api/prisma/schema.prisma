@@ -126,15 +126,19 @@ enum PayItemType {
 }
 
 model PayItem {
-  id             String      @id @default(uuid())
-  name           String      @unique // e.g. "เงินเดือน", "ภาษี"
-  type           PayItemType
-  description    String?
-  isDefault      Boolean     @default(false)
-  defaultFormula String?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-  deletedAt      DateTime?
+  id                   String      @id @default(uuid())
+  name                 String      @unique // e.g. "เงินเดือน", "ภาษี"
+  type                 PayItemType
+  description          String?
+  isDefault            Boolean     @default(false)
+  defaultFormula       String?
+  isAccumulative       Boolean     @default(false)
+  accumulateResetType  String      @default("CALENDAR_YEAR") // CALENDAR_YEAR, FISCAL_YEAR, CUSTOM_MONTH, NEVER
+  accumulateStartMonth Int         @default(1)
+  accumulateLabel      String?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+  deletedAt            DateTime?
 
   transactions PayrollTransaction[]
 }

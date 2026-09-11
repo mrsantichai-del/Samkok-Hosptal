@@ -101,5 +101,10 @@ export declare class PayrollService {
         message: string;
     }>;
     exportExcel(recordId: string, res: Response, employeeIds?: string[]): Promise<void>;
+    getAccumulatedTotalsForRecord(recordId: string, employeeIds?: string[]): Promise<Record<string, Record<string, {
+        label: string;
+        amount: number;
+        type: string;
+    }>>>;
     exportPdf(recordId: string, res: Response, employeeIds?: string[]): Promise<void>;
 }

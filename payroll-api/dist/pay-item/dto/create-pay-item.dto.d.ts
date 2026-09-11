@@ -5,4 +5,8 @@ export declare class CreatePayItemDto {
     description?: string;
     isDefault?: boolean;
     defaultFormula?: string;
+    isAccumulative?: boolean;
+    accumulateResetType?: string;
+    accumulateStartMonth?: number;
+    accumulateLabel?: string;
 }

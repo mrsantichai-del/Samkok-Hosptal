@@ -416,18 +416,117 @@ export class PayrollService {
     res.end();
   }
 
+  async getAccumulatedTotalsForRecord(recordId: string, employeeIds?: string[]) {
+    const currentRecord = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
+    if (!currentRecord) throw new NotFoundException('Payroll record not found');
+
+    const accumPayItems = await this.prisma.payItem.findMany({
+      where: { isAccumulative: true, deletedAt: null }
+    });
+    if (accumPayItems.length === 0) return {};
+
+    const accumItemIds = accumPayItems.map(p => p.id);
+
+    const allTx = await this.prisma.payrollTransaction.findMany({
+      where: {
+        payItemId: { in: accumItemIds },
+        ...(employeeIds && employeeIds.length > 0 ? { employeeId: { in: employeeIds } } : {}),
+        payrollRecord: {
+          deletedAt: null,
+          OR: [
+            { id: recordId },
+            { status: 'APPROVED' }
+          ]
+        }
+      },
+      include: {
+        payrollRecord: true,
+        payItem: true
+      }
+    });
+
+    const result: Record<string, Record<string, { label: string; amount: number; type: string }>> = {};
+
+    for (const tx of allTx) {
+      const r = tx.payrollRecord;
+      const item = tx.payItem;
+      if (!r || !item) continue;
+
+      const curY = currentRecord.year;
+      const curM = currentRecord.month;
+      const curR = currentRecord.round || 1;
+      const recY = r.year;
+      const recM = r.month;
+      const recR = r.round || 1;
+
+      const isPastOrSame = (recY < curY) || 
+        (recY === curY && recM < curM) || 
+        (recY === curY && recM === curM && recR <= curR);
+
+      if (!isPastOrSame) continue;
+
+      let isIncluded = false;
+      const resetType = item.accumulateResetType || 'CALENDAR_YEAR';
+      const startM = item.accumulateStartMonth || (resetType === 'FISCAL_YEAR' ? 10 : 1);
+
+      if (resetType === 'CALENDAR_YEAR') {
+        if (recY === curY) {
+          isIncluded = true;
+        }
+      } else if (resetType === 'FISCAL_YEAR') {
+        if (curM >= 10) {
+          if (recY === curY && recM >= 10) isIncluded = true;
+        } else {
+          if ((recY === curY - 1 && recM >= 10) || (recY === curY && recM < 10)) {
+            isIncluded = true;
+          }
+        }
+      } else if (resetType === 'CUSTOM_MONTH') {
+        if (curM >= startM) {
+          if (recY === curY && recM >= startM) isIncluded = true;
+        } else {
+          if ((recY === curY - 1 && recM >= startM) || (recY === curY && recM < startM)) {
+            isIncluded = true;
+          }
+        }
+      } else if (resetType === 'NEVER') {
+        isIncluded = true;
+      }
+
+      if (isIncluded) {
+        if (!result[tx.employeeId]) {
+          result[tx.employeeId] = {};
+        }
+        const label = item.accumulateLabel?.trim() || `${item.name}สะสม`;
+        if (!result[tx.employeeId][item.id]) {
+          result[tx.employeeId][item.id] = {
+            label,
+            amount: 0,
+            type: item.type,
+          };
+        }
+        result[tx.employeeId][item.id].amount += Number(tx.amount || 0);
+      }
+    }
+
+    return result;
+  }
+
   async exportPdf(recordId: string, res: Response, employeeIds?: string[]) {
     const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
     if (!record) throw new NotFoundException('Record not found');
 
     let transactions = await this.getPayrollTransactions(recordId);
-      if (employeeIds && employeeIds.length > 0) {
-        transactions = transactions.filter(tx => employeeIds.includes(tx.employeeId));
-        transactions.sort((a, b) => employeeIds.indexOf(a.employeeId) - employeeIds.indexOf(b.employeeId));
-      }
-    const allPayItems = await this.prisma.payItem.findMany({ orderBy: { createdAt: 'asc' } });
+    if (employeeIds && employeeIds.length > 0) {
+      transactions = transactions.filter(tx => employeeIds.includes(tx.employeeId));
+      transactions.sort((a, b) => employeeIds.indexOf(a.employeeId) - employeeIds.indexOf(b.employeeId));
+    }
+    const allPayItems = await this.prisma.payItem.findMany({ where: { deletedAt: null }, orderBy: { createdAt: 'asc' } });
     const allIncomes = allPayItems.filter(p => p.type === 'INCOME');
     const allDeductions = allPayItems.filter(p => p.type === 'DEDUCTION');
+    const accumPayItems = allPayItems.filter(p => p.isAccumulative);
+
+    const accumData = await this.getAccumulatedTotalsForRecord(recordId, employeeIds);
     
     const doc = new PDFDocument({ margin: 40, size: 'A4' });
     res.setHeader('Content-Type', 'application/pdf');
@@ -435,19 +534,19 @@ export class PayrollService {
     doc.pipe(res);
     
     const { bahttext } = require('bahttext');
-      const fs = require('fs');
-      const path = require('path');
+    const fs = require('fs');
+    const path = require('path');
 
-      // Use path.join with __dirname so it works in both dev (dist/) and prod (dist/)
-      const fontRegular = path.join(__dirname, '..', 'assets', 'fonts', 'Sarabun-Regular.ttf');
-      const fontBold = path.join(__dirname, '..', 'assets', 'fonts', 'Sarabun-Bold.ttf');
-      
-      // Fallbacks just in case we are running from src/ directly (e.g. ts-node)
-      const finalFontRegular = fs.existsSync(fontRegular) ? fontRegular : path.join(process.cwd(), 'src', 'assets', 'fonts', 'Sarabun-Regular.ttf');
-      const finalFontBold = fs.existsSync(fontBold) ? fontBold : path.join(process.cwd(), 'src', 'assets', 'fonts', 'Sarabun-Bold.ttf');
+    // Use path.join with __dirname so it works in both dev (dist/) and prod (dist/)
+    const fontRegular = path.join(__dirname, '..', 'assets', 'fonts', 'Sarabun-Regular.ttf');
+    const fontBold = path.join(__dirname, '..', 'assets', 'fonts', 'Sarabun-Bold.ttf');
+    
+    // Fallbacks just in case we are running from src/ directly (e.g. ts-node)
+    const finalFontRegular = fs.existsSync(fontRegular) ? fontRegular : path.join(process.cwd(), 'src', 'assets', 'fonts', 'Sarabun-Regular.ttf');
+    const finalFontBold = fs.existsSync(fontBold) ? fontBold : path.join(process.cwd(), 'src', 'assets', 'fonts', 'Sarabun-Bold.ttf');
 
-      doc.registerFont('ThaiRegular', finalFontRegular);
-      doc.registerFont('ThaiBold', finalFontBold);
+    doc.registerFont('ThaiRegular', finalFontRegular);
+    doc.registerFont('ThaiBold', finalFontBold);
     
     const fetchImageBuffer = async (namePrefix: string) => {
       const { data, error } = await supabase.storage.from('uploads').list();
@@ -466,7 +565,6 @@ export class PayrollService {
     if (record.status === 'APPROVED' && record.approvedById) {
       const approver = await this.prisma.user.findUnique({ where: { id: record.approvedById } });
       if (approver?.signatureUrl) {
-        // Extract filename from URL (assumes supabase storage public URL format)
         const parts = approver.signatureUrl.split('/');
         const fileName = parts[parts.length - 1];
         
@@ -477,7 +575,6 @@ export class PayrollService {
         }
       }
     }
-
 
     const empData = new Map<string, any>();
     for (const tx of transactions) {
@@ -500,7 +597,7 @@ export class PayrollService {
 
     let i = 0;
     const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-    const monthStr = `${monthNames[record.month - 1]} ${record.year + 543}`;
+    const monthStr = `${monthNames[record.month - 1]} ${record.year + 543}${record.round && record.round > 1 ? ` (งวดที่ ${record.round}${record.roundName ? `: ${record.roundName}` : ''})` : ''}`;
 
     for (const e of empData.values()) {
       if (i > 0) doc.addPage();
@@ -510,8 +607,23 @@ export class PayrollService {
       const startY = 150;
       const endY = startY + 20 + (maxRows * rowHeight) + 20;
 
+      // Calculate Accumulation Entries
+      const empAccum = accumData[e.employee.id] || {};
+      const accumEntries = accumPayItems.map(item => {
+        const found = empAccum[item.id];
+        return {
+          label: item.accumulateLabel?.trim() || `${item.name}สะสม`,
+          amount: found ? found.amount : (e.txMap.get(item.name) || 0),
+          type: item.type
+        };
+      });
+
+      const numAccumRows = Math.ceil(accumEntries.length / 2);
+      const accumBoxHeight = accumEntries.length > 0 ? 24 + (numAccumRows * 18) : 0;
+      const outerBoxHeight = endY + 40 + (accumEntries.length > 0 ? accumBoxHeight + 15 : 0) + (signatureBuffer ? 55 : 25) - 40;
+
       // Draw Outer Border
-      doc.lineWidth(1).rect(40, 40, 515, endY - 40 + 50).stroke();
+      doc.lineWidth(1).rect(40, 40, 515, outerBoxHeight).stroke();
 
       if (logoBuffer) {
         try {
@@ -580,14 +692,45 @@ export class PayrollService {
       doc.moveTo(40, endY).lineTo(555, endY).stroke();
       
       // Net Pay
-      doc.fontSize(14).text(`คงเหลือสุทธิ`, 180, endY + 10, { continued: true });
+      doc.fontSize(13).text(`คงเหลือสุทธิ`, 180, endY + 8, { continued: true });
       doc.text(`${e.net.toLocaleString(undefined, {minimumFractionDigits: 2})} บาท`, { align: 'right' });
       
-      doc.fontSize(12).font('ThaiRegular').text(`(${bahttext(e.net)})`, 40, endY + 30, { align: 'center' });
+      doc.fontSize(11).font('ThaiRegular').text(`(${bahttext(e.net)})`, 40, endY + 26, { align: 'center' });
+
+      let currentSectionY = endY + 45;
+
+      // Cumulative Summary Section
+      if (accumEntries.length > 0) {
+        doc.lineWidth(0.5);
+        doc.rect(40, currentSectionY, 515, accumBoxHeight).stroke();
+        
+        doc.font('ThaiBold').fontSize(11).text('สรุปยอดสะสม (Cumulative Summary / YTD)', 45, currentSectionY + 5);
+        doc.moveTo(40, currentSectionY + 20).lineTo(555, currentSectionY + 20).stroke();
+
+        doc.font('ThaiRegular').fontSize(10);
+        let accY = currentSectionY + 24;
+        for (let idx = 0; idx < accumEntries.length; idx += 2) {
+          const item1 = accumEntries[idx];
+          const item2 = accumEntries[idx + 1];
+
+          if (item1) {
+            doc.text(`${item1.label}:`, 50, accY, { width: 140 });
+            doc.font('ThaiBold').text(`${item1.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท`, 190, accY, { width: 95, align: 'right' }).font('ThaiRegular');
+          }
+
+          if (item2) {
+            doc.text(`${item2.label}:`, 305, accY, { width: 140 });
+            doc.font('ThaiBold').text(`${item2.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท`, 445, accY, { width: 95, align: 'right' }).font('ThaiRegular');
+          }
+
+          accY += 18;
+        }
+        currentSectionY += accumBoxHeight + 15;
+      }
 
       if (signatureBuffer) {
         try {
-          doc.image(signatureBuffer, 300, endY + 50, { height: 40 });
+          doc.image(signatureBuffer, 300, currentSectionY, { height: 40 });
         } catch (err) {
           console.error("Failed to load signature image:", err);
         }

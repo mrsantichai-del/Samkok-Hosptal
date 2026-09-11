@@ -64,6 +64,9 @@ let PayrollController = class PayrollController {
     rejectEdit(id, body, req) {
         return this.payrollService.rejectEdit(id, req.user.userId, body?.reason);
     }
+    async getAccumulatedTotals(id) {
+        return this.payrollService.getAccumulatedTotalsForRecord(id);
+    }
     async exportExcel(id, body, res) {
         await this.payrollService.exportExcel(id, res, body.employeeIds);
     }
@@ -211,6 +214,15 @@ __decorate([
     __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", void 0)
 ], PayrollController.prototype, "rejectEdit", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive', 'Employee'),
+    (0, common_1.Get)('records/:id/accumulated-totals'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get accumulated totals for pay items in a payroll record' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], PayrollController.prototype, "getAccumulatedTotals", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
     (0, common_1.Post)('records/:id/export/excel'),

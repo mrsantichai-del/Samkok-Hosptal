@@ -109,6 +109,11 @@ export declare class PayrollController {
     }, req: any): Promise<{
         message: string;
     }>;
+    getAccumulatedTotals(id: string): Promise<Record<string, Record<string, {
+        label: string;
+        amount: number;
+        type: string;
+    }>>>;
     exportExcel(id: string, body: {
         employeeIds?: string[];
     }, res: Response): Promise<void>;

@@ -19,6 +19,10 @@ class CreatePayItemDto {
     description;
     isDefault;
     defaultFormula;
+    isAccumulative;
+    accumulateResetType;
+    accumulateStartMonth;
+    accumulateLabel;
 }
 exports.CreatePayItemDto = CreatePayItemDto;
 __decorate([
@@ -51,4 +55,27 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreatePayItemDto.prototype, "defaultFormula", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false, default: false }),
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreatePayItemDto.prototype, "isAccumulative", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false, default: 'CALENDAR_YEAR' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreatePayItemDto.prototype, "accumulateResetType", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false, default: 1 }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], CreatePayItemDto.prototype, "accumulateStartMonth", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreatePayItemDto.prototype, "accumulateLabel", void 0);
 //# sourceMappingURL=create-pay-item.dto.js.map

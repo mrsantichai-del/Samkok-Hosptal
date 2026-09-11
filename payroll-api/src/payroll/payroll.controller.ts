@@ -107,6 +107,13 @@ export class PayrollController {
     return this.payrollService.rejectEdit(id, req.user.userId, body?.reason);
   }
 
+  @Roles('System Administrator', 'Finance Officer', 'Executive', 'Employee')
+  @Get('records/:id/accumulated-totals')
+  @ApiOperation({ summary: 'Get accumulated totals for pay items in a payroll record' })
+  async getAccumulatedTotals(@Param('id') id: string) {
+    return this.payrollService.getAccumulatedTotalsForRecord(id);
+  }
+
   @Roles('System Administrator', 'Finance Officer', 'Executive')
   @Post('records/:id/export/excel')
   @ApiOperation({ summary: 'Export Payroll to Excel' })
@@ -128,3 +135,4 @@ export class PayrollController {
     }
   }
 }
+
