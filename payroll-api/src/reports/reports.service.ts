@@ -95,7 +95,7 @@ export class ReportsService {
     });
   }
 
-  // 1. Executive Summary & Macro KPIs
+  // 1. Executive Summary & Macro KPIs (Optimized Selects)
   async getExecutiveSummary(query: any) {
     const records = await this.getTargetRecords(query);
     if (records.length === 0) {
@@ -107,19 +107,31 @@ export class ReportsService {
 
     const recordIds = records.map(r => r.id);
 
-    const transactions = await this.prisma.payrollTransaction.findMany({
-      where: { payrollRecordId: { in: recordIds } },
-      include: {
-        employee: {
-          include: { department: true, position: true, employeeType: true }
+    const [transactions, prevRecord] = await Promise.all([
+      this.prisma.payrollTransaction.findMany({
+        where: { payrollRecordId: { in: recordIds } },
+        select: {
+          employeeId: true,
+          amount: true,
+          payItem: {
+            select: { name: true, type: true }
+          }
+        }
+      }),
+      records[0] ? this.prisma.payrollRecord.findFirst({
+        where: {
+          deletedAt: null,
+          OR: [
+            { year: { lt: records[0].year } },
+            { year: records[0].year, month: { lt: records[0].month } },
+            { year: records[0].year, month: records[0].month, round: { lt: records[0].round } }
+          ]
         },
-        payItem: true
-      }
-    });
+        orderBy: [{ year: 'desc' }, { month: 'desc' }, { round: 'desc' }]
+      }) : Promise.resolve(null)
+    ]);
 
-    const distinctEmpIds = new Set(transactions.map(t => t.employeeId));
-    const totalHeadcount = distinctEmpIds.size;
-
+    const distinctEmpIds = new Set<string>();
     let totalGrossIncome = 0;
     let totalDeductions = 0;
     let baseSalaryTotal = 0;
@@ -131,7 +143,9 @@ export class ReportsService {
     let gpfTotal = 0;
     let otherDeductionTotal = 0;
 
-    for (const tx of transactions) {
+    for (let i = 0; i < transactions.length; i++) {
+      const tx = transactions[i];
+      distinctEmpIds.add(tx.employeeId);
       const amt = Number(tx.amount) || 0;
       const itemName = (tx.payItem?.name || '').toLowerCase();
       const isIncome = tx.payItem?.type === 'INCOME';
@@ -161,56 +175,49 @@ export class ReportsService {
       }
     }
 
+    const totalHeadcount = distinctEmpIds.size;
     const totalNetPayout = totalGrossIncome - totalDeductions;
     const avgGrossPerHead = totalHeadcount > 0 ? Math.round(totalGrossIncome / totalHeadcount) : 0;
     const avgNetPerHead = totalHeadcount > 0 ? Math.round(totalNetPayout / totalHeadcount) : 0;
     const otRatio = baseSalaryTotal > 0 ? Number(((otShiftTotal / baseSalaryTotal) * 100).toFixed(1)) : 0;
 
     let previousSummary: any = null;
-    const primaryRecord = records[0];
-    if (primaryRecord) {
-      const prev = await this.prisma.payrollRecord.findFirst({
-        where: {
-          deletedAt: null,
-          OR: [
-            { year: { lt: primaryRecord.year } },
-            { year: primaryRecord.year, month: { lt: primaryRecord.month } },
-            { year: primaryRecord.year, month: primaryRecord.month, round: { lt: primaryRecord.round } }
-          ]
-        },
-        orderBy: [{ year: 'desc' }, { month: 'desc' }, { round: 'desc' }]
+    if (prevRecord) {
+      const prevTxs = await this.prisma.payrollTransaction.findMany({
+        where: { payrollRecordId: prevRecord.id },
+        select: {
+          employeeId: true,
+          amount: true,
+          payItem: { select: { type: true } }
+        }
       });
-
-      if (prev) {
-        const prevTxs = await this.prisma.payrollTransaction.findMany({
-          where: { payrollRecordId: prev.id },
-          include: { payItem: true }
-        });
-        const prevDistinctEmps = new Set(prevTxs.map(t => t.employeeId));
-        let prevGross = 0;
-        let prevDed = 0;
-        prevTxs.forEach(t => {
-          const a = Number(t.amount) || 0;
-          if (t.payItem?.type === 'INCOME') prevGross += a;
-          else prevDed += a;
-        });
-        const prevNet = prevGross - prevDed;
-
-        previousSummary = {
-          recordId: prev.id,
-          year: prev.year,
-          month: prev.month,
-          round: prev.round,
-          roundName: prev.roundName,
-          totalHeadcount: prevDistinctEmps.size,
-          totalNetPayout: prevNet,
-          totalGrossIncome: prevGross,
-          totalDeductions: prevDed,
-          netChangePercent: prevNet > 0 ? Number((((totalNetPayout - prevNet) / prevNet) * 100).toFixed(1)) : 0,
-          headcountChange: totalHeadcount - prevDistinctEmps.size
-        };
+      const prevDistinctEmps = new Set(prevTxs.map(t => t.employeeId));
+      let prevGross = 0;
+      let prevDed = 0;
+      for (let i = 0; i < prevTxs.length; i++) {
+        const t = prevTxs[i];
+        const a = Number(t.amount) || 0;
+        if (t.payItem?.type === 'INCOME') prevGross += a;
+        else prevDed += a;
       }
+      const prevNet = prevGross - prevDed;
+
+      previousSummary = {
+        recordId: prevRecord.id,
+        year: prevRecord.year,
+        month: prevRecord.month,
+        round: prevRecord.round,
+        roundName: prevRecord.roundName,
+        totalHeadcount: prevDistinctEmps.size,
+        totalNetPayout: prevNet,
+        totalGrossIncome: prevGross,
+        totalDeductions: prevDed,
+        netChangePercent: prevNet > 0 ? Number((((totalNetPayout - prevNet) / prevNet) * 100).toFixed(1)) : 0,
+        headcountChange: totalHeadcount - prevDistinctEmps.size
+      };
     }
+
+    const primaryRecord = records[0];
 
     return {
       hasData: true,
@@ -249,7 +256,7 @@ export class ReportsService {
     };
   }
 
-  // 2. Breakdown By Dimensions
+  // 2. Breakdown By Dimensions (Optimized Selects)
   async getByDimension(dimension: 'department' | 'position' | 'employeeType' | 'payCategory', query: any) {
     const records = await this.getTargetRecords(query);
     if (records.length === 0) return { dimension, items: [], grandTotal: { gross: 0, net: 0, deductions: 0, headcount: 0 } };
@@ -257,11 +264,23 @@ export class ReportsService {
     const recordIds = records.map(r => r.id);
     const transactions = await this.prisma.payrollTransaction.findMany({
       where: { payrollRecordId: { in: recordIds } },
-      include: {
-        employee: {
-          include: { department: true, position: true, employeeType: true }
+      select: {
+        employeeId: true,
+        amount: true,
+        payItemId: true,
+        payItem: {
+          select: { id: true, name: true, type: true }
         },
-        payItem: true
+        employee: {
+          select: {
+            departmentId: true,
+            positionId: true,
+            employeeTypeId: true,
+            department: { select: { name: true } },
+            position: { select: { name: true } },
+            employeeType: { select: { name: true } }
+          }
+        }
       }
     });
 
@@ -282,7 +301,8 @@ export class ReportsService {
     let grandDed = 0;
     const grandEmpIds = new Set<string>();
 
-    for (const tx of transactions) {
+    for (let i = 0; i < transactions.length; i++) {
+      const tx = transactions[i];
       const amt = Number(tx.amount) || 0;
       const isIncome = tx.payItem?.type === 'INCOME';
       const itemName = (tx.payItem?.name || '').toLowerCase();
@@ -295,14 +315,14 @@ export class ReportsService {
       let groupName = 'ไม่ระบุ';
 
       if (dimension === 'department') {
-        groupId = tx.employee.departmentId || 'unassigned';
-        groupName = tx.employee.department?.name || 'ไม่ระบุกลุ่มงาน';
+        groupId = tx.employee?.departmentId || 'unassigned';
+        groupName = tx.employee?.department?.name || 'ไม่ระบุกลุ่มงาน';
       } else if (dimension === 'position') {
-        groupId = tx.employee.positionId || 'unassigned';
-        groupName = tx.employee.position?.name || 'ไม่ระบุตำแหน่ง';
+        groupId = tx.employee?.positionId || 'unassigned';
+        groupName = tx.employee?.position?.name || 'ไม่ระบุตำแหน่ง';
       } else if (dimension === 'employeeType') {
-        groupId = tx.employee.employeeTypeId || 'unassigned';
-        groupName = tx.employee.employeeType?.name || 'ไม่ระบุประเภท';
+        groupId = tx.employee?.employeeTypeId || 'unassigned';
+        groupName = tx.employee?.employeeType?.name || 'ไม่ระบุประเภท';
       } else if (dimension === 'payCategory') {
         if (isIncome) {
           if (itemName.includes('เงินเดือน') || itemName.includes('ค่าจ้าง')) {
@@ -412,7 +432,7 @@ export class ReportsService {
     };
   }
 
-  // 3. Multi-Month Timeline Trend
+  // 3. Multi-Month Timeline Trend (Optimized: 1 Batch Query instead of N queries)
   async getTimelineTrend(query: any) {
     const { period = 'last12Months', year } = query;
     let targetRecords: any[] = [];
@@ -439,24 +459,50 @@ export class ReportsService {
       targetRecords.reverse();
     }
 
-    const monthNamesShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+    if (targetRecords.length === 0) {
+      return { period, dataPoints: [] };
+    }
 
+    const targetRecordIds = targetRecords.map(r => r.id);
+
+    // Single batch query for all trend transactions
+    const allTxs = await this.prisma.payrollTransaction.findMany({
+      where: { payrollRecordId: { in: targetRecordIds } },
+      select: {
+        payrollRecordId: true,
+        employeeId: true,
+        amount: true,
+        payItem: { select: { name: true, type: true } }
+      }
+    });
+
+    // Group transactions by payrollRecordId
+    const txByRecord = new Map<string, any[]>();
+    for (let i = 0; i < allTxs.length; i++) {
+      const tx = allTxs[i];
+      if (!txByRecord.has(tx.payrollRecordId)) {
+        txByRecord.set(tx.payrollRecordId, []);
+      }
+      txByRecord.get(tx.payrollRecordId)!.push(tx);
+    }
+
+    const monthNamesShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
     const dataPoints: any[] = [];
 
-    for (const rec of targetRecords) {
-      const txs = await this.prisma.payrollTransaction.findMany({
-        where: { payrollRecordId: rec.id },
-        include: { payItem: true }
-      });
+    for (let r = 0; r < targetRecords.length; r++) {
+      const rec = targetRecords[r];
+      const txs = txByRecord.get(rec.id) || [];
 
-      const empIds = new Set(txs.map(t => t.employeeId));
+      const empIds = new Set<string>();
       let gross = 0;
       let ded = 0;
       let base = 0;
       let ot = 0;
       let special = 0;
 
-      txs.forEach(t => {
+      for (let i = 0; i < txs.length; i++) {
+        const t = txs[i];
+        empIds.add(t.employeeId);
         const amt = Number(t.amount) || 0;
         const itemName = (t.payItem?.name || '').toLowerCase();
         if (t.payItem?.type === 'INCOME') {
@@ -467,7 +513,7 @@ export class ReportsService {
         } else {
           ded += amt;
         }
-      });
+      }
 
       const thaiYearShort = String(rec.year + 543).slice(-2);
       const label = monthNamesShort[rec.month - 1] + ' ' + thaiYearShort;
@@ -495,7 +541,7 @@ export class ReportsService {
     };
   }
 
-  // 4. Drill-Down Micro Details
+  // 4. Drill-Down Micro Details (Optimized Selects)
   async getDrilldownDetails(query: {
     recordId?: string;
     year?: number;
@@ -535,11 +581,27 @@ export class ReportsService {
         ...txWhere,
         employee: empWhere
       },
-      include: {
-        employee: {
-          include: { department: true, position: true, employeeType: true }
+      select: {
+        amount: true,
+        payItemId: true,
+        payItem: {
+          select: { id: true, name: true, type: true }
         },
-        payItem: true
+        employee: {
+          select: {
+            id: true,
+            employeeCode: true,
+            firstName: true,
+            lastName: true,
+            status: true,
+            startDate: true,
+            endDate: true,
+            baseSalary: true,
+            department: { select: { name: true } },
+            position: { select: { name: true } },
+            employeeType: { select: { name: true } }
+          }
+        }
       }
     });
 
@@ -565,7 +627,8 @@ export class ReportsService {
     let grandGross = 0;
     let grandDed = 0;
 
-    for (const tx of transactions) {
+    for (let i = 0; i < transactions.length; i++) {
+      const tx = transactions[i];
       const emp = tx.employee;
       const amt = Number(tx.amount) || 0;
       const isIncome = tx.payItem?.type === 'INCOME';

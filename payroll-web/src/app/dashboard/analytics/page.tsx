@@ -31,7 +31,8 @@ import {
   ChevronRight, 
   Percent, 
   Sparkles,
-  PieChart as PieIcon
+  PieChart as PieIcon,
+  Loader2
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -81,6 +82,11 @@ export default function ExecutiveAnalyticsPage() {
 
   const fetchAnalytics = async () => {
     setLoading(true);
+    // Hide stale data during calculation
+    setSummaryData(null);
+    setDimensionData(null);
+    setTrendData([]);
+
     try {
       const token = Cookies.get("token");
       const params: any = { periodType };
@@ -215,7 +221,7 @@ export default function ExecutiveAnalyticsPage() {
           <Button 
             variant="outline" 
             size="sm" 
-            className="text-gray-700 bg-white hover:bg-gray-50 border-gray-300"
+            className="text-gray-700 bg-white hover:bg-gray-50 border-gray-300 cursor-pointer"
             onClick={fetchAnalytics}
             disabled={loading}
           >
@@ -225,7 +231,7 @@ export default function ExecutiveAnalyticsPage() {
 
           <Button 
             size="sm" 
-            className="bg-[#1877f2] hover:bg-[#166fe5] text-white shadow-sm font-medium"
+            className="bg-[#1877f2] hover:bg-[#166fe5] text-white shadow-sm font-medium cursor-pointer"
             onClick={() => router.push('/dashboard/reports')}
           >
             <FileSpreadsheet className="w-4 h-4 mr-1.5" />
@@ -255,7 +261,7 @@ export default function ExecutiveAnalyticsPage() {
                     key={p.id}
                     type="button"
                     onClick={() => setPeriodType(p.id as any)}
-                    className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-all ${
+                    className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-all cursor-pointer ${
                       periodType === p.id 
                         ? 'bg-white text-[#1877f2] shadow-xs' 
                         : 'text-gray-600 hover:text-gray-900'
@@ -272,7 +278,7 @@ export default function ExecutiveAnalyticsPage() {
               {periodType === 'monthly' && (
                 <>
                   <select 
-                    className="h-8 text-xs border rounded-md px-2 bg-white font-medium"
+                    className="h-8 text-xs border rounded-md px-2 bg-white font-medium cursor-pointer"
                     value={selectedMonth}
                     onChange={e => setSelectedMonth(e.target.value)}
                   >
@@ -281,7 +287,7 @@ export default function ExecutiveAnalyticsPage() {
                     ))}
                   </select>
                   <select 
-                    className="h-8 text-xs border rounded-md px-2 bg-white font-medium"
+                    className="h-8 text-xs border rounded-md px-2 bg-white font-medium cursor-pointer"
                     value={selectedYear}
                     onChange={e => setSelectedYear(e.target.value)}
                   >
@@ -295,7 +301,7 @@ export default function ExecutiveAnalyticsPage() {
               {periodType === 'quarterly' && (
                 <>
                   <select 
-                    className="h-8 text-xs border rounded-md px-2 bg-white font-medium"
+                    className="h-8 text-xs border rounded-md px-2 bg-white font-medium cursor-pointer"
                     value={selectedQuarter}
                     onChange={e => setSelectedQuarter(e.target.value)}
                   >
@@ -305,7 +311,7 @@ export default function ExecutiveAnalyticsPage() {
                     <option value="4">ไตรมาส 4 (ต.ค. - ธ.ค.)</option>
                   </select>
                   <select 
-                    className="h-8 text-xs border rounded-md px-2 bg-white font-medium"
+                    className="h-8 text-xs border rounded-md px-2 bg-white font-medium cursor-pointer"
                     value={selectedYear}
                     onChange={e => setSelectedYear(e.target.value)}
                   >
@@ -317,7 +323,7 @@ export default function ExecutiveAnalyticsPage() {
 
               {(periodType === 'fiscalYear' || periodType === 'calendarYear') && (
                 <select 
-                  className="h-8 text-xs border rounded-md px-2 bg-white font-medium"
+                  className="h-8 text-xs border rounded-md px-2 bg-white font-medium cursor-pointer"
                   value={selectedYear}
                   onChange={e => setSelectedYear(e.target.value)}
                 >
@@ -327,7 +333,7 @@ export default function ExecutiveAnalyticsPage() {
                 </select>
               )}
 
-              {summaryData?.periodLabel && (
+              {summaryData?.periodLabel && !loading && (
                 <span className="text-xs font-bold text-blue-900 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-md">
                   {summaryData.periodLabel}
                 </span>
@@ -353,7 +359,7 @@ export default function ExecutiveAnalyticsPage() {
                     key={d.id}
                     variant={activeDimension === d.id ? "default" : "outline"}
                     size="sm"
-                    className={`h-8 text-xs font-medium ${
+                    className={`h-8 text-xs font-medium cursor-pointer ${
                       activeDimension === d.id 
                         ? 'bg-[#1877f2] text-white hover:bg-[#166fe5]' 
                         : 'bg-white text-gray-700 hover:bg-gray-50'
@@ -374,28 +380,28 @@ export default function ExecutiveAnalyticsPage() {
                 <button
                   type="button"
                   onClick={() => setActiveMetric('amount')}
-                  className={`px-2.5 py-1 rounded font-semibold transition-all ${activeMetric === 'amount' ? 'bg-white text-blue-700 shadow-xs' : 'text-gray-500'}`}
+                  className={`px-2.5 py-1 rounded font-semibold transition-all cursor-pointer ${activeMetric === 'amount' ? 'bg-white text-blue-700 shadow-xs' : 'text-gray-500'}`}
                 >
                   บาทรวม (฿)
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveMetric('percent')}
-                  className={`px-2.5 py-1 rounded font-semibold transition-all ${activeMetric === 'percent' ? 'bg-white text-blue-700 shadow-xs' : 'text-gray-500'}`}
+                  className={`px-2.5 py-1 rounded font-semibold transition-all cursor-pointer ${activeMetric === 'percent' ? 'bg-white text-blue-700 shadow-xs' : 'text-gray-500'}`}
                 >
                   สัดส่วน (%)
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveMetric('avg')}
-                  className={`px-2.5 py-1 rounded font-semibold transition-all ${activeMetric === 'avg' ? 'bg-white text-blue-700 shadow-xs' : 'text-gray-500'}`}
+                  className={`px-2.5 py-1 rounded font-semibold transition-all cursor-pointer ${activeMetric === 'avg' ? 'bg-white text-blue-700 shadow-xs' : 'text-gray-500'}`}
                 >
                   เฉลี่ย/คน
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveMetric('headcount')}
-                  className={`px-2.5 py-1 rounded font-semibold transition-all ${activeMetric === 'headcount' ? 'bg-white text-blue-700 shadow-xs' : 'text-gray-500'}`}
+                  className={`px-2.5 py-1 rounded font-semibold transition-all cursor-pointer ${activeMetric === 'headcount' ? 'bg-white text-blue-700 shadow-xs' : 'text-gray-500'}`}
                 >
                   จำนวนคน
                 </button>
@@ -406,237 +412,275 @@ export default function ExecutiveAnalyticsPage() {
       </Card>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total Payout */}
-        <Card className="border shadow-xs bg-white relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-blue-600" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-gray-500">ยอดเบิกจ่ายสุทธิรวม</span>
-              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                <DollarSign className="w-4 h-4" />
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
+          {[1, 2, 3, 4].map(n => (
+            <Card key={n} className="border shadow-xs bg-white">
+              <CardContent className="p-4 pt-5 space-y-3">
+                <div className="flex justify-between items-center">
+                  <div className="h-3 bg-gray-200 rounded-sm w-28"></div>
+                  <div className="w-8 h-8 rounded-full bg-gray-100"></div>
+                </div>
+                <div className="h-7 bg-gray-200 rounded-md w-36"></div>
+                <div className="h-3 bg-gray-100 rounded-sm w-full pt-2"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Total Payout */}
+          <Card className="border shadow-xs bg-white relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-blue-600" />
+            <CardContent className="p-4 pt-5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-500">ยอดเบิกจ่ายสุทธิรวม</span>
+                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                  <DollarSign className="w-4 h-4" />
+                </div>
               </div>
-            </div>
-            <div className="text-2xl font-black text-gray-900 mt-2">
-              ฿{metrics ? (metrics.totalNetPayout).toLocaleString() : '0'}
-            </div>
-            <div className="flex items-center justify-between mt-2 pt-2 border-t text-xs text-gray-500">
-              <span>เงินได้รวม: ฿{metrics ? metrics.totalGrossIncome.toLocaleString() : '0'}</span>
-              {comparison && (
-                <span className={`inline-flex items-center font-bold ${comparison.netChangePercent >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                  {comparison.netChangePercent >= 0 ? <TrendingUp className="w-3.5 h-3.5 mr-0.5" /> : <TrendingDown className="w-3.5 h-3.5 mr-0.5" />}
-                  {comparison.netChangePercent > 0 ? `+${comparison.netChangePercent}%` : `${comparison.netChangePercent}%`}
+              <div className="text-2xl font-black text-gray-900 mt-2">
+                ฿{metrics ? (metrics.totalNetPayout).toLocaleString() : '0'}
+              </div>
+              <div className="flex items-center justify-between mt-2 pt-2 border-t text-xs text-gray-500">
+                <span>เงินได้รวม: ฿{metrics ? metrics.totalGrossIncome.toLocaleString() : '0'}</span>
+                {comparison && (
+                  <span className={`inline-flex items-center font-bold ${comparison.netChangePercent >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {comparison.netChangePercent >= 0 ? <TrendingUp className="w-3.5 h-3.5 mr-0.5" /> : <TrendingDown className="w-3.5 h-3.5 mr-0.5" />}
+                    {comparison.netChangePercent > 0 ? `+${comparison.netChangePercent}%` : `${comparison.netChangePercent}%`}
+                  </span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 2: Headcount */}
+          <Card className="border shadow-xs bg-white relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-600" />
+            <CardContent className="p-4 pt-5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-500">อัตรากำลังรวมในงวด</span>
+                <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                  <Users className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="text-2xl font-black text-gray-900 mt-2">
+                {metrics ? metrics.totalHeadcount : 0} <span className="text-sm font-normal text-gray-500">คน</span>
+              </div>
+              <div className="flex items-center justify-between mt-2 pt-2 border-t text-xs text-gray-500">
+                <span>เฉลี่ยสุทธิ/คน:</span>
+                <span className="font-bold text-gray-800">฿{metrics ? metrics.avgNetPerHead.toLocaleString() : '0'}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 3: Overtime & Shifts */}
+          <Card className="border shadow-xs bg-white relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-amber-500" />
+            <CardContent className="p-4 pt-5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-500">ค่าเวรและล่วงเวลา (OT)</span>
+                <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
+                  <Clock className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="text-2xl font-black text-gray-900 mt-2">
+                ฿{metrics ? metrics.otShiftTotal.toLocaleString() : '0'}
+              </div>
+              <div className="flex items-center justify-between mt-2 pt-2 border-t text-xs text-gray-500">
+                <span>สัดส่วนต่อเงินเดือนหลัก:</span>
+                <span className="font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                  {metrics ? metrics.otRatioPercent : 0}%
                 </span>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Card 2: Headcount */}
-        <Card className="border shadow-xs bg-white relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-600" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-gray-500">อัตรากำลังรวมในงวด</span>
-              <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
-                <Users className="w-4 h-4" />
               </div>
-            </div>
-            <div className="text-2xl font-black text-gray-900 mt-2">
-              {metrics ? metrics.totalHeadcount : 0} <span className="text-sm font-normal text-gray-500">คน</span>
-            </div>
-            <div className="flex items-center justify-between mt-2 pt-2 border-t text-xs text-gray-500">
-              <span>เฉลี่ยสุทธิ/คน:</span>
-              <span className="font-bold text-gray-800">฿{metrics ? metrics.avgNetPerHead.toLocaleString() : '0'}</span>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Card 3: Overtime & Shifts */}
-        <Card className="border shadow-xs bg-white relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-amber-500" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-gray-500">ค่าเวรและล่วงเวลา (OT)</span>
-              <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
-                <Clock className="w-4 h-4" />
+          {/* Card 4: Deductions & Taxes */}
+          <Card className="border shadow-xs bg-white relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-purple-600" />
+            <CardContent className="p-4 pt-5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-500">ภาษี & เงินสะสมกองทุน</span>
+                <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
+                  <Percent className="w-4 h-4" />
+                </div>
               </div>
-            </div>
-            <div className="text-2xl font-black text-gray-900 mt-2">
-              ฿{metrics ? metrics.otShiftTotal.toLocaleString() : '0'}
-            </div>
-            <div className="flex items-center justify-between mt-2 pt-2 border-t text-xs text-gray-500">
-              <span>สัดส่วนต่อเงินเดือนหลัก:</span>
-              <span className="font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
-                {metrics ? metrics.otRatioPercent : 0}%
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Card 4: Deductions & Taxes */}
-        <Card className="border shadow-xs bg-white relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-purple-600" />
-          <CardContent className="p-4 pt-5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-gray-500">ภาษี & เงินสะสมกองทุน</span>
-              <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
-                <Percent className="w-4 h-4" />
+              <div className="text-2xl font-black text-gray-900 mt-2">
+                ฿{metrics ? metrics.totalDeductions.toLocaleString() : '0'}
               </div>
-            </div>
-            <div className="text-2xl font-black text-gray-900 mt-2">
-              ฿{metrics ? metrics.totalDeductions.toLocaleString() : '0'}
-            </div>
-            <div className="flex items-center justify-between mt-2 pt-2 border-t text-[11px] text-gray-500">
-              <span>ภาษี: ฿{metrics ? metrics.taxTotal.toLocaleString() : '0'}</span>
-              <span>สปส: ฿{metrics ? metrics.ssoTotal.toLocaleString() : '0'}</span>
-              <span>กบข: ฿{metrics ? metrics.gpfTotal.toLocaleString() : '0'}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              <div className="flex items-center justify-between mt-2 pt-2 border-t text-[11px] text-gray-500">
+                <span>ภาษี: ฿{metrics ? metrics.taxTotal.toLocaleString() : '0'}</span>
+                <span>สปส: ฿{metrics ? metrics.ssoTotal.toLocaleString() : '0'}</span>
+                <span>กบข: ฿{metrics ? metrics.gpfTotal.toLocaleString() : '0'}</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Main Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Left Column (2 spans): Primary Interactive Drill-down Chart */}
-        <Card className="lg:col-span-2 border shadow-xs bg-white">
-          <CardHeader className="p-4 pb-2 border-b flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-blue-600" /> 
-                {activeDimension === 'department' && 'ค่าใช้จ่ายแยกตามกลุ่มงาน (คลิกแท่งเพื่อเจาะลึก)'}
-                {activeDimension === 'position' && 'ค่าใช้จ่ายแยกตามตำแหน่งวิชาชีพ (คลิกแท่งเพื่อเจาะลึก)'}
-                {activeDimension === 'employeeType' && 'ค่าใช้จ่ายแยกตามประเภทการจ้างงาน (คลิกแท่งเพื่อเจาะลึก)'}
-                {activeDimension === 'payCategory' && 'สัดส่วนจำแนกตามหมวดเงินได้-เงินหัก'}
-              </CardTitle>
-              <CardDescription className="text-xs">
-                {activeMetric === 'amount' && 'แสดงยอดเงินสุทธิ (บาท)'}
-                {activeMetric === 'percent' && 'แสดงสัดส่วนเปอร์เซ็นต์ (%)'}
-                {activeMetric === 'avg' && 'แสดงค่าเฉลี่ยต่อคน (บาท/คน)'}
-                {activeMetric === 'headcount' && 'แสดงจำนวนบุคลากร (คน)'}
-              </CardDescription>
-            </div>
-            <Badge variant="outline" className="text-[11px] bg-gray-50">
-              {chartData.length} รายการ
-            </Badge>
-          </CardHeader>
-          <CardContent className="p-4">
-            {chartData.length === 0 ? (
-              <div className="py-24 text-center text-gray-400 text-sm">ไม่พบข้อมูลสำหรับเงื่อนไขนี้</div>
-            ) : (
-              <div className="h-[360px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={chartData} 
-                    margin={{ top: 10, right: 10, left: 10, bottom: 40 }}
-                    onClick={(e: any) => {
-                      if (e && e.activePayload && e.activePayload.length > 0) {
-                        handleDrilldown(e.activePayload[0].payload);
-                      }
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                    <XAxis 
-                      dataKey="name" 
-                      angle={-35} 
-                      textAnchor="end" 
-                      tick={{ fontSize: 11, fill: '#64748b' }}
-                      interval={0}
-                      height={60}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 11, fill: '#64748b' }}
-                      tickFormatter={(v) => activeMetric === 'percent' ? `${v}%` : v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}
-                    />
-                    <Tooltip 
-                      formatter={(val: any, name: any, item: any) => {
-                        const p = item.payload;
-                        return [
-                          activeMetric === 'percent' ? `${val}% (฿${p.totalNet.toLocaleString()})` : `฿${Number(val).toLocaleString()}`,
-                          `ยอดจ่าย (${p.headcount} คน)`
-                        ];
+      {loading ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <Card className="lg:col-span-2 border shadow-xs bg-white">
+            <CardContent className="p-8 py-28 flex flex-col items-center justify-center text-center">
+              <div className="relative mb-3">
+                <div className="w-12 h-12 rounded-full border-4 border-blue-100 border-t-blue-600 animate-spin"></div>
+                <Sparkles className="w-4 h-4 text-blue-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+              </div>
+              <p className="text-sm font-bold text-gray-700">กำลังวิเคราะห์และจัดกลุ่มกราฟมิติข้อมูล...</p>
+              <p className="text-xs text-gray-400 mt-1">กำลังประมวลผลตัวเลขและสัดส่วน กรุณารอสักครู่</p>
+            </CardContent>
+          </Card>
+          <Card className="border shadow-xs bg-white">
+            <CardContent className="p-8 py-28 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full border-4 border-purple-100 border-t-purple-600 animate-spin mb-3"></div>
+              <p className="text-xs font-bold text-gray-700">กำลังคำนวณสัดส่วนงบประมาณ...</p>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Left Column (2 spans): Primary Interactive Drill-down Chart */}
+          <Card className="lg:col-span-2 border shadow-xs bg-white">
+            <CardHeader className="p-4 pb-2 border-b flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-blue-600" /> 
+                  {activeDimension === 'department' && 'ค่าใช้จ่ายแยกตามกลุ่มงาน (คลิกแท่งเพื่อเจาะลึก)'}
+                  {activeDimension === 'position' && 'ค่าใช้จ่ายแยกตามตำแหน่งวิชาชีพ (คลิกแท่งเพื่อเจาะลึก)'}
+                  {activeDimension === 'employeeType' && 'ค่าใช้จ่ายแยกตามประเภทการจ้างงาน (คลิกแท่งเพื่อเจาะลึก)'}
+                  {activeDimension === 'payCategory' && 'สัดส่วนจำแนกตามหมวดเงินได้-เงินหัก'}
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  {activeMetric === 'amount' && 'แสดงยอดเงินสุทธิ (บาท)'}
+                  {activeMetric === 'percent' && 'แสดงสัดส่วนเปอร์เซ็นต์ (%)'}
+                  {activeMetric === 'avg' && 'แสดงค่าเฉลี่ยต่อคน (บาท/คน)'}
+                  {activeMetric === 'headcount' && 'แสดงจำนวนบุคลากร (คน)'}
+                </CardDescription>
+              </div>
+              <Badge variant="outline" className="text-[11px] bg-gray-50">
+                {chartData.length} รายการ
+              </Badge>
+            </CardHeader>
+            <CardContent className="p-4">
+              {chartData.length === 0 ? (
+                <div className="py-24 text-center text-gray-400 text-sm">ไม่พบข้อมูลสำหรับเงื่อนไขนี้</div>
+              ) : (
+                <div className="h-[360px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart 
+                      data={chartData} 
+                      margin={{ top: 10, right: 10, left: 10, bottom: 40 }}
+                      onClick={(e: any) => {
+                        if (e && e.activePayload && e.activePayload.length > 0) {
+                          handleDrilldown(e.activePayload[0].payload);
+                        }
                       }}
-                      labelFormatter={(label, payload: any) => payload?.[0]?.payload?.fullName || label}
-                      contentStyle={{ borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: 'none' }}
-                    />
-                    <Bar 
-                      dataKey="value" 
-                      radius={[4, 4, 0, 0]}
-                      className="cursor-pointer transition-opacity hover:opacity-85"
                     >
-                      {chartData.map((entry: any, index: number) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Right Column (1 span): Donut Composition Chart */}
-        <Card className="border shadow-xs bg-white">
-          <CardHeader className="p-4 pb-2 border-b">
-            <CardTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
-              <PieIcon className="w-4 h-4 text-purple-600" /> สัดส่วน % โครงสร้างงบประมาณ
-            </CardTitle>
-            <CardDescription className="text-xs">Top 6 หมวดที่มีสัดส่วนสูงสุด</CardDescription>
-          </CardHeader>
-          <CardContent className="p-4">
-            {chartData.length === 0 ? (
-              <div className="py-24 text-center text-gray-400 text-sm">ไม่มีข้อมูล</div>
-            ) : (
-              <div className="h-[220px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={chartData.slice(0, 6)}
-                      dataKey="totalNet"
-                      nameKey="fullName"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
-                      paddingAngle={2}
-                    >
-                      {chartData.slice(0, 6).map((entry: any, index: number) => (
-                        <Cell key={`cell-pie-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(val: any) => [`฿${Number(val).toLocaleString()}`, 'ยอดจ่ายสุทธิ']}
-                      contentStyle={{ borderRadius: '8px', fontSize: '12px' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-
-            {/* Top items legend */}
-            <div className="mt-2 space-y-1.5 border-t pt-2 max-h-[140px] overflow-y-auto">
-              {chartData.slice(0, 5).map((item: any, idx: number) => (
-                <div 
-                  key={idx} 
-                  className="flex items-center justify-between text-xs p-1 rounded hover:bg-gray-50 cursor-pointer"
-                  onClick={() => handleDrilldown(item)}
-                >
-                  <div className="flex items-center gap-2 truncate pr-2">
-                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
-                    <span className="truncate font-medium text-gray-700">{item.fullName}</span>
-                  </div>
-                  <div className="font-bold text-gray-900 whitespace-nowrap">
-                    {item.sharePercent}%
-                  </div>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                      <XAxis 
+                        dataKey="name" 
+                        angle={-35} 
+                        textAnchor="end" 
+                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        interval={0}
+                        height={60}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        tickFormatter={(v) => activeMetric === 'percent' ? `${v}%` : v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}
+                      />
+                      <Tooltip 
+                        formatter={(val: any, name: any, item: any) => {
+                          const p = item.payload;
+                          return [
+                            activeMetric === 'percent' ? `${val}% (฿${p.totalNet.toLocaleString()})` : `฿${Number(val).toLocaleString()}`,
+                            `ยอดจ่าย (${p.headcount} คน)`
+                          ];
+                        }}
+                        labelFormatter={(label, payload: any) => payload?.[0]?.payload?.fullName || label}
+                        contentStyle={{ borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: 'none' }}
+                      />
+                      <Bar 
+                        dataKey="value" 
+                        radius={[4, 4, 0, 0]}
+                        className="cursor-pointer transition-opacity hover:opacity-85"
+                      >
+                        {chartData.map((entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Right Column (1 span): Donut Composition Chart */}
+          <Card className="border shadow-xs bg-white">
+            <CardHeader className="p-4 pb-2 border-b">
+              <CardTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <PieIcon className="w-4 h-4 text-purple-600" /> สัดส่วน % โครงสร้างงบประมาณ
+              </CardTitle>
+              <CardDescription className="text-xs">Top 6 หมวดที่มีสัดส่วนสูงสุด</CardDescription>
+            </CardHeader>
+            <CardContent className="p-4">
+              {chartData.length === 0 ? (
+                <div className="py-24 text-center text-gray-400 text-sm">ไม่มีข้อมูล</div>
+              ) : (
+                <div className="h-[220px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={chartData.slice(0, 6)}
+                        dataKey="totalNet"
+                        nameKey="fullName"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={50}
+                        outerRadius={80}
+                        paddingAngle={2}
+                      >
+                        {chartData.slice(0, 6).map((entry: any, index: number) => (
+                          <Cell key={`cell-pie-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(val: any) => [`฿${Number(val).toLocaleString()}`, 'ยอดจ่ายสุทธิ']}
+                        contentStyle={{ borderRadius: '8px', fontSize: '12px' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+
+              {/* Top items legend */}
+              <div className="mt-2 space-y-1.5 border-t pt-2 max-h-[140px] overflow-y-auto">
+                {chartData.slice(0, 5).map((item: any, idx: number) => (
+                  <div 
+                    key={idx} 
+                    className="flex items-center justify-between text-xs p-1 rounded hover:bg-gray-50 cursor-pointer"
+                    onClick={() => handleDrilldown(item)}
+                  >
+                    <div className="flex items-center gap-2 truncate pr-2">
+                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
+                      <span className="truncate font-medium text-gray-700">{item.fullName}</span>
+                    </div>
+                    <div className="font-bold text-gray-900 whitespace-nowrap">
+                      {item.sharePercent}%
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Row 3: 12-Month Trend Timeline Chart */}
-      {trendData.length > 0 && (
+      {!loading && trendData.length > 0 && (
         <Card className="border shadow-xs bg-white">
           <CardHeader className="p-4 pb-2 border-b flex flex-row items-center justify-between">
             <div>
@@ -730,7 +774,10 @@ export default function ExecutiveAnalyticsPage() {
 
           <div className="flex-1 overflow-y-auto p-0">
             {drilldownLoading ? (
-              <div className="py-20 text-center text-gray-500">กำลังโหลดรายละเอียด...</div>
+              <div className="py-20 text-center text-gray-500 flex items-center justify-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                กำลังโหลดรายละเอียด...
+              </div>
             ) : filteredDrilldownEmployees.length === 0 ? (
               <div className="py-20 text-center text-gray-400">ไม่พบรายชื่อพนักงาน</div>
             ) : (
@@ -778,12 +825,12 @@ export default function ExecutiveAnalyticsPage() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="text-xs"
+              className="text-xs cursor-pointer"
               onClick={() => router.push('/dashboard/reports')}
             >
               <FileSpreadsheet className="w-3.5 h-3.5 mr-1" /> ดูในศูนย์รวมรายงาน
             </Button>
-            <Button size="sm" onClick={() => setDrilldownOpen(false)} className="bg-gray-800 text-white">
+            <Button size="sm" onClick={() => setDrilldownOpen(false)} className="bg-gray-800 text-white cursor-pointer">
               ปิดหน้าต่าง
             </Button>
           </DialogFooter>

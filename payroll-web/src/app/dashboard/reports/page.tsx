@@ -28,7 +28,9 @@ import {
   DollarSign, 
   Layers,
   Users,
-  Percent
+  Percent,
+  Loader2,
+  Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -58,6 +60,13 @@ export default function ReportsCenterPage() {
 
   const fetchReportData = async () => {
     setLoading(true);
+    // Explicitly reset existing data so stale numbers are hidden while recalculating
+    setSummaryData(null);
+    setDepartmentData(null);
+    setEmployeeTypeData(null);
+    setExpandedGroups(new Set());
+    setGroupDetails({});
+
     try {
       const token = Cookies.get("token");
       const params: any = { periodType };
@@ -83,8 +92,6 @@ export default function ReportsCenterPage() {
       setSummaryData(sumRes.data);
       setDepartmentData(deptRes.data);
       setEmployeeTypeData(typeRes.data);
-      setExpandedGroups(new Set());
-      setGroupDetails({});
     } catch (e) {
       console.error(e);
       toast.error("ดึงข้อมูลรายงานไม่สำเร็จ");
@@ -227,7 +234,7 @@ export default function ReportsCenterPage() {
           <Button 
             variant="outline" 
             size="sm" 
-            className="text-blue-700 bg-blue-50 hover:bg-blue-100 border-blue-200"
+            className="text-blue-700 bg-blue-50 hover:bg-blue-100 border-blue-200 cursor-pointer"
             onClick={() => router.push('/dashboard/analytics')}
           >
             <BarChart3 className="w-4 h-4 mr-1.5" />
@@ -237,7 +244,7 @@ export default function ReportsCenterPage() {
           <Button 
             variant="outline" 
             size="sm" 
-            className="text-gray-700 bg-white hover:bg-gray-50 border-gray-300"
+            className="text-gray-700 bg-white hover:bg-gray-50 border-gray-300 cursor-pointer"
             onClick={handlePrint}
           >
             <Printer className="w-4 h-4 mr-1.5" />
@@ -246,7 +253,7 @@ export default function ReportsCenterPage() {
 
           <Button 
             size="sm" 
-            className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm font-medium"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm font-medium cursor-pointer"
             onClick={handleExportExcel}
           >
             <Download className="w-4 h-4 mr-1.5" />
@@ -276,7 +283,7 @@ export default function ReportsCenterPage() {
                     key={p.id}
                     type="button"
                     onClick={() => setPeriodType(p.id as any)}
-                    className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-all ${
+                    className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-all cursor-pointer ${
                       periodType === p.id 
                         ? 'bg-white text-emerald-700 shadow-xs' 
                         : 'text-gray-600 hover:text-gray-900'
@@ -293,7 +300,7 @@ export default function ReportsCenterPage() {
               {periodType === 'monthly' && (
                 <>
                   <select 
-                    className="h-8 text-xs border rounded-md px-2 bg-white font-medium"
+                    className="h-8 text-xs border rounded-md px-2 bg-white font-medium cursor-pointer"
                     value={selectedMonth}
                     onChange={e => setSelectedMonth(e.target.value)}
                   >
@@ -302,7 +309,31 @@ export default function ReportsCenterPage() {
                     ))}
                   </select>
                   <select 
-                    className="h-8 text-xs border rounded-md px-2 bg-white font-medium"
+                    className="h-8 text-xs border rounded-md px-2 bg-white font-medium cursor-pointer"
+                    value={selectedYear}
+                    onChange={e => setSelectedYear(e.target.value)}
+                  >
+                    <option value="2026">พ.ศ. 2569 (2026)</option>
+                    <option value="2025">พ.ศ. 2568 (2025)</option>
+                    <option value="2024">พ.ศ. 2567 (2024)</option>
+                  </select>
+                </>
+              )}
+
+              {periodType === 'quarterly' && (
+                <>
+                  <select 
+                    className="h-8 text-xs border rounded-md px-2 bg-white font-medium cursor-pointer"
+                    value={selectedQuarter}
+                    onChange={e => setSelectedQuarter(e.target.value)}
+                  >
+                    <option value="1">ไตรมาส 1 (ม.ค. - มี.ค.)</option>
+                    <option value="2">ไตรมาส 2 (เม.ย. - มิ.ย.)</option>
+                    <option value="3">ไตรมาส 3 (ก.ค. - ก.ย.)</option>
+                    <option value="4">ไตรมาส 4 (ต.ค. - ธ.ค.)</option>
+                  </select>
+                  <select 
+                    className="h-8 text-xs border rounded-md px-2 bg-white font-medium cursor-pointer"
                     value={selectedYear}
                     onChange={e => setSelectedYear(e.target.value)}
                   >
@@ -315,16 +346,17 @@ export default function ReportsCenterPage() {
 
               {(periodType === 'fiscalYear' || periodType === 'calendarYear') && (
                 <select 
-                  className="h-8 text-xs border rounded-md px-2 bg-white font-medium"
+                  className="h-8 text-xs border rounded-md px-2 bg-white font-medium cursor-pointer"
                   value={selectedYear}
                   onChange={e => setSelectedYear(e.target.value)}
                 >
                   <option value="2026">ปี พ.ศ. 2569</option>
                   <option value="2025">ปี พ.ศ. 2568</option>
+                  <option value="2024">ปี พ.ศ. 2567</option>
                 </select>
               )}
 
-              {summaryData?.periodLabel && (
+              {summaryData?.periodLabel && !loading && (
                 <span className="text-xs font-bold text-emerald-900 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-md">
                   {summaryData.periodLabel}
                 </span>
@@ -345,7 +377,7 @@ export default function ReportsCenterPage() {
                   key={tab.id}
                   variant={reportTab === tab.id ? "default" : "outline"}
                   size="sm"
-                  className={`h-8 text-xs font-medium ${
+                  className={`h-8 text-xs font-medium cursor-pointer ${
                     reportTab === tab.id 
                       ? 'bg-emerald-600 text-white hover:bg-emerald-700' 
                       : 'bg-white text-gray-700 hover:bg-gray-50'
@@ -372,7 +404,16 @@ export default function ReportsCenterPage() {
       </Card>
 
       {/* Summary KPI Banner */}
-      {metrics && (
+      {loading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-lg border shadow-xs animate-pulse">
+          {[1, 2, 3, 4].map(n => (
+            <div key={n} className="space-y-2 border-r last:border-r-0 pr-3">
+              <div className="h-3 bg-gray-200 rounded-sm w-24"></div>
+              <div className="h-6 bg-gray-200 rounded-md w-32"></div>
+            </div>
+          ))}
+        </div>
+      ) : metrics ? (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-lg border shadow-xs print:grid-cols-4 print:border-black">
           <div className="border-r pr-3">
             <span className="text-xs text-gray-500 font-medium">ยอดจ่ายสุทธิรวม</span>
@@ -391,163 +432,174 @@ export default function ReportsCenterPage() {
             <div className="text-lg font-bold text-blue-700">฿{metrics.avgNetPerHead.toLocaleString()}</div>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Main Report Table */}
       <Card className="border shadow-xs bg-white overflow-hidden print:border-black print:shadow-none">
-        <Table className="text-xs">
-          <TableHeader>
-            <TableRow className="bg-gray-50/90 print:bg-gray-100">
-              <TableHead className="w-12 text-center">#</TableHead>
-              <TableHead className="font-bold text-gray-800">
-                {reportTab === 'employeeType' ? 'ประเภทการจ้างงาน' : 'กลุ่มงาน / แผนก'}
-              </TableHead>
-              <TableHead className="text-center font-bold text-gray-800">จำนวนคน</TableHead>
-              <TableHead className="text-right font-bold text-gray-800">เงินเดือนหลัก</TableHead>
-              <TableHead className="text-right font-bold text-gray-800">ค่าเวร & OT</TableHead>
-              <TableHead className="text-right font-bold text-gray-800">เงินเพิ่มพิเศษ</TableHead>
-              <TableHead className="text-right font-bold text-gray-800">เงินได้รวม</TableHead>
-              <TableHead className="text-right font-bold text-gray-800">เงินหักรวม</TableHead>
-              <TableHead className="text-right font-bold text-gray-900 bg-blue-50/60">ยอดจ่ายสุทธิ (Net)</TableHead>
-              <TableHead className="text-right font-bold text-gray-800">สัดส่วน (%)</TableHead>
-              <TableHead className="text-right font-bold text-gray-800">เฉลี่ย/คน</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={11} className="py-16 text-center text-gray-500">
-                  กำลังโหลดข้อมูลรายงาน...
-                </TableCell>
+        {loading ? (
+          <div className="py-24 px-6 flex flex-col items-center justify-center text-center bg-gray-50/50">
+            <div className="relative mb-4">
+              <div className="w-14 h-14 rounded-full border-4 border-emerald-100 border-t-emerald-600 animate-spin flex items-center justify-center">
+              </div>
+              <Sparkles className="w-5 h-5 text-emerald-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+            </div>
+            <h3 className="text-base font-bold text-gray-800">กำลังประมวลผลข้อมูลและคำนวณรายงาน...</h3>
+            <p className="text-xs text-gray-500 mt-1 max-w-sm">
+              ระบบกำลังดึงข้อมูล สรุปยอด และจัดกลุ่มตามมิติที่เลือก กรุณารอสักครู่
+            </p>
+          </div>
+        ) : (
+          <Table className="text-xs">
+            <TableHeader>
+              <TableRow className="bg-gray-50/90 print:bg-gray-100">
+                <TableHead className="w-12 text-center">#</TableHead>
+                <TableHead className="font-bold text-gray-800">
+                  {reportTab === 'employeeType' ? 'ประเภทการจ้างงาน' : 'กลุ่มงาน / แผนก'}
+                </TableHead>
+                <TableHead className="text-center font-bold text-gray-800">จำนวนคน</TableHead>
+                <TableHead className="text-right font-bold text-gray-800">เงินเดือนหลัก</TableHead>
+                <TableHead className="text-right font-bold text-gray-800">ค่าเวร & OT</TableHead>
+                <TableHead className="text-right font-bold text-gray-800">เงินเพิ่มพิเศษ</TableHead>
+                <TableHead className="text-right font-bold text-gray-800">เงินได้รวม</TableHead>
+                <TableHead className="text-right font-bold text-gray-800">เงินหักรวม</TableHead>
+                <TableHead className="text-right font-bold text-gray-900 bg-blue-50/60">ยอดจ่ายสุทธิ (Net)</TableHead>
+                <TableHead className="text-right font-bold text-gray-800">สัดส่วน (%)</TableHead>
+                <TableHead className="text-right font-bold text-gray-800">เฉลี่ย/คน</TableHead>
               </TableRow>
-            ) : (reportTab === 'employeeType' ? employeeTypeData?.items : departmentData?.items)?.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={11} className="py-16 text-center text-gray-400">
-                  ไม่พบข้อมูลรายงานสำหรับเงื่อนไขนี้
-                </TableCell>
-              </TableRow>
-            ) : (
-              (reportTab === 'employeeType' ? employeeTypeData?.items : departmentData?.items)
-                ?.filter((item: any) => !searchTerm || item.name.toLowerCase().includes(searchTerm.toLowerCase()))
-                .map((item: any, idx: number) => {
-                  const isExpanded = expandedGroups.has(item.id);
-                  const isDimensionDept = reportTab !== 'employeeType';
-                  const details = groupDetails[item.id] || [];
-                  const isLoadingDetails = loadingGroups.has(item.id);
+            </TableHeader>
+            <TableBody>
+              {(reportTab === 'employeeType' ? employeeTypeData?.items : departmentData?.items)?.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={11} className="py-16 text-center text-gray-400">
+                    ไม่พบข้อมูลรายงานสำหรับเงื่อนไขนี้
+                  </TableCell>
+                </TableRow>
+              ) : (
+                (reportTab === 'employeeType' ? employeeTypeData?.items : departmentData?.items)
+                  ?.filter((item: any) => !searchTerm || item.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                  .map((item: any, idx: number) => {
+                    const isExpanded = expandedGroups.has(item.id);
+                    const isDimensionDept = reportTab !== 'employeeType';
+                    const details = groupDetails[item.id] || [];
+                    const isLoadingDetails = loadingGroups.has(item.id);
 
-                  return (
-                    <React.Fragment key={item.id || idx}>
-                      {/* Master Group Row */}
-                      <TableRow 
-                        className={`hover:bg-gray-50 transition-colors font-medium ${isExpanded ? 'bg-blue-50/30' : ''}`}
-                      >
-                        <TableCell className="text-center text-gray-400">{idx + 1}</TableCell>
-                        <TableCell>
-                          <button
-                            type="button"
-                            className="flex items-center gap-1.5 font-bold text-gray-900 hover:text-blue-600 text-left print:pointer-events-none"
-                            onClick={() => toggleExpandGroup(item.id, isDimensionDept ? 'department' : 'employeeType')}
-                          >
-                            <span className="text-gray-400 print:hidden">
-                              {isExpanded ? <ChevronDown className="w-4 h-4 text-blue-600" /> : <ChevronRight className="w-4 h-4" />}
-                            </span>
-                            <span>{item.name}</span>
-                          </button>
-                        </TableCell>
-                        <TableCell className="text-center font-semibold text-gray-700">{item.headcount}</TableCell>
-                        <TableCell className="text-right text-gray-700">฿{item.baseSalary.toLocaleString()}</TableCell>
-                        <TableCell className="text-right text-amber-700">฿{item.otShift.toLocaleString()}</TableCell>
-                        <TableCell className="text-right text-purple-700">฿{item.specialAllowance.toLocaleString()}</TableCell>
-                        <TableCell className="text-right font-medium text-gray-800">฿{item.totalGross.toLocaleString()}</TableCell>
-                        <TableCell className="text-right text-rose-600">-฿{item.totalDeductions.toLocaleString()}</TableCell>
-                        <TableCell className="text-right font-bold text-blue-700 bg-blue-50/50">
-                          ฿{item.totalNet.toLocaleString()}
-                        </TableCell>
-                        <TableCell className="text-right text-gray-600">{item.sharePercent}%</TableCell>
-                        <TableCell className="text-right font-semibold text-gray-800">฿{item.avgNetPerHead.toLocaleString()}</TableCell>
-                      </TableRow>
-
-                      {/* Expandable Sub-table (Drill-Down Level) */}
-                      {isExpanded && (
-                        <TableRow className="bg-gray-50/60 print:bg-white">
-                          <TableCell colSpan={11} className="p-3 pl-8">
-                            <div className="border rounded-md bg-white p-3 shadow-xs">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-bold text-xs text-blue-900 flex items-center gap-1.5">
-                                  <Users className="w-3.5 h-3.5 text-blue-600" />
-                                  รายชื่อและรายการรับ-หักของบุคลากรใน {item.name} ({details.length} คน)
-                                </span>
-                              </div>
-
-                              {isLoadingDetails ? (
-                                <div className="py-6 text-center text-gray-400 text-xs">กำลังโหลดรายละเอียด...</div>
-                              ) : details.length === 0 ? (
-                                <div className="py-4 text-center text-gray-400 text-xs">ไม่มีรายละเอียด</div>
-                              ) : (
-                                <Table className="text-xs">
-                                  <TableHeader>
-                                    <TableRow className="bg-gray-100 text-gray-600">
-                                      <TableHead className="w-10 text-center">#</TableHead>
-                                      <TableHead>รหัส</TableHead>
-                                      <TableHead>ชื่อ - นามสกุล</TableHead>
-                                      <TableHead>ตำแหน่ง</TableHead>
-                                      <TableHead>ประเภท</TableHead>
-                                      <TableHead className="text-right">เงินได้รวม</TableHead>
-                                      <TableHead className="text-right">เงินหักรวม</TableHead>
-                                      <TableHead className="text-right font-bold text-blue-900">รับสุทธิ</TableHead>
-                                    </TableRow>
-                                  </TableHeader>
-                                  <TableBody>
-                                    {details.map((emp: any, eIdx: number) => (
-                                      <TableRow key={emp.employeeId || eIdx} className="hover:bg-gray-50">
-                                        <TableCell className="text-center text-gray-400">{eIdx + 1}</TableCell>
-                                        <TableCell className="font-medium text-gray-700">{emp.employeeCode}</TableCell>
-                                        <TableCell className="font-semibold text-gray-900">{emp.firstName} {emp.lastName}</TableCell>
-                                        <TableCell className="text-gray-600">{emp.position}</TableCell>
-                                        <TableCell className="text-gray-600">{emp.employeeType}</TableCell>
-                                        <TableCell className="text-right text-gray-700">฿{emp.grossIncome.toLocaleString()}</TableCell>
-                                        <TableCell className="text-right text-rose-600">-฿{emp.totalDeductions.toLocaleString()}</TableCell>
-                                        <TableCell className="text-right font-bold text-blue-700">฿{emp.netAmount.toLocaleString()}</TableCell>
-                                      </TableRow>
-                                    ))}
-                                  </TableBody>
-                                </Table>
-                              )}
-                            </div>
+                    return (
+                      <React.Fragment key={item.id || idx}>
+                        {/* Master Group Row */}
+                        <TableRow 
+                          className={`hover:bg-gray-50 transition-colors font-medium ${isExpanded ? 'bg-blue-50/30' : ''}`}
+                        >
+                          <TableCell className="text-center text-gray-400">{idx + 1}</TableCell>
+                          <TableCell>
+                            <button
+                              type="button"
+                              className="flex items-center gap-1.5 font-bold text-gray-900 hover:text-blue-600 text-left print:pointer-events-none cursor-pointer"
+                              onClick={() => toggleExpandGroup(item.id, isDimensionDept ? 'department' : 'employeeType')}
+                            >
+                              <span className="text-gray-400 print:hidden">
+                                {isExpanded ? <ChevronDown className="w-4 h-4 text-blue-600" /> : <ChevronRight className="w-4 h-4" />}
+                              </span>
+                              <span>{item.name}</span>
+                            </button>
                           </TableCell>
+                          <TableCell className="text-center font-semibold text-gray-700">{item.headcount}</TableCell>
+                          <TableCell className="text-right text-gray-700">฿{item.baseSalary.toLocaleString()}</TableCell>
+                          <TableCell className="text-right text-amber-700">฿{item.otShift.toLocaleString()}</TableCell>
+                          <TableCell className="text-right text-purple-700">฿{item.specialAllowance.toLocaleString()}</TableCell>
+                          <TableCell className="text-right font-medium text-gray-800">฿{item.totalGross.toLocaleString()}</TableCell>
+                          <TableCell className="text-right text-rose-600">-฿{item.totalDeductions.toLocaleString()}</TableCell>
+                          <TableCell className="text-right font-bold text-blue-700 bg-blue-50/50">
+                            ฿{item.totalNet.toLocaleString()}
+                          </TableCell>
+                          <TableCell className="text-right text-gray-600">{item.sharePercent}%</TableCell>
+                          <TableCell className="text-right font-semibold text-gray-800">฿{item.avgNetPerHead.toLocaleString()}</TableCell>
                         </TableRow>
-                      )}
-                    </React.Fragment>
-                  );
-                })
+
+                        {/* Expandable Sub-table (Drill-Down Level) */}
+                        {isExpanded && (
+                          <TableRow className="bg-gray-50/60 print:bg-white">
+                            <TableCell colSpan={11} className="p-3 pl-8">
+                              <div className="border rounded-md bg-white p-3 shadow-xs">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="font-bold text-xs text-blue-900 flex items-center gap-1.5">
+                                    <Users className="w-3.5 h-3.5 text-blue-600" />
+                                    รายชื่อและรายการรับ-หักของบุคลากรใน {item.name} ({details.length} คน)
+                                  </span>
+                                </div>
+
+                                {isLoadingDetails ? (
+                                  <div className="py-6 text-center text-gray-400 text-xs flex items-center justify-center gap-2">
+                                    <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                                    กำลังโหลดรายละเอียด...
+                                  </div>
+                                ) : details.length === 0 ? (
+                                  <div className="py-4 text-center text-gray-400 text-xs">ไม่มีรายละเอียด</div>
+                                ) : (
+                                  <Table className="text-xs">
+                                    <TableHeader>
+                                      <TableRow className="bg-gray-100 text-gray-600">
+                                        <TableHead className="w-10 text-center">#</TableHead>
+                                        <TableHead>รหัส</TableHead>
+                                        <TableHead>ชื่อ - นามสกุล</TableHead>
+                                        <TableHead>ตำแหน่ง</TableHead>
+                                        <TableHead>ประเภท</TableHead>
+                                        <TableHead className="text-right">เงินได้รวม</TableHead>
+                                        <TableHead className="text-right">เงินหักรวม</TableHead>
+                                        <TableHead className="text-right font-bold text-blue-900">รับสุทธิ</TableHead>
+                                      </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {details.map((emp: any, eIdx: number) => (
+                                        <TableRow key={emp.employeeId || eIdx} className="hover:bg-gray-50">
+                                          <TableCell className="text-center text-gray-400">{eIdx + 1}</TableCell>
+                                          <TableCell className="font-medium text-gray-700">{emp.employeeCode}</TableCell>
+                                          <TableCell className="font-semibold text-gray-900">{emp.firstName} {emp.lastName}</TableCell>
+                                          <TableCell className="text-gray-600">{emp.position}</TableCell>
+                                          <TableCell className="text-gray-600">{emp.employeeType}</TableCell>
+                                          <TableCell className="text-right text-gray-700">฿{emp.grossIncome.toLocaleString()}</TableCell>
+                                          <TableCell className="text-right text-rose-600">-฿{emp.totalDeductions.toLocaleString()}</TableCell>
+                                          <TableCell className="text-right font-bold text-blue-700">฿{emp.netAmount.toLocaleString()}</TableCell>
+                                        </TableRow>
+                                      ))}
+                                    </TableBody>
+                                  </Table>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </React.Fragment>
+                    );
+                  })
+              )}
+            </TableBody>
+            {/* Grand Total Footer */}
+            {(departmentData?.grandTotal || employeeTypeData?.grandTotal) && (
+              <TableFooter>
+                <TableRow className="bg-gray-100 font-bold text-gray-900 text-xs">
+                  <TableCell colSpan={2} className="text-center font-bold">รวมทั้งสิ้น (Grand Total)</TableCell>
+                  <TableCell className="text-center">
+                    {(reportTab === 'employeeType' ? employeeTypeData : departmentData)?.grandTotal.headcount} คน
+                  </TableCell>
+                  <TableCell colSpan={3} className="text-center text-gray-500">-</TableCell>
+                  <TableCell className="text-right text-gray-900">
+                    ฿{(reportTab === 'employeeType' ? employeeTypeData : departmentData)?.grandTotal.gross.toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-right text-rose-600">
+                    -฿{(reportTab === 'employeeType' ? employeeTypeData : departmentData)?.grandTotal.deductions.toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-right font-extrabold text-blue-800 bg-blue-100/70">
+                    ฿{(reportTab === 'employeeType' ? employeeTypeData : departmentData)?.grandTotal.net.toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-right">100.0%</TableCell>
+                  <TableCell className="text-right">
+                    ฿{(reportTab === 'employeeType' ? employeeTypeData : departmentData)?.grandTotal.avgNetPerHead.toLocaleString()}
+                  </TableCell>
+                </TableRow>
+              </TableFooter>
             )}
-          </TableBody>
-          {/* Grand Total Footer */}
-          {!loading && (departmentData?.grandTotal || employeeTypeData?.grandTotal) && (
-            <TableFooter>
-              <TableRow className="bg-gray-100 font-bold text-gray-900 text-xs">
-                <TableCell colSpan={2} className="text-center font-bold">รวมทั้งสิ้น (Grand Total)</TableCell>
-                <TableCell className="text-center">
-                  {(reportTab === 'employeeType' ? employeeTypeData : departmentData)?.grandTotal.headcount} คน
-                </TableCell>
-                <TableCell colSpan={3} className="text-center text-gray-500">-</TableCell>
-                <TableCell className="text-right text-gray-900">
-                  ฿{(reportTab === 'employeeType' ? employeeTypeData : departmentData)?.grandTotal.gross.toLocaleString()}
-                </TableCell>
-                <TableCell className="text-right text-rose-600">
-                  -฿{(reportTab === 'employeeType' ? employeeTypeData : departmentData)?.grandTotal.deductions.toLocaleString()}
-                </TableCell>
-                <TableCell className="text-right font-extrabold text-blue-800 bg-blue-100/70">
-                  ฿{(reportTab === 'employeeType' ? employeeTypeData : departmentData)?.grandTotal.net.toLocaleString()}
-                </TableCell>
-                <TableCell className="text-right">100.0%</TableCell>
-                <TableCell className="text-right">
-                  ฿{(reportTab === 'employeeType' ? employeeTypeData : departmentData)?.grandTotal.avgNetPerHead.toLocaleString()}
-                </TableCell>
-              </TableRow>
-            </TableFooter>
-          )}
-        </Table>
+          </Table>
+        )}
       </Card>
     </div>
   );
