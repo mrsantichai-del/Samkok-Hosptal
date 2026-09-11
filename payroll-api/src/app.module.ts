@@ -9,6 +9,7 @@ import { PayrollModule } from './payroll/payroll.module';
 import { SettingsModule } from './settings/settings.module';
 import { UsersModule } from './users/users.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     PayrollModule,
     SettingsModule,
     UsersModule,
-    NotificationsModule
+    NotificationsModule,
+    ReportsModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -15,7 +15,9 @@ import {
   Search,
   Menu,
   FolderKanban,
-  Briefcase
+  Briefcase,
+  BarChart3,
+  FileSpreadsheet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,15 +50,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!user) return null; // Avoid hydration mismatch or flashing
 
   const navItems = [
-    { name: "แดชบอร์ด", href: "/dashboard", icon: LayoutDashboard },
-    { name: "ผู้ใช้งาน", href: "/dashboard/users", icon: Users },
+    { name: "แดชบอร์ดหลัก", href: "/dashboard", icon: LayoutDashboard },
+    { name: "แดชบอร์ดผู้บริหาร (Analytics)", href: "/dashboard/analytics", icon: BarChart3 },
+    { name: "ศูนย์รวมรายงาน (Reports)", href: "/dashboard/reports", icon: FileSpreadsheet },
+    { name: "ประมวลผลเงินเดือน", href: "/dashboard/payroll", icon: Calculator },
     { name: "พนักงาน", href: "/dashboard/employees", icon: Users },
+    { name: "ผู้ใช้งาน", href: "/dashboard/users", icon: Users },
     { name: "กลุ่มงาน", href: "/dashboard/departments", icon: FolderKanban },
     { name: "ประเภทพนักงาน", href: "/dashboard/employee-types", icon: FolderKanban },
     { name: "ตำแหน่ง", href: "/dashboard/positions", icon: Briefcase },
     { name: "ตั้งค่ารายรับ/รายจ่าย", href: "/dashboard/pay-items", icon: Settings },
-    { name: "ประมวลผลเงินเดือน", href: "/dashboard/payroll", icon: Calculator },
-    { name: "ตั้งค่าระบบ (อัปโหลดภาพ)", href: "/dashboard/settings", icon: Settings },
+    { name: "ตั้งค่าระบบ", href: "/dashboard/settings", icon: Settings },
   ];
 
   return (

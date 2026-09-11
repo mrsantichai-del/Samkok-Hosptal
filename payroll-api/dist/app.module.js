@@ -18,6 +18,7 @@ const payroll_module_1 = require("./payroll/payroll.module");
 const settings_module_1 = require("./settings/settings.module");
 const users_module_1 = require("./users/users.module");
 const notifications_module_1 = require("./notifications/notifications.module");
+const reports_module_1 = require("./reports/reports.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -31,7 +32,8 @@ exports.AppModule = AppModule = __decorate([
             payroll_module_1.PayrollModule,
             settings_module_1.SettingsModule,
             users_module_1.UsersModule,
-            notifications_module_1.NotificationsModule
+            notifications_module_1.NotificationsModule,
+            reports_module_1.ReportsModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
