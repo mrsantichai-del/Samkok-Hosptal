@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Cookies from "js-cookie";
@@ -18,7 +18,9 @@ import {
   Briefcase,
   BarChart3,
   FileSpreadsheet,
-  FileText
+  FileText,
+  ShieldCheck,
+  Building2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,22 +50,37 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push("/");
   };
 
-  if (!user) return null; // Avoid hydration mismatch or flashing
+  const userRoles: string[] = useMemo(() => {
+    if (!user?.roles) return ['Employee'];
+    return Array.isArray(user.roles) ? user.roles : [user.roles];
+  }, [user]);
 
-  const navItems = [
-    { name: "แดชบอร์ดหลัก", href: "/dashboard", icon: LayoutDashboard },
-    { name: "สลิปของฉัน (My Payslips)", href: "/dashboard/my-payslips", icon: FileText },
-    { name: "แดชบอร์ดผู้บริหาร (Analytics)", href: "/dashboard/analytics", icon: BarChart3 },
-    { name: "ศูนย์รวมรายงาน (Reports)", href: "/dashboard/reports", icon: FileSpreadsheet },
-    { name: "ประมวลผลเงินเดือน", href: "/dashboard/payroll", icon: Calculator },
-    { name: "พนักงาน", href: "/dashboard/employees", icon: Users },
-    { name: "ผู้ใช้งาน", href: "/dashboard/users", icon: Users },
-    { name: "กลุ่มงาน", href: "/dashboard/departments", icon: FolderKanban },
-    { name: "ประเภทพนักงาน", href: "/dashboard/employee-types", icon: FolderKanban },
-    { name: "ตำแหน่ง", href: "/dashboard/positions", icon: Briefcase },
-    { name: "ตั้งค่ารายรับ/รายจ่าย", href: "/dashboard/pay-items", icon: Settings },
-    { name: "ตั้งค่าระบบ", href: "/dashboard/settings", icon: Settings },
+  const isAdmin = userRoles.includes('Admin');
+
+  const allNavItems = [
+    { name: "แดชบอร์ดหลัก", href: "/dashboard", icon: LayoutDashboard, roles: ['ALL', 'Employee', 'HR', 'Admin', 'Executive'] },
+    { name: "สลิปของฉัน (My Payslips)", href: "/dashboard/my-payslips", icon: FileText, roles: ['ALL', 'Employee', 'HR', 'Admin', 'Executive'] },
+    { name: "แดชบอร์ดผู้บริหาร (Analytics)", href: "/dashboard/analytics", icon: BarChart3, roles: ['Admin', 'Executive', 'HR'] },
+    { name: "ศูนย์รวมรายงาน (Reports)", href: "/dashboard/reports", icon: FileSpreadsheet, roles: ['Admin', 'Executive', 'HR'] },
+    { name: "ประมวลผลเงินเดือน", href: "/dashboard/payroll", icon: Calculator, roles: ['Admin', 'HR'] },
+    { name: "พนักงาน", href: "/dashboard/employees", icon: Users, roles: ['Admin', 'HR'] },
+    { name: "ผู้ใช้งาน", href: "/dashboard/users", icon: ShieldCheck, roles: ['Admin'] },
+    { name: "กลุ่มงาน", href: "/dashboard/departments", icon: FolderKanban, roles: ['Admin', 'HR'] },
+    { name: "ประเภทพนักงาน", href: "/dashboard/employee-types", icon: Building2, roles: ['Admin', 'HR'] },
+    { name: "ตำแหน่ง", href: "/dashboard/positions", icon: Briefcase, roles: ['Admin', 'HR'] },
+    { name: "ตั้งค่ารายรับ/รายจ่าย", href: "/dashboard/pay-items", icon: Settings, roles: ['Admin', 'HR'] },
+    { name: "ตั้งค่าระบบ", href: "/dashboard/settings", icon: Settings, roles: ['Admin'] },
   ];
+
+  const visibleNavItems = useMemo(() => {
+    if (isAdmin) return allNavItems;
+    return allNavItems.filter(item => {
+      if (item.roles.includes('ALL')) return true;
+      return item.roles.some(r => userRoles.includes(r));
+    });
+  }, [userRoles, isAdmin]);
+
+  if (!user) return null; // Avoid hydration mismatch or flashing
 
   return (
     <div className="min-h-screen bg-[#f0f2f5] flex flex-col">
@@ -78,7 +95,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Input 
               type="search" 
               placeholder="ค้นหา..." 
-              className="w-64 pl-9 bg-[#f0f2f5] border-none rounded-full h-10 focus-visible:ring-0"
+              className="w-64 pl-9 bg-[#f0f2f5] border-none rounded-full h-10 focus-visible:ring-0 text-xs"
             />
           </div>
         </div>
@@ -90,10 +107,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <NotificationBell />
           <div className="flex items-center gap-2 ml-2 pl-2 border-l border-gray-300">
             <div className="text-right hidden sm:block">
-              <div className="text-sm font-bold">{user.username}</div>
-              <div className="text-xs text-gray-500">{user.roles?.[0]}</div>
+              <div className="text-sm font-bold text-gray-900">{user.username}</div>
+              <div className="text-xs text-gray-500 font-medium">{user.roles?.[0] || 'Employee'}</div>
             </div>
-            <Button variant="ghost" size="icon" className="rounded-full bg-[#e4e6eb] hover:bg-[#d8dadf] w-10 h-10" onClick={handleLogout}>
+            <Button variant="ghost" size="icon" className="rounded-full bg-[#e4e6eb] hover:bg-[#d8dadf] w-10 h-10 cursor-pointer" onClick={handleLogout} title="ออกจากระบบ">
               <LogOut className="h-5 w-5 text-black" />
             </Button>
           </div>
@@ -102,16 +119,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar */}
-        <aside className="w-[280px] hidden lg:flex flex-col p-2 overflow-y-auto print:hidden">
+        <aside className="w-[280px] hidden lg:flex flex-col p-2 overflow-y-auto print:hidden border-r bg-white/50">
           <nav className="space-y-1">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/dashboard");
               return (
                 <Link key={item.name} href={item.href}>
-                  <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors ${
-                    isActive ? "bg-[#e4e6eb] text-black" : "text-gray-700 hover:bg-[#e4e6eb]"
+                  <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors text-sm ${
+                    isActive ? "bg-[#1877f2]/10 text-[#1877f2] font-bold" : "text-gray-700 hover:bg-[#e4e6eb]"
                   }`}>
-                    <item.icon className={`h-6 w-6 ${isActive ? "text-[#1877f2]" : "text-gray-500"}`} />
+                    <item.icon className={`h-5 w-5 ${isActive ? "text-[#1877f2]" : "text-gray-500"}`} />
                     {item.name}
                   </div>
                 </Link>
