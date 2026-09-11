@@ -22,6 +22,19 @@ export declare class PayrollService {
         editRequestReason: string | null;
         editRequestedAt: Date | null;
     }[]>;
+    getPayrollRecordById(id: string): Promise<{
+        id: string;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        month: number;
+        year: number;
+        status: string;
+        notes: string | null;
+        approvedById: string | null;
+        editRequestReason: string | null;
+        editRequestedAt: Date | null;
+    }>;
     getPayrollTransactions(recordId: string, employeeId?: string): Promise<({
         employee: {
             employeeType: {

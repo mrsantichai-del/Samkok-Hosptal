@@ -34,6 +34,9 @@ let PayrollController = class PayrollController {
     getRecords() {
         return this.payrollService.getPayrollRecords();
     }
+    getRecordById(id) {
+        return this.payrollService.getPayrollRecordById(id);
+    }
     getTransactions(id, employeeId) {
         return this.payrollService.getPayrollTransactions(id, employeeId);
     }
@@ -87,6 +90,15 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], PayrollController.prototype, "getRecords", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
+    (0, common_1.Get)('records/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get a single payroll record by ID' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], PayrollController.prototype, "getRecordById", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Finance Officer', 'Executive'),
     (0, common_1.Get)('records/:id/transactions'),

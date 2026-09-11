@@ -37,6 +37,13 @@ export class PayrollController {
   }
 
   @Roles('System Administrator', 'Finance Officer', 'Executive')
+  @Get('records/:id')
+  @ApiOperation({ summary: 'Get a single payroll record by ID' })
+  getRecordById(@Param('id') id: string) {
+    return this.payrollService.getPayrollRecordById(id);
+  }
+
+  @Roles('System Administrator', 'Finance Officer', 'Executive')
   @Get('records/:id/transactions')
   @ApiOperation({ summary: 'Get all transactions for a payroll record' })
   @ApiQuery({ name: 'employeeId', required: false })
