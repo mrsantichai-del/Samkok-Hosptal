@@ -15,7 +15,8 @@ import {
   Search,
   Menu,
   FolderKanban,
-  Briefcase
+  Briefcase,
+  Clock
 } from "lucide-react";
 
 import axios from "axios";
@@ -39,33 +40,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       const res = await axios.get(`${API_URL}/users/my-notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setNotifications(res.data);
+      if (Array.isArray(res.data)) {
+        setNotifications(res.data);
+      }
     } catch (e) {
-      console.error(e);
+      console.error("Fetch notifications error:", e);
     }
   };
 
   const markAllRead = async () => {
     try {
       const token = Cookies.get("token");
+      if (!token) return;
       await axios.patch(`${API_URL}/users/notifications/read-all`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications([]);
       setShowNotifications(false);
     } catch (e) {
-      console.error(e);
+      console.error("Mark all read error:", e);
     }
   };
-
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-      const interval = setInterval(fetchNotifications, 60000); // Poll every minute
-      return () => clearInterval(interval);
-    }
-  }, [user]);
-
 
   useEffect(() => {
     const token = Cookies.get("token");
@@ -81,12 +76,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [router]);
 
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 45000); // Poll every 45s
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
   const handleLogout = () => {
     Cookies.remove("token");
     router.push("/");
   };
 
-  if (!user) return null; // Avoid hydration mismatch or flashing
+  if (!user) return null;
 
   const navItems = [
     { name: "แดชบอร์ด", href: "/dashboard", icon: LayoutDashboard },
@@ -122,9 +125,49 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Button variant="ghost" size="icon" className="rounded-full bg-[#e4e6eb] hover:bg-[#d8dadf] w-10 h-10">
             <Menu className="h-5 w-5 text-black" />
           </Button>
-          <Button variant="ghost" size="icon" className="rounded-full bg-[#e4e6eb] hover:bg-[#d8dadf] w-10 h-10">
-            <Bell className="h-5 w-5 text-black" />
-          </Button>
+
+          {/* Notification Bell */}
+          {notifications.length > 0 ? (
+            <Popover open={showNotifications} onOpenChange={setShowNotifications}>
+              <PopoverTrigger 
+                className="relative rounded-full bg-[#e4e6eb] hover:bg-[#d8dadf] w-10 h-10 flex items-center justify-center transition-colors cursor-pointer border-0"
+                title={`การแจ้งเตือน (${notifications.length})`}
+              >
+                <Bell className="h-5 w-5 text-black" />
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 border-2 border-white shadow-sm">
+                  {notifications.length > 99 ? "99+" : notifications.length}
+                </span>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-0 mr-4 mt-2 bg-white shadow-xl rounded-xl border border-gray-200 overflow-hidden" align="end">
+                <div className="p-3 border-b flex justify-between items-center bg-gray-50">
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-4 w-4 text-blue-600" />
+                    <span className="font-semibold text-sm">การแจ้งเตือน ({notifications.length})</span>
+                  </div>
+                  <button onClick={markAllRead} className="text-xs text-[#1877f2] hover:underline font-medium cursor-pointer">
+                    อ่านทั้งหมด
+                  </button>
+                </div>
+                <div className="max-h-[320px] overflow-y-auto divide-y divide-gray-100">
+                  {notifications.map(notif => (
+                    <div key={notif.id} className="p-3 hover:bg-gray-50 transition-colors">
+                      <div className="font-semibold text-xs text-gray-900">{notif.title}</div>
+                      <div className="text-xs text-gray-600 mt-1 leading-relaxed">{notif.message}</div>
+                      <div className="text-[10px] text-gray-400 mt-1.5 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {new Date(notif.createdAt).toLocaleString("th-TH", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          ) : (
+            <Button variant="ghost" size="icon" className="rounded-full bg-[#e4e6eb] hover:bg-[#d8dadf] w-10 h-10 opacity-70" title="ไม่มีการแจ้งเตือน">
+              <Bell className="h-5 w-5 text-gray-600" />
+            </Button>
+          )}
+
           <div className="flex items-center gap-2 ml-2 pl-2 border-l border-gray-300">
             <div className="text-right hidden sm:block">
               <div className="text-sm font-bold">{user.username}</div>
