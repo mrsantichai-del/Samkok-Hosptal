@@ -235,7 +235,7 @@ export default function ReportsCenterPage() {
             variant="outline" 
             size="sm" 
             className="text-blue-700 bg-blue-50 hover:bg-blue-100 border-blue-200 cursor-pointer"
-            onClick={() => router.push('/dashboard/analytics')}
+            onClick={() => router.push('/analytics')}
           >
             <BarChart3 className="w-4 h-4 mr-1.5" />
             ดูแดชบอร์ดภาพรวม

@@ -80,19 +80,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [userRoles, isAdmin]);
 
   const allNavItems = [
-    { name: "แดชบอร์ดหลัก", href: "/dashboard", icon: LayoutDashboard, roles: ['ALL'] },
-    { name: "สลิปของฉัน (My Payslips)", href: "/dashboard/my-payslips", icon: FileText, roles: ['ALL'] },
-    { name: "แดชบอร์ดผู้บริหาร (Analytics)", href: "/dashboard/analytics", icon: BarChart3, roles: ['Admin', 'Executive', 'HR'] },
-    { name: "ศูนย์รวมรายงาน (Reports)", href: "/dashboard/reports", icon: FileSpreadsheet, roles: ['Admin', 'Executive', 'HR'] },
-    { name: "ประมวลผลเงินเดือน", href: "/dashboard/payroll", icon: Calculator, roles: ['Admin', 'HR'] },
-    { name: "พนักงาน", href: "/dashboard/employees", icon: Users, roles: ['Admin', 'HR'] },
-    { name: "ผู้ใช้งาน", href: "/dashboard/users", icon: ShieldCheck, roles: ['Admin'] },
-    { name: "กลุ่มผู้ใช้งาน", href: "/dashboard/roles", icon: Users, roles: ['Admin'] },
-    { name: "กลุ่มงาน", href: "/dashboard/departments", icon: FolderKanban, roles: ['Admin', 'HR'] },
-    { name: "ประเภทพนักงาน", href: "/dashboard/employee-types", icon: Building2, roles: ['Admin', 'HR'] },
-    { name: "ตำแหน่ง", href: "/dashboard/positions", icon: Briefcase, roles: ['Admin', 'HR'] },
-    { name: "ตั้งค่ารายรับ/รายจ่าย", href: "/dashboard/pay-items", icon: Settings, roles: ['Admin', 'HR'] },
-    { name: "ตั้งค่าระบบ", href: "/dashboard/settings", icon: Settings, roles: ['Admin'] },
+    { name: "แดชบอร์ดหลัก", href: "/home", icon: LayoutDashboard, roles: ['ALL'] },
+    { name: "สลิปของฉัน (My Payslips)", href: "/my-payslips", icon: FileText, roles: ['ALL'] },
+    { name: "แดชบอร์ดผู้บริหาร (Analytics)", href: "/analytics", icon: BarChart3, roles: ['Admin', 'Executive', 'HR'] },
+    { name: "ศูนย์รวมรายงาน (Reports)", href: "/reports", icon: FileSpreadsheet, roles: ['Admin', 'Executive', 'HR'] },
+    { name: "ประมวลผลเงินเดือน", href: "/payroll", icon: Calculator, roles: ['Admin', 'HR'] },
+    { name: "พนักงาน", href: "/employees", icon: Users, roles: ['Admin', 'HR'] },
+    { name: "ผู้ใช้งาน", href: "/users", icon: ShieldCheck, roles: ['Admin'] },
+    { name: "กลุ่มผู้ใช้งาน", href: "/roles", icon: Users, roles: ['Admin'] },
+    { name: "กลุ่มงาน", href: "/departments", icon: FolderKanban, roles: ['Admin', 'HR'] },
+    { name: "ประเภทพนักงาน", href: "/employee-types", icon: Building2, roles: ['Admin', 'HR'] },
+    { name: "ตำแหน่ง", href: "/positions", icon: Briefcase, roles: ['Admin', 'HR'] },
+    { name: "ตั้งค่ารายรับ/รายจ่าย", href: "/pay-items", icon: Settings, roles: ['Admin', 'HR'] },
+    { name: "ตั้งค่าระบบ", href: "/settings", icon: Settings, roles: ['Admin'] },
   ];
 
   // Administrator sees ALL items
@@ -113,7 +113,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Top Navbar */}
       <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 shadow-sm h-14 flex items-center px-4 justify-between print:hidden">
         <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <Link href="/home" className="flex items-center gap-2">
             <img src="/logo.jpg" alt="Samkok Hospital Logo" className="w-10 h-10 rounded-full object-cover border border-gray-200" />
           </Link>
           <div className="relative hidden md:block">
@@ -148,7 +148,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <aside className="w-[280px] hidden lg:flex flex-col p-2 overflow-y-auto print:hidden border-r bg-white/50">
           <nav className="space-y-1">
             {visibleNavItems.map((item) => {
-              const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/dashboard");
+              const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/home");
               return (
                 <Link key={item.name} href={item.href}>
                   <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors text-sm ${

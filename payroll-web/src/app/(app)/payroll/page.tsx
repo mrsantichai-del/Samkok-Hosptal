@@ -247,7 +247,7 @@ export default function PayrollPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="outline" size="sm" className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 border-blue-200" onClick={() => router.push(`/dashboard/payroll/${rec.id}`)}>
+                        <Button variant="outline" size="sm" className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 border-blue-200" onClick={() => router.push(`/payroll/${rec.id}`)}>
                           <Eye className="h-4 w-4 mr-1" /> ดูรายละเอียด
                         </Button>
                         {rec.status !== 'APPROVED' && rec.status !== 'PAID' && (

@@ -232,7 +232,7 @@ export default function ExecutiveAnalyticsPage() {
           <Button 
             size="sm" 
             className="bg-[#1877f2] hover:bg-[#166fe5] text-white shadow-sm font-medium cursor-pointer"
-            onClick={() => router.push('/dashboard/reports')}
+            onClick={() => router.push('/reports')}
           >
             <FileSpreadsheet className="w-4 h-4 mr-1.5" />
             เปิดศูนย์รวมรายงานฉบับเต็ม
@@ -826,7 +826,7 @@ export default function ExecutiveAnalyticsPage() {
               variant="outline" 
               size="sm" 
               className="text-xs cursor-pointer"
-              onClick={() => router.push('/dashboard/reports')}
+              onClick={() => router.push('/reports')}
             >
               <FileSpreadsheet className="w-3.5 h-3.5 mr-1" /> ดูในศูนย์รวมรายงาน
             </Button>

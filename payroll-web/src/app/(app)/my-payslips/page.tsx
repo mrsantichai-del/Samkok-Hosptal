@@ -341,7 +341,7 @@ export default function MyPayslipsPage() {
                 <div className="flex items-start gap-2.5">
                   <span className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center shrink-0 text-xs border border-indigo-200">2</span>
                   <p className="leading-relaxed">
-                    <b>หากต้องการให้บัญชีนี้มีสลิปเงินเดือนส่วนบุคคล:</b> ไปที่เมนู <a href="/dashboard/users" className="text-indigo-600 underline font-bold hover:text-indigo-800">จัดการผู้ใช้งาน (Users)</a> แล้วกด <b>แก้ไข</b> เพื่อเลือกผูกบัญชีเข้ากับรหัสพนักงานของคุณ
+                    <b>หากต้องการให้บัญชีนี้มีสลิปเงินเดือนส่วนบุคคล:</b> ไปที่เมนู <a href="/users" className="text-indigo-600 underline font-bold hover:text-indigo-800">จัดการผู้ใช้งาน (Users)</a> แล้วกด <b>แก้ไข</b> เพื่อเลือกผูกบัญชีเข้ากับรหัสพนักงานของคุณ
                   </p>
                 </div>
               </div>

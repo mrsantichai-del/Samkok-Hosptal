@@ -31,7 +31,7 @@ export default function ErrorBoundary({
         <p className="text-xs text-gray-400 mb-4">Error Digest: {error.digest}</p>
       )}
       <div className="flex gap-3">
-        <Button variant="outline" onClick={() => router.push("/dashboard/payroll")}>
+        <Button variant="outline" onClick={() => router.push("/payroll")}>
           <ArrowLeft className="w-4 h-4 mr-1.5" /> กลับหน้ารายการเงินเดือน
         </Button>
         <Button className="bg-[#1877f2] hover:bg-[#166fe5]" onClick={() => reset()}>

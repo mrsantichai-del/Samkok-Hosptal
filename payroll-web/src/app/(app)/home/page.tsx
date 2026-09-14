@@ -116,7 +116,7 @@ export default function DashboardHome() {
       title: "สลิปของฉัน & หนังสือรับรอง 50 ทวิ",
       subTitle: "My Payslips & 50 Tawi",
       desc: "เรียกดูสลิปเงินเดือนย้อนหลังทุกงวด ตรวจสอบรายการเงินได้-เงินหัก และสั่งพิมพ์หนังสือรับรองภาษี 50 ทวิ ของตนเอง",
-      href: "/dashboard/my-payslips",
+      href: "/my-payslips",
       icon: FileText,
       category: "บริการข้อมูลบุคลากรส่วนบุคคล",
       color: {
@@ -134,7 +134,7 @@ export default function DashboardHome() {
       title: "แดชบอร์ดผู้บริหาร (Analytics)",
       subTitle: "Executive Analytics & Macro Trends",
       desc: "วิเคราะห์ภาพรวมงบประมาณค่าใช้จ่าย สัดส่วนค่าเวร/OT แนวโน้ม 12 เดือน และเจาะลึกข้อมูลบุคลากรหลายมิติ",
-      href: "/dashboard/analytics",
+      href: "/analytics",
       icon: BarChart3,
       category: "การวิเคราะห์และรายงานผู้บริหาร",
       color: {
@@ -150,7 +150,7 @@ export default function DashboardHome() {
       title: "ศูนย์รวมรายงาน (Reports)",
       subTitle: "Official Reports & Excel Export",
       desc: "ตารางรายงานสรุปค่าใช้จ่ายทางการ จำแนกตามกลุ่มงาน/ประเภทการจ้าง ระบบคลี่ดูรายชื่อย่อย และส่งออก Excel",
-      href: "/dashboard/reports",
+      href: "/reports",
       icon: FileSpreadsheet,
       category: "การวิเคราะห์และรายงานผู้บริหาร",
       color: {
@@ -168,7 +168,7 @@ export default function DashboardHome() {
       title: "ประมวลผลเงินเดือน (Payroll)",
       subTitle: "Payroll Calculation & Approval",
       desc: "สร้างงวดเงินเดือนใหม่ คำนวณรายการเงินได้ เงินหัก ภาษี ประกันสังคม กบข. ตรวจสอบความถูกต้อง และส่งขออนุมัติ",
-      href: "/dashboard/payroll",
+      href: "/payroll",
       icon: Calculator,
       category: "ระบบงานบุคคลและการเงิน",
       color: {
@@ -184,7 +184,7 @@ export default function DashboardHome() {
       title: "ทะเบียนประวัติพนักงาน (Employees)",
       subTitle: "Employee Master Directory",
       desc: "จัดการข้อมูลประวัติบุคลากร บันทึกวันเริ่มงาน-ลาออก สังกัดกลุ่มงาน ตำแหน่ง อัตราเงินเดือน และผูกบัญชีผู้ใช้",
-      href: "/dashboard/employees",
+      href: "/employees",
       icon: Users,
       category: "ระบบงานบุคคลและการเงิน",
       color: {
@@ -200,7 +200,7 @@ export default function DashboardHome() {
       title: "จัดการบัญชีผู้ใช้งาน (Users)",
       subTitle: "User Accounts Management",
       desc: "บริหารจัดการบัญชีผู้ใช้งานระบบ รหัสผ่าน กำหนดบทบาท และผูกข้อมูลเข้ากับประวัติพนักงาน",
-      href: "/dashboard/users",
+      href: "/users",
       icon: ShieldCheck,
       category: "ระบบงานบุคคลและการเงิน",
       color: {
@@ -216,7 +216,7 @@ export default function DashboardHome() {
       title: "กลุ่มผู้ใช้งานและกำหนดสิทธิ์ (Roles)",
       subTitle: "User Groups & Permissions Scope",
       desc: "กำหนดกลุ่มสิทธิ์ อธิบายขอบเขตหน้าที่ความรับผิดชอบ และคำบรรยายสิทธิ์การเข้าถึงแต่ละโมดูลกันลืม",
-      href: "/dashboard/roles",
+      href: "/roles",
       icon: Shield,
       category: "ระบบงานบุคคลและการเงิน",
       color: {
@@ -234,7 +234,7 @@ export default function DashboardHome() {
       title: "กลุ่มงานและแผนก (Departments)",
       subTitle: "Hospital Organization Structure",
       desc: "กำหนดโครงสร้างสายงาน กลุ่มงานทางการแพทย์ และฝ่ายสนับสนุนต่าง ๆ ภายในโรงพยาบาล",
-      href: "/dashboard/departments",
+      href: "/departments",
       icon: FolderKanban,
       category: "โครงสร้างองค์กรและการตั้งค่าระบบ",
       color: {
@@ -250,7 +250,7 @@ export default function DashboardHome() {
       title: "ประเภทพนักงาน (Employee Types)",
       subTitle: "Employment Classifications",
       desc: "กำหนดประเภทการจ้างงาน เช่น ข้าราชการ, ลูกจ้างประจำ, พนักงานกระทรวงสาธารณสุข, ลูกจ้างชั่วคราว",
-      href: "/dashboard/employee-types",
+      href: "/employee-types",
       icon: Building2,
       category: "โครงสร้างองค์กรและการตั้งค่าระบบ",
       color: {
@@ -266,7 +266,7 @@ export default function DashboardHome() {
       title: "ตำแหน่งและสายวิชาชีพ (Positions)",
       subTitle: "Job Positions & Professions",
       desc: "จัดการทำเนียบตำแหน่งงาน สายวิชาชีพแพทย์ พยาบาล เภสัชกร และบุคลากรทางการแพทย์ทุกสายงาน",
-      href: "/dashboard/positions",
+      href: "/positions",
       icon: Briefcase,
       category: "โครงสร้างองค์กรและการตั้งค่าระบบ",
       color: {
@@ -282,7 +282,7 @@ export default function DashboardHome() {
       title: "ตั้งค่ารายรับ-รายจ่าย (Pay Items)",
       subTitle: "Earnings, Deductions & Formula Settings",
       desc: "กำหนดประเภทเงินได้ รายการหัก ภาษี กองทุน สปส. กบข. และตั้งค่าสูตรคำนวณอัตโนมัติ",
-      href: "/dashboard/pay-items",
+      href: "/pay-items",
       icon: Settings,
       category: "โครงสร้างองค์กรและการตั้งค่าระบบ",
       color: {
@@ -298,7 +298,7 @@ export default function DashboardHome() {
       title: "ตั้งค่าระบบ (Settings)",
       subTitle: "System General Configuration",
       desc: "ข้อมูลองค์กร ตราสัญลักษณ์โรงพยาบาลสามโคก และการกำหนดค่าพื้นฐานของระบบสารสนเทศ",
-      href: "/dashboard/settings",
+      href: "/settings",
       icon: Settings,
       category: "โครงสร้างองค์กรและการตั้งค่าระบบ",
       color: {

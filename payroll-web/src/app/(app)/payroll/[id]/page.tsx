@@ -264,7 +264,7 @@ export default function PayrollDetailPage() {
       });
       toast.dismiss(toastId);
       showSuccess("ลบข้อมูลสำเร็จ", `ลบรอบเงินเดือน ${monthLabel} (${roundLabel}) เรียบร้อยแล้ว`);
-      router.push('/dashboard/payroll');
+      router.push('/payroll');
     } catch (err: any) {
       toast.dismiss(toastId);
       showError("เกิดข้อผิดพลาด", err.response?.data?.message || "ไม่สามารถลบรอบเงินเดือนได้");
@@ -675,7 +675,7 @@ export default function PayrollDetailPage() {
     <div className="fixed top-14 left-0 lg:left-[280px] right-0 bottom-0 bg-[#f0f2f5] flex flex-col p-2 lg:p-4 z-30">
       <div className="flex justify-between items-center mb-2 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/payroll')} className="h-8 w-8">
+          <Button variant="ghost" size="icon" onClick={() => router.push('/payroll')} className="h-8 w-8">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>

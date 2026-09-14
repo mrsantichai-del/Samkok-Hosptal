@@ -33,8 +33,8 @@ export default function Home() {
       const token = response.data.access_token;
       Cookies.set("token", token, { expires: 1 }); // Save token to cookies
       
-      // Redirect to dashboard
-      router.push("/dashboard");
+      // Redirect to clean /home
+      router.push("/home");
     } catch (err: any) {
       setError(err.response?.data?.message || "เข้าสู่ระบบไม่สำเร็จ โปรดตรวจสอบรหัสผ่าน");
     } finally {
