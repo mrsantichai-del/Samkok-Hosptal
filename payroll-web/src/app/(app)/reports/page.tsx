@@ -146,11 +146,23 @@ export default function ReportsCenterPage() {
     }
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    try {
+      const token = Cookies.get("token");
+      if (token) {
+        await axios.post(`${API_URL}/audit-logs/log-event`, {
+          action: 'PRINT_REPORT',
+          tableName: 'ExecutiveReport',
+          description: `สั่งพิมพ์หน้ารายงานสรุปยอดภาพรวม (แท็บ: ${reportTab}, รอบข้อมูล: ${periodType})`
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => {});
+      }
+    } catch (e) {}
     window.print();
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     let exportRows: any[] = [];
     let sheetName = "Report";
 
@@ -191,6 +203,19 @@ export default function ReportsCenterPage() {
     XLSX.utils.book_append_sheet(wb, ws, sheetName);
     XLSX.writeFile(wb, `Hospital_Payroll_${sheetName}_${selectedYear}.xlsx`);
     toast.success("ส่งออกไฟล์ Excel สำเร็จ");
+
+    try {
+      const token = Cookies.get("token");
+      if (token) {
+        await axios.post(`${API_URL}/audit-logs/log-event`, {
+          action: 'EXPORT_EXCEL',
+          tableName: 'ExecutiveReport',
+          description: `ส่งออกไฟล์รายงาน Excel (${sheetName}_${selectedYear}.xlsx, จำนวน ${exportRows.length} แถว)`
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => {});
+      }
+    } catch (e) {}
   };
 
   const metrics = summaryData?.metrics;

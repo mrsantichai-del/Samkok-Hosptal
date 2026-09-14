@@ -154,7 +154,37 @@ export default function MyPayslipsPage() {
     }
   }, [activeTab, selectedEmployeeId, selectedTaxYear]);
 
-  const handlePrint = () => {
+  const handlePrintPayslip = async () => {
+    try {
+      const token = Cookies.get("token");
+      if (token) {
+        await axios.post(`${API_URL}/audit-logs/log-event`, {
+          action: 'PRINT_PAYSLIP',
+          tableName: 'Payslip',
+          recordId: currentPayslip?.id || employeeInfo?.id || '',
+          description: `สั่งพิมพ์สลิปเงินเดือนของ ${employeeInfo?.fullName || 'พนักงาน'} (${currentPayslip?.periodText || 'งวดปัจจุบัน'})`
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => {});
+      }
+    } catch (e) {}
+    window.print();
+  };
+
+  const handlePrint50Tawi = async () => {
+    try {
+      const token = Cookies.get("token");
+      if (token) {
+        await axios.post(`${API_URL}/audit-logs/log-event`, {
+          action: 'PRINT_50TAWI',
+          tableName: 'Form50Tawi',
+          recordId: employeeInfo?.id || '',
+          description: `สั่งพิมพ์หนังสือรับรองการหักภาษี ณ ที่จ่าย 50 ทวิ ของ ${employeeInfo?.fullName || 'พนักงาน'} ประจำปี ${selectedTaxYear}`
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => {});
+      }
+    } catch (e) {}
     window.print();
   };
 
@@ -372,7 +402,7 @@ export default function MyPayslipsPage() {
             <PayslipTemplate 
               employee={employeeInfo} 
               payslip={currentPayslip} 
-              onPrint={handlePrint}
+              onPrint={handlePrintPayslip}
             />
           )}
         </>
@@ -399,7 +429,7 @@ export default function MyPayslipsPage() {
           ) : (
             <Form50Tawi 
               data={tawiData} 
-              onPrint={handlePrint}
+              onPrint={handlePrint50Tawi}
             />
           )}
         </>

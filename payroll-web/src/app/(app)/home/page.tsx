@@ -24,6 +24,7 @@ import {
   UserCog,
   ShieldAlert,
   Settings2,
+  ScrollText,
   ChevronRight,
   Sparkles,
   ArrowUpRight,
@@ -321,6 +322,22 @@ export default function DashboardHome() {
         badge: "bg-indigo-100 text-indigo-800"
       },
       roles: ['Admin']
+    },
+    {
+      title: "ประวัติการใช้งานและตรวจสอบ (Audit Logs)",
+      subTitle: "System Audit Trail & Activity Tracker",
+      desc: "บันทึกและตรวจสอบกิจกรรมย้อนหลัง การแก้ไขข้อมูล การอนุมัติ และประวัติการพิมพ์เอกสารราชการแบบเรียลไทม์",
+      href: "/audit-logs",
+      icon: ScrollText,
+      category: "ผู้ดูแลระบบ (System Admin)",
+      color: {
+        bg: "bg-amber-50/70",
+        text: "text-amber-700",
+        border: "border-amber-200",
+        hoverBorder: "hover:border-amber-400 hover:shadow-amber-50",
+        badge: "bg-amber-100 text-amber-800"
+      },
+      roles: ['Admin', 'Executive']
     },
     {
       title: "ตั้งค่าระบบ (Settings)",

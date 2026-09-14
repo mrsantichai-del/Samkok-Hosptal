@@ -19,6 +19,7 @@ import {
   UserCog,
   ShieldAlert,
   Settings2,
+  ScrollText,
   LogOut,
   Search,
   Menu,
@@ -141,6 +142,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       items: [
         { name: "จัดการบัญชีผู้ใช้งาน", href: "/users", icon: UserCog, roles: ['Admin'] },
         { name: "กลุ่มผู้ใช้งานและกำหนดสิทธิ์", href: "/roles", icon: ShieldAlert, roles: ['Admin'] },
+        { name: "ประวัติการใช้งาน (Audit Logs)", href: "/audit-logs", icon: ScrollText, roles: ['Admin', 'Executive'] },
         { name: "ตั้งค่าระบบ", href: "/settings", icon: Settings2, roles: ['Admin'] },
       ]
     }
