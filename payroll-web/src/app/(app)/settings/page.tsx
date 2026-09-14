@@ -132,7 +132,7 @@ export default function SettingsPage() {
           <Building2 className="w-7 h-7 text-blue-600" /> ตั้งค่าโรงพยาบาลและระบบ (Hospital Master Settings)
         </h1>
         <p className="text-gray-500 text-sm mt-1">
-          กำหนดข้อมูลนิติบุคคล เลขประจำตัวผู้เสียภาษี 13 หลัก และผู้มีอำนาจลงนามสำหรับออกหนังสือรับรอง 50 ทวิ และสลิปเงินเดือน
+          กำหนดข้อมูลนิติบุคคล เลขประจำตัวผู้เสียภาษี 13 หลัก ที่อยู่ และตราสัญลักษณ์สำหรับออกหนังสือรับรอง 50 ทวิ และสลิปเงินเดือน
         </p>
       </div>
 
@@ -223,31 +223,7 @@ export default function SettingsPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2 border-t border-gray-100">
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-gray-700">
-                  ชื่อผู้มีอำนาจลงนาม / ผู้อำนวยการ
-                </Label>
-                <Input 
-                  value={hospitalForm.directorName} 
-                  onChange={e => setHospitalForm({...hospitalForm, directorName: e.target.value})}
-                  placeholder="เช่น นายแพทย์ผู้อำนวยการโรงพยาบาลสามโคก"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-gray-700">
-                  ตำแหน่งผู้มีอำนาจลงนาม
-                </Label>
-                <Input 
-                  value={hospitalForm.directorTitle} 
-                  onChange={e => setHospitalForm({...hospitalForm, directorTitle: e.target.value})}
-                  placeholder="เช่น ผู้อำนวยการโรงพยาบาลสามโคก"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-3">
+            <div className="flex justify-end pt-2">
               <Button 
                 type="submit" 
                 className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm cursor-pointer"
