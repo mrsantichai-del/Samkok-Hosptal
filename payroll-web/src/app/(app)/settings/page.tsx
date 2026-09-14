@@ -4,17 +4,27 @@ import { API_URL } from "@/lib/config";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Building2, FileText, Image as ImageIcon, PenTool, Save, CheckCircle2, ShieldCheck, AlertCircle } from "lucide-react";
+import { 
+  Building2, 
+  Image as ImageIcon, 
+  Save, 
+  ShieldCheck, 
+  Users, 
+  ExternalLink,
+  Sparkles,
+  FileSignature,
+  CheckCircle2
+} from "lucide-react";
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [logo, setLogo] = useState<File | null>(null);
-  const [signature, setSignature] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -90,26 +100,24 @@ export default function SettingsPage() {
     }
   };
 
-  const handleUpload = async (type: 'logo' | 'signature') => {
-    const file = type === 'logo' ? logo : signature;
-    if (!file) return;
+  const handleUploadLogo = async () => {
+    if (!logo) return;
 
     setUploading(true);
-    const toastId = toast.loading(`กำลังอัปโหลด${type === 'logo' ? 'โลโก้' : 'ลายเซ็น'}...`);
+    const toastId = toast.loading("กำลังอัปโหลดโลโก้โรงพยาบาล...");
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", logo);
 
     try {
       const token = Cookies.get("token");
-      await axios.post(`${API_URL}/settings/upload-${type}`, formData, {
+      await axios.post(`${API_URL}/settings/upload-logo`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }
       });
-      toast.success(`อัปโหลด ${type === 'logo' ? 'โลโก้' : 'ลายเซ็น'} สำเร็จ!`, { id: toastId });
-      if (type === 'logo') setLogo(null);
-      else setSignature(null);
+      toast.success("อัปโหลดโลโก้โรงพยาบาลสำเร็จ!", { id: toastId });
+      setLogo(null);
     } catch (e: any) {
       toast.error(e.response?.data?.message || "เกิดข้อผิดพลาดในการอัปโหลด", { id: toastId });
     } finally {
@@ -253,9 +261,10 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* 2. Upload Logo & Official Signature */}
+      {/* 2. Media Branding & Signature Management Guidance */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border shadow-xs bg-white">
+        {/* Left: Hospital Logo Upload */}
+        <Card className="border shadow-xs bg-white flex flex-col justify-between">
           <CardHeader className="border-b pb-3">
             <div className="flex items-center gap-2">
               <ImageIcon className="w-5 h-5 text-emerald-600" />
@@ -265,25 +274,33 @@ export default function SettingsPage() {
               ใช้แสดงผลที่ส่วนหัวของสลิปเงินเดือน รายงาน และเอกสารทางการเงิน
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-4 space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold">เลือกไฟล์โลโก้ (.png, .jpg)</Label>
-              <Input type="file" accept="image/*" onChange={(e) => setLogo(e.target.files?.[0] || null)} />
+          <CardContent className="p-5 space-y-4 flex-1 flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-700">เลือกไฟล์โลโก้ใหม่ (.png, .jpg)</Label>
+                <Input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={(e) => setLogo(e.target.files?.[0] || null)} 
+                  className="text-xs h-9 cursor-pointer"
+                />
+              </div>
+              <Button 
+                className="bg-[#1877f2] hover:bg-[#166fe5] w-full text-xs cursor-pointer shadow-2xs" 
+                onClick={handleUploadLogo} 
+                disabled={!logo || uploading}
+              >
+                {uploading ? "กำลังอัปโหลด..." : "อัปโหลดโลโก้ใหม่"}
+              </Button>
             </div>
-            <Button 
-              className="bg-[#1877f2] hover:bg-[#166fe5] w-full text-xs" 
-              onClick={() => handleUpload('logo')} 
-              disabled={!logo || uploading}
-            >
-              อัปโหลดโลโก้ใหม่
-            </Button>
-            <div className="pt-2 border-t">
-              <p className="text-xs font-bold text-gray-600 mb-2">โลโก้ปัจจุบันที่ใช้ในระบบ:</p>
-              <div className="h-24 bg-gray-50 rounded-lg border border-dashed flex items-center justify-center p-2">
+
+            <div className="pt-3 border-t">
+              <p className="text-xs font-bold text-gray-600 mb-2">โลโก้ปัจจุบันที่แสดงในระบบ:</p>
+              <div className="h-24 bg-gray-50/80 rounded-xl border border-dashed border-gray-300 flex items-center justify-center p-3">
                 <img 
                   src={`${API_URL}/settings/logo`} 
-                  alt="Logo" 
-                  className="max-h-full object-contain" 
+                  alt="Hospital Logo" 
+                  className="max-h-full max-w-full object-contain drop-shadow-xs" 
                   onError={(e) => {
                     e.currentTarget.src = "/logo.jpg";
                   }} 
@@ -293,38 +310,49 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border shadow-xs bg-white">
-          <CardHeader className="border-b pb-3">
+        {/* Right: Digital Signature Management Info & Quick Link */}
+        <Card className="border border-indigo-100 bg-gradient-to-br from-indigo-50/40 via-blue-50/20 to-white shadow-xs flex flex-col justify-between">
+          <CardHeader className="border-b border-indigo-100/60 pb-3">
             <div className="flex items-center gap-2">
-              <PenTool className="w-5 h-5 text-indigo-600" />
-              <CardTitle className="text-sm font-bold">ลายเซ็นดิจิทัลผู้อนุมัติ / ฝ่ายการเงิน</CardTitle>
+              <FileSignature className="w-5 h-5 text-indigo-600" />
+              <CardTitle className="text-sm font-bold text-indigo-950">
+                การจัดการลายเซ็นดิจิทัลผู้อนุมัติ (Approver Signatures)
+              </CardTitle>
             </div>
-            <CardDescription className="text-xs text-gray-500">
-              ใช้ประทับท้ายสลิปเงินเดือนและเอกสารสรุปยอดค่าใช้จ่าย
+            <CardDescription className="text-xs text-gray-600">
+              ลายเซ็นดิจิทัลผูกกับบัญชีผู้ใช้งานรายบุคคลตามระบบความปลอดภัย RBAC
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-4 space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold">เลือกไฟล์ลายเซ็นพื้นหลังโปร่งใส (.png)</Label>
-              <Input type="file" accept="image/*" onChange={(e) => setSignature(e.target.files?.[0] || null)} />
-            </div>
-            <Button 
-              className="bg-[#1877f2] hover:bg-[#166fe5] w-full text-xs" 
-              onClick={() => handleUpload('signature')} 
-              disabled={!signature || uploading}
-            >
-              อัปโหลดลายเซ็นใหม่
-            </Button>
-            <div className="pt-2 border-t">
-              <p className="text-xs font-bold text-gray-600 mb-2">ลายเซ็นปัจจุบัน:</p>
-              <div className="h-24 bg-gray-50 rounded-lg border border-dashed flex items-center justify-center p-2">
-                <img 
-                  src={`${API_URL}/settings/signature`} 
-                  alt="Signature" 
-                  className="max-h-full object-contain" 
-                  onError={(e) => (e.currentTarget.style.display = 'none')} 
-                />
+          <CardContent className="p-5 space-y-4 flex-1 flex flex-col justify-between">
+            <div className="space-y-3 text-xs text-gray-700 leading-relaxed">
+              <div className="bg-white p-3.5 rounded-xl border border-indigo-100 shadow-2xs space-y-2">
+                <p className="font-bold text-indigo-900 flex items-center gap-1.5 text-xs">
+                  <Sparkles className="w-4 h-4 text-indigo-600" /> ระบบดึงลายเซ็นอัตโนมัติจากผู้อนุมัติจริง:
+                </p>
+                <ul className="list-disc pl-4 space-y-1.5 text-gray-600 text-[11.5px]">
+                  <li>
+                    ลายเซ็นที่ประทับลงบนสลิปเงินเดือน (Payslip) จะดึงมาจาก <b>ไฟล์ลายเซ็นส่วนตัวของผู้ที่กดปุ่มอนุมัติรอบเงินเดือน</b>
+                  </li>
+                  <li>
+                    ระบบมี **Validation Guard** ตรวจสอบว่าผู้อนุมัติได้ผูกบัญชีกับพนักงานและอัปโหลดลายเซ็นแล้วก่อนจึงจะกดอนุมัติได้
+                  </li>
+                </ul>
               </div>
+
+              <p className="text-[11.5px] text-gray-500">
+                ผู้ดูแลระบบหรือผู้อนุมัติแต่ละท่าน สามารถอัปโหลดลายเซ็นดิจิทัล (PNG พื้นหลังโปร่งใส) และผูกรหัสพนักงานได้ที่เมนู <b>จัดการบัญชีผู้ใช้งาน (Users)</b>
+              </p>
+            </div>
+
+            <div className="pt-3 border-t border-indigo-100/60">
+              <Button 
+                onClick={() => router.push("/users")}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs cursor-pointer shadow-xs flex items-center justify-center gap-1.5 h-9"
+              >
+                <Users className="w-4 h-4" />
+                ไปยังหน้าจัดการบัญชีผู้ใช้งานเพื่อจัดการลายเซ็น
+                <ExternalLink className="w-3.5 h-3.5 ml-1" />
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -332,3 +360,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
