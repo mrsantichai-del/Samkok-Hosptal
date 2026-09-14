@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, BadRequestException, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -21,6 +21,15 @@ const supabase = createClient(
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  // ==========================================
+  // CURRENT USER PROFILE
+  // ==========================================
+  @Get('me')
+  @ApiOperation({ summary: 'Get current logged in user profile' })
+  getMe(@Req() req: any) {
+    return this.usersService.findOne(req.user.userId);
+  }
 
   // ==========================================
   // ROLES / USER GROUPS ENDPOINTS

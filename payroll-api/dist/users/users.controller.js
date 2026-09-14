@@ -30,6 +30,9 @@ let UsersController = class UsersController {
     constructor(usersService) {
         this.usersService = usersService;
     }
+    getMe(req) {
+        return this.usersService.findOne(req.user.userId);
+    }
     getRoles() {
         return this.usersService.getRoles();
     }
@@ -122,6 +125,14 @@ let UsersController = class UsersController {
     }
 };
 exports.UsersController = UsersController;
+__decorate([
+    (0, common_1.Get)('me'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get current logged in user profile' }),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getMe", null);
 __decorate([
     (0, roles_decorator_1.Roles)('System Administrator', 'Admin', 'HR'),
     (0, common_1.Get)('roles'),

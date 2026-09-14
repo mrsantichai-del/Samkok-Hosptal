@@ -295,9 +295,22 @@ let PayrollService = class PayrollService {
     async approvePayroll(recordId, userId) {
         const record = await this.prisma.payrollRecord.findUnique({ where: { id: recordId } });
         if (!record)
-            throw new common_1.NotFoundException('Record not found');
+            throw new common_1.NotFoundException('ไม่พบข้อมูลรอบเงินเดือนที่ต้องการอนุมัติ');
         if (record.status === 'APPROVED')
             throw new common_1.BadRequestException('รอบเงินเดือนนี้ได้รับการอนุมัติแล้ว');
+        const approverUser = await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: { employee: true }
+        });
+        if (!approverUser) {
+            throw new common_1.NotFoundException('ไม่พบบัญชีผู้ใช้งานของผู้อนุมัติในระบบ');
+        }
+        if (!approverUser.employeeId || !approverUser.employee) {
+            throw new common_1.BadRequestException('ไม่สามารถอนุมัติได้: บัญชีผู้ใช้งานของท่านยังไม่ได้ผูกกับข้อมูลบุคลากร (Employee) กรุณาไปที่หน้าจัดการผู้ใช้งาน (Users) เพื่อเลือกผูกบัญชีก่อนดำเนินการอนุมัติ');
+        }
+        if (!approverUser.signatureUrl) {
+            throw new common_1.BadRequestException('ไม่สามารถอนุมัติได้: บัญชีผู้ใช้งานของท่านยังไม่ได้อัปโหลดลายเซ็นดิจิทัลในระบบ กรุณาไปที่หน้าจัดการผู้ใช้งาน (Users) เพื่ออัปโหลดไฟล์ลายเซ็นก่อนดำเนินการอนุมัติ');
+        }
         await this.prisma.payrollRecord.update({
             where: { id: recordId },
             data: { status: 'APPROVED', approvedById: userId }

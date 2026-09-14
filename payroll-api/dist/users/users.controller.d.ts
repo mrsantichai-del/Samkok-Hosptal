@@ -4,6 +4,55 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export declare class UsersController {
     private readonly usersService;
     constructor(usersService: UsersService);
+    getMe(req: any): Promise<{
+        employee: {
+            id: string;
+            deletedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+            status: string;
+            employeeCode: string;
+            firstName: string;
+            lastName: string;
+            idCard: string | null;
+            bankAccount: string | null;
+            bankName: string | null;
+            baseSalary: import("@prisma/client-runtime-utils").Decimal | null;
+            startDate: Date | null;
+            endDate: Date | null;
+            departmentId: string | null;
+            positionId: string | null;
+            employeeTypeId: string | null;
+        } | null;
+        roles: ({
+            role: {
+                name: string;
+                id: string;
+                deletedAt: Date | null;
+                createdAt: Date;
+                updatedAt: Date;
+                description: string | null;
+            };
+        } & {
+            id: string;
+            deletedAt: Date | null;
+            createdAt: Date;
+            userId: string;
+            roleId: string;
+        })[];
+    } & {
+        id: string;
+        username: string;
+        passwordHash: string;
+        email: string | null;
+        isActive: boolean;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        signatureUrl: string | null;
+        imgUrl: string | null;
+        employeeId: string | null;
+    }>;
     getRoles(): Promise<{
         description: string;
         userCount: number;

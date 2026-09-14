@@ -206,9 +206,50 @@ export default function PayrollDetailPage() {
   };
 
   const handleApprovePayroll = async () => {
+    // 1. Pre-validation check: Check if current approver has linked employee and signatureUrl
+    try {
+      const token = Cookies.get("token");
+      const meRes = await axios.get(`${API_URL}/users/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const me = meRes.data;
+
+      if (!me?.employee) {
+        const goSetup = await showConfirm({
+          title: "⚠️ บัญชียังไม่ได้ผูกกับพนักงาน",
+          text: "บัญชีผู้ใช้งานของคุณยังไม่ได้ผูกกับประวัติบุคลากรในระบบ จึงไม่สามารถระบุชื่อและตำแหน่งผู้อนุมัติบนเอกสารได้\n\nต้องการไปที่หน้า 'จัดการผู้ใช้งาน' เพื่อผูกบัญชีก่อนหรือไม่?",
+          icon: "warning",
+          confirmButtonText: "ไปยังหน้าจัดการผู้ใช้งาน",
+          confirmButtonColor: "#2563eb",
+          cancelButtonText: "ยกเลิก"
+        });
+        if (goSetup.isConfirmed) {
+          router.push("/users");
+        }
+        return;
+      }
+
+      if (!me?.signatureUrl) {
+        const goSetup = await showConfirm({
+          title: "⚠️ ยังไม่มีลายเซ็นดิจิทัลในระบบ",
+          text: `บัญชีของคุณ (${me.employee.firstName} ${me.employee.lastName}) ยังไม่ได้อัปโหลดไฟล์ลายเซ็นดิจิทัลเพื่อใช้ประทับตราอนุมัติสลิปเงินเดือน\n\nต้องการไปที่หน้า 'จัดการผู้ใช้งาน' เพื่ออัปโหลดลายเซ็นก่อนหรือไม่?`,
+          icon: "warning",
+          confirmButtonText: "ไปยังหน้าจัดการผู้ใช้งาน",
+          confirmButtonColor: "#2563eb",
+          cancelButtonText: "ยกเลิก"
+        });
+        if (goSetup.isConfirmed) {
+          router.push("/users");
+        }
+        return;
+      }
+    } catch (e) {
+      // If /users/me check fails or network issue, fallback to normal confirmation and let backend guard validate
+    }
+
     const result = await showConfirm({
       title: "ยืนยันการอนุมัติการจ่ายเงินเดือน",
-      text: "คุณต้องการอนุมัติการจ่ายเงินเดือนประจำรอบนี้ใช่หรือไม่? เมื่ออนุมัติแล้วข้อมูลจะเข้าสู่สถานะ 'อนุมัติแล้ว' อย่างเป็นทางการ",
+      text: "คุณต้องการอนุมัติการจ่ายเงินเดือนประจำรอบนี้ใช่หรือไม่? เมื่ออนุมัติแล้วข้อมูลจะเข้าสู่สถานะ 'อนุมัติแล้ว' อย่างเป็นทางการ และลายเซ็นของคุณจะถูกประทับลงในสลิปเงินเดือน",
       icon: "question",
       confirmButtonText: "ยืนยันอนุมัติเงินเดือน",
       confirmButtonColor: "#059669",
@@ -228,7 +269,22 @@ export default function PayrollDetailPage() {
       fetchData();
     } catch (err: any) {
       toast.dismiss(toastId);
-      showError("เกิดข้อผิดพลาด", err.response?.data?.message || "ไม่สามารถอนุมัติเงินเดือนได้");
+      const errMsg = err.response?.data?.message || "ไม่สามารถอนุมัติเงินเดือนได้";
+      if (errMsg.includes("ยังไม่ได้ผูกกับ") || errMsg.includes("ยังไม่ได้อัปโหลดลายเซ็น")) {
+        const goSetup = await showConfirm({
+          title: "⚠️ ข้อมูลผู้อนุมัติยังไม่สมบูรณ์",
+          text: `${errMsg}\n\nต้องการไปยังหน้า 'จัดการผู้ใช้งาน' เพื่อตั้งค่าทันทีหรือไม่?`,
+          icon: "warning",
+          confirmButtonText: "ไปยังหน้าจัดการผู้ใช้งาน",
+          confirmButtonColor: "#2563eb",
+          cancelButtonText: "ยกเลิก"
+        });
+        if (goSetup.isConfirmed) {
+          router.push("/users");
+        }
+      } else {
+        showError("เกิดข้อผิดพลาด", errMsg);
+      }
     } finally {
       setApproving(false);
     }
