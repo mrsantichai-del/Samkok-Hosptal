@@ -15,7 +15,8 @@ import {
   Shield, Users, UserCheck, ShieldAlert, KeyRound, Building2, 
   FileText, DollarSign, BarChart3, Settings, HelpCircle, CheckCircle2,
   XCircle, Lock, Unlock, Eye, Sparkles, Filter, Info, ChevronRight,
-  ShieldCheck, ShieldQuestion, Users2, LayoutList, TableProperties
+  ShieldCheck, ShieldQuestion, Users2, LayoutList, TableProperties,
+  ScrollText
 } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -26,7 +27,7 @@ const ROLE_TEMPLATES = [
   {
     name: "System Administrator",
     title: "ผู้ดูแลระบบสูงสุด",
-    desc: "ผู้ดูแลระบบสูงสุด ได้รับอนุญาตให้เข้าถึงและจัดการได้ทุกโมดูล 100% (ดู, สร้าง, แก้ไข, ลบ, อนุมัติ, ส่งออกข้อมูล) จัดการบัญชีผู้ใช้ รีเซ็ตรหัสผ่าน กำหนดกลุ่มสิทธิ์ โครงสร้างกลุ่มงาน ตำแหน่งงาน ประเภทบุคลากร สูตรคำนวณเงินเดือน และตั้งค่าโรงพยาบาลสำหรับออกเอกสารราชการ สามารถสลับดูสลิปเงินเดือนและใบ 50 ทวิของพนักงานทุกคนได้โดยไม่จำเป็นต้องเป็นพนักงาน"
+    desc: "ผู้ดูแลระบบสูงสุด ได้รับอนุญาตให้เข้าถึงและจัดการได้ทุกโมดูล 100% (ดู, สร้าง, แก้ไข, ลบ, อนุมัติ, ส่งออกข้อมูล) จัดการบัญชีผู้ใช้ รีเซ็ตรหัสผ่าน กำหนดกลุ่มสิทธิ์ ตรวจสอบประวัติการใช้งาน (Audit Logs) โครงสร้างกลุ่มงาน ตำแหน่งงาน ประเภทบุคลากร สูตรคำนวณเงินเดือน และตั้งค่าโรงพยาบาลสำหรับออกเอกสารราชการ สามารถสลับดูสลิปเงินเดือนและใบ 50 ทวิของพนักงานทุกคนได้โดยไม่จำเป็นต้องเป็นพนักงาน"
   },
   {
     name: "Executive",
@@ -45,7 +46,7 @@ const ROLE_TEMPLATES = [
   }
 ];
 
-// 12 System Modules for the Capabilities Matrix
+// 13 System Modules for the Capabilities Matrix
 const SYSTEM_CAPABILITIES = [
   {
     id: "home",
@@ -191,8 +192,21 @@ const SYSTEM_CAPABILITIES = [
     }
   },
   {
+    id: "audit_logs",
+    module: "12. ประวัติการใช้งาน & ตรวจสอบระบบ (Audit Logs)",
+    icon: ScrollText,
+    color: "text-rose-700 bg-rose-50 border-rose-200",
+    description: "บันทึกประวัติการเข้าใช้งาน, สร้าง, แก้ไข, ลบ, พิมพ์, ส่งออก และเปรียบเทียบข้อมูลย้อนหลัง (Diff View)",
+    roles: {
+      admin: { view: true, edit: false, delete: false, approve: false, export: true, note: "เข้าถึงบันทึกกิจกรรมทั้งหมด ตรวจสอบย้อนหลัง Old vs New และ Export Excel" },
+      executive: { view: true, edit: false, delete: false, approve: false, export: true, note: "เข้าดูรายงานสรุปกิจกรรมและประวัติการใช้งานระบบ" },
+      hr: { view: false, edit: false, delete: false, approve: false, export: false, note: "ไม่มีสิทธิ์เข้าถึง (สงวนเฉพาะผู้ดูแลระบบและผู้บริหาร)" },
+      employee: { view: false, edit: false, delete: false, approve: false, export: false, note: "ไม่มีสิทธิ์เข้าถึง (ซ่อนเมนู)" }
+    }
+  },
+  {
     id: "settings",
-    module: "12. ตั้งค่าโรงพยาบาล & 50 ทวิ (Hospital Master Settings)",
+    module: "13. ตั้งค่าโรงพยาบาล & 50 ทวิ (Hospital Master Settings)",
     icon: Settings,
     color: "text-slate-600 bg-slate-50 border-slate-200",
     description: "ชื่อ รพ., เลขประจำตัวผู้เสียภาษี 13 หลัก, ที่อยู่ทางการ, ผู้มีอำนาจลงนาม, โลโก้ และลายเซ็นดิจิทัล",
@@ -206,7 +220,7 @@ const SYSTEM_CAPABILITIES = [
 ];
 
 export default function RolesPage() {
-  // Mode: 'roles' (List/Cards View) | 'matrix' (12-Module Matrix View)
+  // Mode: 'roles' (List/Cards View) | 'matrix' (Capabilities Matrix View)
   const [activeView, setActiveView] = useState<'roles' | 'matrix'>('roles');
 
   const [roles, setRoles] = useState<any[]>([]);
@@ -503,7 +517,7 @@ export default function RolesPage() {
             <Users2 className="w-7 h-7 text-indigo-600" /> จัดการกลุ่มผู้ใช้งานและกำหนดสิทธิ์ (User Groups & Roles)
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            ศูนย์รวมการจัดการกลุ่มบทบาท กำหนดคำบรรยายขอบเขตหน้าที่ และตรวจสอบตารางสิทธิ์ 12 โมดูลระบบ
+            ศูนย์รวมการจัดการกลุ่มบทบาท กำหนดคำบรรยายขอบเขตหน้าที่ และตรวจสอบตารางสิทธิ์ 13 โมดูลระบบ
           </p>
         </div>
 
@@ -532,7 +546,7 @@ export default function RolesPage() {
               }`}
             >
               <TableProperties className="w-4 h-4" />
-              2. ตารางเมทริกซ์ 12 โมดูล
+              2. ตารางเมทริกซ์ 13 โมดูล
             </button>
           </div>
 
@@ -833,7 +847,7 @@ export default function RolesPage() {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                   <CardTitle className="text-base font-bold flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-blue-600" /> ตารางเมทริกซ์สิทธิ์การใช้งาน 12 โมดูลระบบ (Capabilities Matrix)
+                    <Shield className="w-5 h-5 text-blue-600" /> ตารางเมทริกซ์สิทธิ์การใช้งาน 13 โมดูลระบบ (Capabilities Matrix)
                   </CardTitle>
                   <CardDescription className="text-xs text-gray-500 mt-0.5">
                     แผนผังเปรียบเทียบสิทธิ์ (RBAC Matrix) แสดงความสามารถในการ ดู, เพิ่ม/แก้ไข, ลบ, อนุมัติ และพิมพ์/ส่งออก
