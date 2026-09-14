@@ -22,7 +22,48 @@ const supabase = createClient(
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Roles('System Administrator')
+  // ==========================================
+  // ROLES / USER GROUPS ENDPOINTS
+  // ==========================================
+  @Roles('System Administrator', 'Admin', 'HR')
+  @Get('roles')
+  @ApiOperation({ summary: 'Get all user groups / roles with users count and details' })
+  getRoles() {
+    return this.usersService.getRoles();
+  }
+
+  @Roles('System Administrator', 'Admin', 'HR')
+  @Get('roles/:id')
+  @ApiOperation({ summary: 'Get role details and users in role' })
+  getRole(@Param('id') id: string) {
+    return this.usersService.getRole(id);
+  }
+
+  @Roles('System Administrator', 'Admin')
+  @Post('roles')
+  @ApiOperation({ summary: 'Create a new user group / role' })
+  createRole(@Body() body: { name: string; description?: string }) {
+    return this.usersService.createRole(body);
+  }
+
+  @Roles('System Administrator', 'Admin')
+  @Patch('roles/:id')
+  @ApiOperation({ summary: 'Update a user group / role' })
+  updateRole(@Param('id') id: string, @Body() body: { name?: string; description?: string }) {
+    return this.usersService.updateRole(id, body);
+  }
+
+  @Roles('System Administrator', 'Admin')
+  @Delete('roles/:id')
+  @ApiOperation({ summary: 'Delete a user group / role' })
+  removeRole(@Param('id') id: string) {
+    return this.usersService.removeRole(id);
+  }
+
+  // ==========================================
+  // USER PROFILE & AVATAR ENDPOINTS
+  // ==========================================
+  @Roles('System Administrator', 'Admin')
   @Post(':id/upload-image')
   @ApiOperation({ summary: 'Upload user profile image' })
   @UseInterceptors(FileInterceptor('file'))
@@ -48,7 +89,7 @@ export class UsersController {
     return this.usersService.update(id, { imgUrl: urlData.publicUrl } as any);
   }
 
-  @Roles('System Administrator')
+  @Roles('System Administrator', 'Admin')
   @Post(':id/upload-signature')
   @ApiOperation({ summary: 'Upload user signature' })
   @UseInterceptors(FileInterceptor('file'))
@@ -74,7 +115,7 @@ export class UsersController {
     return this.usersService.update(id, { signatureUrl: urlData.publicUrl } as any);
   }
 
-  @Roles('System Administrator')
+  @Roles('System Administrator', 'Admin')
   @Delete(':id/image')
   @ApiOperation({ summary: 'Delete user profile image' })
   async deleteImage(@Param('id') id: string) {
@@ -88,7 +129,7 @@ export class UsersController {
     return { message: 'No image to delete' };
   }
 
-  @Roles('System Administrator')
+  @Roles('System Administrator', 'Admin')
   @Delete(':id/signature')
   @ApiOperation({ summary: 'Delete user signature' })
   async deleteSignature(@Param('id') id: string) {
@@ -102,42 +143,38 @@ export class UsersController {
     return { message: 'No signature to delete' };
   }
 
-  @Roles('System Administrator')
-  @Get('roles')
-  @ApiOperation({ summary: 'Get all available roles' })
-  getRoles() {
-    return this.usersService.getRoles();
-  }
-
-  @Roles('System Administrator')
+  // ==========================================
+  // USERS CRUD ENDPOINTS
+  // ==========================================
+  @Roles('System Administrator', 'Admin')
   @Get()
   @ApiOperation({ summary: 'Get all users' })
   findAll() {
     return this.usersService.findAll();
   }
 
-  @Roles('System Administrator')
+  @Roles('System Administrator', 'Admin')
   @Get(':id')
   @ApiOperation({ summary: 'Get user by id' })
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
-  @Roles('System Administrator')
+  @Roles('System Administrator', 'Admin')
   @Post()
   @ApiOperation({ summary: 'Create a new user' })
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
-  @Roles('System Administrator')
+  @Roles('System Administrator', 'Admin')
   @Patch(':id')
   @ApiOperation({ summary: 'Update a user' })
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 
-  @Roles('System Administrator')
+  @Roles('System Administrator', 'Admin')
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a user' })
   remove(@Param('id') id: string) {

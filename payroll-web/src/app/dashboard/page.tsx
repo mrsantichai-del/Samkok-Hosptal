@@ -24,7 +24,8 @@ import {
   Building2,
   Sparkles,
   ArrowUpRight,
-  ShieldAlert
+  ShieldAlert,
+  Shield
 } from "lucide-react";
 
 interface MenuItem {
@@ -197,8 +198,8 @@ export default function DashboardHome() {
     },
     {
       title: "จัดการบัญชีผู้ใช้งาน (Users)",
-      subTitle: "User Accounts & Role Permissions",
-      desc: "บริหารจัดการบัญชีผู้ใช้งานระบบ รหัสผ่าน กำหนดบทบาท และสิทธิ์การเข้าถึงข้อมูลของแต่ละฝ่าย",
+      subTitle: "User Accounts Management",
+      desc: "บริหารจัดการบัญชีผู้ใช้งานระบบ รหัสผ่าน กำหนดบทบาท และผูกข้อมูลเข้ากับประวัติพนักงาน",
       href: "/dashboard/users",
       icon: ShieldCheck,
       category: "ระบบงานบุคคลและการเงิน",
@@ -208,6 +209,22 @@ export default function DashboardHome() {
         border: "border-cyan-200",
         hoverBorder: "hover:border-cyan-400 hover:shadow-cyan-50",
         badge: "bg-cyan-100 text-cyan-800"
+      },
+      roles: ['Admin']
+    },
+    {
+      title: "กลุ่มผู้ใช้งานและกำหนดสิทธิ์ (Roles)",
+      subTitle: "User Groups & Permissions Scope",
+      desc: "กำหนดกลุ่มสิทธิ์ อธิบายขอบเขตหน้าที่ความรับผิดชอบ และคำบรรยายสิทธิ์การเข้าถึงแต่ละโมดูลกันลืม",
+      href: "/dashboard/roles",
+      icon: Shield,
+      category: "ระบบงานบุคคลและการเงิน",
+      color: {
+        bg: "bg-indigo-50/70",
+        text: "text-indigo-700",
+        border: "border-indigo-200",
+        hoverBorder: "hover:border-indigo-400 hover:shadow-indigo-50",
+        badge: "bg-indigo-100 text-indigo-800"
       },
       roles: ['Admin']
     },

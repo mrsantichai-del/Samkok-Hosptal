@@ -30,6 +30,21 @@ let UsersController = class UsersController {
     constructor(usersService) {
         this.usersService = usersService;
     }
+    getRoles() {
+        return this.usersService.getRoles();
+    }
+    getRole(id) {
+        return this.usersService.getRole(id);
+    }
+    createRole(body) {
+        return this.usersService.createRole(body);
+    }
+    updateRole(id, body) {
+        return this.usersService.updateRole(id, body);
+    }
+    removeRole(id) {
+        return this.usersService.removeRole(id);
+    }
     async uploadImage(id, file) {
         if (!file)
             throw new common_1.BadRequestException('No file uploaded');
@@ -90,9 +105,6 @@ let UsersController = class UsersController {
         }
         return { message: 'No signature to delete' };
     }
-    getRoles() {
-        return this.usersService.getRoles();
-    }
     findAll() {
         return this.usersService.findAll();
     }
@@ -111,7 +123,52 @@ let UsersController = class UsersController {
 };
 exports.UsersController = UsersController;
 __decorate([
-    (0, roles_decorator_1.Roles)('System Administrator'),
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin', 'HR'),
+    (0, common_1.Get)('roles'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all user groups / roles with users count and details' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getRoles", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin', 'HR'),
+    (0, common_1.Get)('roles/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get role details and users in role' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getRole", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin'),
+    (0, common_1.Post)('roles'),
+    (0, swagger_1.ApiOperation)({ summary: 'Create a new user group / role' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "createRole", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin'),
+    (0, common_1.Patch)('roles/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update a user group / role' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "updateRole", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin'),
+    (0, common_1.Delete)('roles/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete a user group / role' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "removeRole", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin'),
     (0, common_1.Post)(':id/upload-image'),
     (0, swagger_1.ApiOperation)({ summary: 'Upload user profile image' }),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
@@ -122,7 +179,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "uploadImage", null);
 __decorate([
-    (0, roles_decorator_1.Roles)('System Administrator'),
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin'),
     (0, common_1.Post)(':id/upload-signature'),
     (0, swagger_1.ApiOperation)({ summary: 'Upload user signature' }),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
@@ -133,7 +190,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "uploadSignature", null);
 __decorate([
-    (0, roles_decorator_1.Roles)('System Administrator'),
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin'),
     (0, common_1.Delete)(':id/image'),
     (0, swagger_1.ApiOperation)({ summary: 'Delete user profile image' }),
     __param(0, (0, common_1.Param)('id')),
@@ -142,7 +199,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "deleteImage", null);
 __decorate([
-    (0, roles_decorator_1.Roles)('System Administrator'),
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin'),
     (0, common_1.Delete)(':id/signature'),
     (0, swagger_1.ApiOperation)({ summary: 'Delete user signature' }),
     __param(0, (0, common_1.Param)('id')),
@@ -151,15 +208,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "deleteSignature", null);
 __decorate([
-    (0, roles_decorator_1.Roles)('System Administrator'),
-    (0, common_1.Get)('roles'),
-    (0, swagger_1.ApiOperation)({ summary: 'Get all available roles' }),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", void 0)
-], UsersController.prototype, "getRoles", null);
-__decorate([
-    (0, roles_decorator_1.Roles)('System Administrator'),
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin'),
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({ summary: 'Get all users' }),
     __metadata("design:type", Function),
@@ -167,7 +216,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "findAll", null);
 __decorate([
-    (0, roles_decorator_1.Roles)('System Administrator'),
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin'),
     (0, common_1.Get)(':id'),
     (0, swagger_1.ApiOperation)({ summary: 'Get user by id' }),
     __param(0, (0, common_1.Param)('id')),
@@ -176,7 +225,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "findOne", null);
 __decorate([
-    (0, roles_decorator_1.Roles)('System Administrator'),
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin'),
     (0, common_1.Post)(),
     (0, swagger_1.ApiOperation)({ summary: 'Create a new user' }),
     __param(0, (0, common_1.Body)()),
@@ -185,7 +234,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "create", null);
 __decorate([
-    (0, roles_decorator_1.Roles)('System Administrator'),
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin'),
     (0, common_1.Patch)(':id'),
     (0, swagger_1.ApiOperation)({ summary: 'Update a user' }),
     __param(0, (0, common_1.Param)('id')),
@@ -195,7 +244,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "update", null);
 __decorate([
-    (0, roles_decorator_1.Roles)('System Administrator'),
+    (0, roles_decorator_1.Roles)('System Administrator', 'Admin'),
     (0, common_1.Delete)(':id'),
     (0, swagger_1.ApiOperation)({ summary: 'Delete a user' }),
     __param(0, (0, common_1.Param)('id')),

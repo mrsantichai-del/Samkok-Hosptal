@@ -87,6 +87,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "ประมวลผลเงินเดือน", href: "/dashboard/payroll", icon: Calculator, roles: ['Admin', 'HR'] },
     { name: "พนักงาน", href: "/dashboard/employees", icon: Users, roles: ['Admin', 'HR'] },
     { name: "ผู้ใช้งาน", href: "/dashboard/users", icon: ShieldCheck, roles: ['Admin'] },
+    { name: "กลุ่มผู้ใช้งาน", href: "/dashboard/roles", icon: Users, roles: ['Admin'] },
     { name: "กลุ่มงาน", href: "/dashboard/departments", icon: FolderKanban, roles: ['Admin', 'HR'] },
     { name: "ประเภทพนักงาน", href: "/dashboard/employee-types", icon: Building2, roles: ['Admin', 'HR'] },
     { name: "ตำแหน่ง", href: "/dashboard/positions", icon: Briefcase, roles: ['Admin', 'HR'] },
