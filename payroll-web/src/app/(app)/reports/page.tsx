@@ -196,20 +196,83 @@ export default function ReportsCenterPage() {
   const metrics = summaryData?.metrics;
 
   return (
-    <div className="space-y-5 max-w-7xl mx-auto pb-16 print:p-0 print:m-0 print:max-w-none">
+    <div className="space-y-5 max-w-7xl mx-auto pb-16 print:p-0 print:m-0 print:max-w-none print:w-full">
+      {/* Print-specific CSS */}
+      <style jsx global>{`
+        @media print {
+          @page {
+            size: A4 landscape;
+            margin: 8mm 6mm;
+          }
+          body, html {
+            background: #ffffff !important;
+            color: #000000 !important;
+            font-size: 8pt !important;
+            width: 100% !important;
+            overflow: visible !important;
+          }
+          .print-report-card {
+            border: none !important;
+            box-shadow: none !important;
+            overflow: visible !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+          }
+          .print-report-table {
+            width: 100% !important;
+            table-layout: fixed !important;
+            border-collapse: collapse !important;
+          }
+          .print-report-table th,
+          .print-report-table td {
+            padding: 4px 3px !important;
+            font-size: 7.5pt !important;
+            line-height: 1.2 !important;
+            border: 0.5px solid #d1d5db !important;
+            word-break: break-word !important;
+          }
+          .print-report-table th {
+            background-color: #f3f4f6 !important;
+            color: #111827 !important;
+            font-weight: 700 !important;
+          }
+          .print-report-table th.bg-blue-50\\/60,
+          .print-report-table td.bg-blue-50\\/50,
+          .print-report-table td.bg-blue-100\\/70 {
+            background-color: #eff6ff !important;
+          }
+          .print-kpi-banner {
+            border: 1px solid #e5e7eb !important;
+            box-shadow: none !important;
+            margin-bottom: 12px !important;
+            padding: 8px !important;
+          }
+          thead {
+            display: table-header-group !important;
+          }
+          tfoot {
+            display: table-footer-group !important;
+          }
+          tr {
+            page-break-inside: avoid !important;
+          }
+        }
+      `}</style>
+
       {/* Official Thai Print Header */}
-      <div className="hidden print:block text-center mb-6">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <img src="/logo.jpg" alt="Logo" className="w-14 h-14 object-contain" />
+      <div className="hidden print:block text-center mb-4">
+        <div className="flex items-center justify-center gap-3 mb-1.5">
+          <img src="/logo.jpg" alt="Logo" className="w-12 h-12 object-contain" />
           <div>
-            <h1 className="text-xl font-bold font-serif text-black">โรงพยาบาลสามโคก (Samkok Hospital)</h1>
-            <p className="text-sm font-serif text-gray-700">รายงานสรุปค่าใช้จ่ายบุคลากรและการเงินประจำงวด</p>
+            <h1 className="text-lg font-bold text-black">โรงพยาบาลสามโคก (Samkok Hospital)</h1>
+            <p className="text-xs text-gray-700">รายงานสรุปค่าใช้จ่ายบุคลากรและการเงินประจำงวด</p>
           </div>
         </div>
-        <h2 className="text-base font-bold font-serif text-black mt-2">
+        <h2 className="text-sm font-bold text-black mt-1">
           {summaryData?.periodLabel || 'รายงานค่าใช้จ่ายบุคลากร'}
         </h2>
-        <p className="text-xs font-serif text-gray-600">
+        <p className="text-[10px] text-gray-600">
           พิมพ์เมื่อวันที่: {new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
         </p>
       </div>
@@ -405,7 +468,7 @@ export default function ReportsCenterPage() {
 
       {/* Summary KPI Banner */}
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-lg border shadow-xs animate-pulse">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-lg border shadow-xs animate-pulse print:hidden">
           {[1, 2, 3, 4].map(n => (
             <div key={n} className="space-y-2 border-r last:border-r-0 pr-3">
               <div className="h-3 bg-gray-200 rounded-sm w-24"></div>
@@ -414,28 +477,28 @@ export default function ReportsCenterPage() {
           ))}
         </div>
       ) : metrics ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-lg border shadow-xs print:grid-cols-4 print:border-black">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-lg border shadow-xs print:grid-cols-4 print-kpi-banner">
           <div className="border-r pr-3">
-            <span className="text-xs text-gray-500 font-medium">ยอดจ่ายสุทธิรวม</span>
-            <div className="text-lg font-bold text-gray-900">฿{metrics.totalNetPayout.toLocaleString()}</div>
+            <span className="text-xs print:text-[9px] text-gray-500 font-medium">ยอดจ่ายสุทธิรวม</span>
+            <div className="text-lg print:text-sm font-bold text-gray-900">฿{metrics.totalNetPayout.toLocaleString()}</div>
           </div>
           <div className="border-r pr-3">
-            <span className="text-xs text-gray-500 font-medium">อัตรากำลังรวม</span>
-            <div className="text-lg font-bold text-emerald-700">{metrics.totalHeadcount} คน</div>
+            <span className="text-xs print:text-[9px] text-gray-500 font-medium">อัตรากำลังรวม</span>
+            <div className="text-lg print:text-sm font-bold text-emerald-700">{metrics.totalHeadcount} คน</div>
           </div>
           <div className="border-r pr-3">
-            <span className="text-xs text-gray-500 font-medium">ค่าเวร & OT รวม</span>
-            <div className="text-lg font-bold text-amber-600">฿{metrics.otShiftTotal.toLocaleString()}</div>
+            <span className="text-xs print:text-[9px] text-gray-500 font-medium">ค่าเวร & OT รวม</span>
+            <div className="text-lg print:text-sm font-bold text-amber-600">฿{metrics.otShiftTotal.toLocaleString()}</div>
           </div>
           <div>
-            <span className="text-xs text-gray-500 font-medium">เฉลี่ยสุทธิ/คน</span>
-            <div className="text-lg font-bold text-blue-700">฿{metrics.avgNetPerHead.toLocaleString()}</div>
+            <span className="text-xs print:text-[9px] text-gray-500 font-medium">เฉลี่ยสุทธิ/คน</span>
+            <div className="text-lg print:text-sm font-bold text-blue-700">฿{metrics.avgNetPerHead.toLocaleString()}</div>
           </div>
         </div>
       ) : null}
 
       {/* Main Report Table */}
-      <Card className="border shadow-xs bg-white overflow-hidden print:border-black print:shadow-none">
+      <Card className="border shadow-xs bg-white overflow-hidden print:border-none print:shadow-none print:overflow-visible print:p-0 print:m-0 print:w-full print-report-card">
         {loading ? (
           <div className="py-24 px-6 flex flex-col items-center justify-center text-center bg-gray-50/50">
             <div className="relative mb-4">
@@ -449,71 +512,72 @@ export default function ReportsCenterPage() {
             </p>
           </div>
         ) : (
-          <Table className="text-xs">
-            <TableHeader>
-              <TableRow className="bg-gray-50/90 print:bg-gray-100">
-                <TableHead className="w-12 text-center">#</TableHead>
-                <TableHead className="font-bold text-gray-800">
-                  {reportTab === 'employeeType' ? 'ประเภทการจ้างงาน' : 'กลุ่มงาน / แผนก'}
-                </TableHead>
-                <TableHead className="text-center font-bold text-gray-800">จำนวนคน</TableHead>
-                <TableHead className="text-right font-bold text-gray-800">เงินเดือนหลัก</TableHead>
-                <TableHead className="text-right font-bold text-gray-800">ค่าเวร & OT</TableHead>
-                <TableHead className="text-right font-bold text-gray-800">เงินเพิ่มพิเศษ</TableHead>
-                <TableHead className="text-right font-bold text-gray-800">เงินได้รวม</TableHead>
-                <TableHead className="text-right font-bold text-gray-800">เงินหักรวม</TableHead>
-                <TableHead className="text-right font-bold text-gray-900 bg-blue-50/60">ยอดจ่ายสุทธิ (Net)</TableHead>
-                <TableHead className="text-right font-bold text-gray-800">สัดส่วน (%)</TableHead>
-                <TableHead className="text-right font-bold text-gray-800">เฉลี่ย/คน</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {(reportTab === 'employeeType' ? employeeTypeData?.items : departmentData?.items)?.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={11} className="py-16 text-center text-gray-400">
-                    ไม่พบข้อมูลรายงานสำหรับเงื่อนไขนี้
-                  </TableCell>
+          <div className="overflow-x-auto print:overflow-visible print:w-full">
+            <Table className="text-xs print-report-table print:text-[8pt] w-full">
+              <TableHeader>
+                <TableRow className="bg-gray-50/90 print:bg-gray-100">
+                  <TableHead className="w-[3%] text-center print:p-1 font-bold">#</TableHead>
+                  <TableHead className="w-[21%] font-bold text-gray-800 print:p-1">
+                    {reportTab === 'employeeType' ? 'ประเภทการจ้างงาน' : 'กลุ่มงาน / แผนก'}
+                  </TableHead>
+                  <TableHead className="w-[6%] text-center font-bold text-gray-800 print:p-1">จำนวนคน</TableHead>
+                  <TableHead className="w-[9%] text-right font-bold text-gray-800 print:p-1">เงินเดือนหลัก</TableHead>
+                  <TableHead className="w-[8.5%] text-right font-bold text-gray-800 print:p-1">ค่าเวร & OT</TableHead>
+                  <TableHead className="w-[8.5%] text-right font-bold text-gray-800 print:p-1">เงินเพิ่มพิเศษ</TableHead>
+                  <TableHead className="w-[9.5%] text-right font-bold text-gray-800 print:p-1">เงินได้รวม</TableHead>
+                  <TableHead className="w-[8.5%] text-right font-bold text-gray-800 print:p-1">เงินหักรวม</TableHead>
+                  <TableHead className="w-[10.5%] text-right font-bold text-gray-900 bg-blue-50/60 print:p-1">ยอดจ่ายสุทธิ (Net)</TableHead>
+                  <TableHead className="w-[6.5%] text-right font-bold text-gray-800 print:p-1">สัดส่วน (%)</TableHead>
+                  <TableHead className="w-[9%] text-right font-bold text-gray-800 print:p-1">เฉลี่ย/คน</TableHead>
                 </TableRow>
-              ) : (
-                (reportTab === 'employeeType' ? employeeTypeData?.items : departmentData?.items)
-                  ?.filter((item: any) => !searchTerm || item.name.toLowerCase().includes(searchTerm.toLowerCase()))
-                  .map((item: any, idx: number) => {
-                    const isExpanded = expandedGroups.has(item.id);
-                    const isDimensionDept = reportTab !== 'employeeType';
-                    const details = groupDetails[item.id] || [];
-                    const isLoadingDetails = loadingGroups.has(item.id);
+              </TableHeader>
+              <TableBody>
+                {(reportTab === 'employeeType' ? employeeTypeData?.items : departmentData?.items)?.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={11} className="py-16 text-center text-gray-400">
+                      ไม่พบข้อมูลรายงานสำหรับเงื่อนไขนี้
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  (reportTab === 'employeeType' ? employeeTypeData?.items : departmentData?.items)
+                    ?.filter((item: any) => !searchTerm || item.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                    .map((item: any, idx: number) => {
+                      const isExpanded = expandedGroups.has(item.id);
+                      const isDimensionDept = reportTab !== 'employeeType';
+                      const details = groupDetails[item.id] || [];
+                      const isLoadingDetails = loadingGroups.has(item.id);
 
-                    return (
-                      <React.Fragment key={item.id || idx}>
-                        {/* Master Group Row */}
-                        <TableRow 
-                          className={`hover:bg-gray-50 transition-colors font-medium ${isExpanded ? 'bg-blue-50/30' : ''}`}
-                        >
-                          <TableCell className="text-center text-gray-400">{idx + 1}</TableCell>
-                          <TableCell>
-                            <button
-                              type="button"
-                              className="flex items-center gap-1.5 font-bold text-gray-900 hover:text-blue-600 text-left print:pointer-events-none cursor-pointer"
-                              onClick={() => toggleExpandGroup(item.id, isDimensionDept ? 'department' : 'employeeType')}
-                            >
-                              <span className="text-gray-400 print:hidden">
-                                {isExpanded ? <ChevronDown className="w-4 h-4 text-blue-600" /> : <ChevronRight className="w-4 h-4" />}
-                              </span>
-                              <span>{item.name}</span>
-                            </button>
-                          </TableCell>
-                          <TableCell className="text-center font-semibold text-gray-700">{item.headcount}</TableCell>
-                          <TableCell className="text-right text-gray-700">฿{item.baseSalary.toLocaleString()}</TableCell>
-                          <TableCell className="text-right text-amber-700">฿{item.otShift.toLocaleString()}</TableCell>
-                          <TableCell className="text-right text-purple-700">฿{item.specialAllowance.toLocaleString()}</TableCell>
-                          <TableCell className="text-right font-medium text-gray-800">฿{item.totalGross.toLocaleString()}</TableCell>
-                          <TableCell className="text-right text-rose-600">-฿{item.totalDeductions.toLocaleString()}</TableCell>
-                          <TableCell className="text-right font-bold text-blue-700 bg-blue-50/50">
-                            ฿{item.totalNet.toLocaleString()}
-                          </TableCell>
-                          <TableCell className="text-right text-gray-600">{item.sharePercent}%</TableCell>
-                          <TableCell className="text-right font-semibold text-gray-800">฿{item.avgNetPerHead.toLocaleString()}</TableCell>
-                        </TableRow>
+                      return (
+                        <React.Fragment key={item.id || idx}>
+                          {/* Master Group Row */}
+                          <TableRow 
+                            className={`hover:bg-gray-50 transition-colors font-medium ${isExpanded ? 'bg-blue-50/30' : ''}`}
+                          >
+                            <TableCell className="text-center text-gray-400 print:p-1 print:text-black">{idx + 1}</TableCell>
+                            <TableCell className="print:p-1 break-words">
+                              <button
+                                type="button"
+                                className="flex items-center gap-1.5 font-bold text-gray-900 hover:text-blue-600 text-left print:pointer-events-none cursor-pointer"
+                                onClick={() => toggleExpandGroup(item.id, isDimensionDept ? 'department' : 'employeeType')}
+                              >
+                                <span className="text-gray-400 print:hidden">
+                                  {isExpanded ? <ChevronDown className="w-4 h-4 text-blue-600" /> : <ChevronRight className="w-4 h-4" />}
+                                </span>
+                                <span>{item.name}</span>
+                              </button>
+                            </TableCell>
+                            <TableCell className="text-center font-semibold text-gray-700 print:p-1">{item.headcount}</TableCell>
+                            <TableCell className="text-right text-gray-700 print:p-1 whitespace-nowrap">฿{item.baseSalary.toLocaleString()}</TableCell>
+                            <TableCell className="text-right text-amber-700 print:p-1 whitespace-nowrap">฿{item.otShift.toLocaleString()}</TableCell>
+                            <TableCell className="text-right text-purple-700 print:p-1 whitespace-nowrap">฿{item.specialAllowance.toLocaleString()}</TableCell>
+                            <TableCell className="text-right font-medium text-gray-800 print:p-1 whitespace-nowrap">฿{item.totalGross.toLocaleString()}</TableCell>
+                            <TableCell className="text-right text-rose-600 print:p-1 whitespace-nowrap">-฿{item.totalDeductions.toLocaleString()}</TableCell>
+                            <TableCell className="text-right font-bold text-blue-700 bg-blue-50/50 print:p-1 whitespace-nowrap">
+                              ฿{item.totalNet.toLocaleString()}
+                            </TableCell>
+                            <TableCell className="text-right text-gray-600 print:p-1">{item.sharePercent}%</TableCell>
+                            <TableCell className="text-right font-semibold text-gray-800 print:p-1 whitespace-nowrap">฿{item.avgNetPerHead.toLocaleString()}</TableCell>
+                          </TableRow>
 
                         {/* Expandable Sub-table (Drill-Down Level) */}
                         {isExpanded && (
@@ -575,30 +639,31 @@ export default function ReportsCenterPage() {
             </TableBody>
             {/* Grand Total Footer */}
             {(departmentData?.grandTotal || employeeTypeData?.grandTotal) && (
-              <TableFooter>
-                <TableRow className="bg-gray-100 font-bold text-gray-900 text-xs">
-                  <TableCell colSpan={2} className="text-center font-bold">รวมทั้งสิ้น (Grand Total)</TableCell>
-                  <TableCell className="text-center">
+              <TableFooter className="print:table-footer-group">
+                <TableRow className="bg-gray-100 font-bold text-gray-900 text-xs print:bg-gray-200">
+                  <TableCell colSpan={2} className="text-center font-bold print:p-1">รวมทั้งสิ้น (Grand Total)</TableCell>
+                  <TableCell className="text-center print:p-1">
                     {(reportTab === 'employeeType' ? employeeTypeData : departmentData)?.grandTotal.headcount} คน
                   </TableCell>
-                  <TableCell colSpan={3} className="text-center text-gray-500">-</TableCell>
-                  <TableCell className="text-right text-gray-900">
+                  <TableCell colSpan={3} className="text-center text-gray-500 print:p-1">-</TableCell>
+                  <TableCell className="text-right text-gray-900 print:p-1 whitespace-nowrap">
                     ฿{(reportTab === 'employeeType' ? employeeTypeData : departmentData)?.grandTotal.gross.toLocaleString()}
                   </TableCell>
-                  <TableCell className="text-right text-rose-600">
+                  <TableCell className="text-right text-rose-600 print:p-1 whitespace-nowrap">
                     -฿{(reportTab === 'employeeType' ? employeeTypeData : departmentData)?.grandTotal.deductions.toLocaleString()}
                   </TableCell>
-                  <TableCell className="text-right font-extrabold text-blue-800 bg-blue-100/70">
+                  <TableCell className="text-right font-extrabold text-blue-800 bg-blue-100/70 print:p-1 whitespace-nowrap">
                     ฿{(reportTab === 'employeeType' ? employeeTypeData : departmentData)?.grandTotal.net.toLocaleString()}
                   </TableCell>
-                  <TableCell className="text-right">100.0%</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right print:p-1">100.0%</TableCell>
+                  <TableCell className="text-right print:p-1 whitespace-nowrap">
                     ฿{(reportTab === 'employeeType' ? employeeTypeData : departmentData)?.grandTotal.avgNetPerHead.toLocaleString()}
                   </TableCell>
                 </TableRow>
               </TableFooter>
             )}
           </Table>
+        </div>
         )}
       </Card>
     </div>

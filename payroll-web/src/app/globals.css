@@ -128,3 +128,34 @@
     @apply font-sans;
   }
 }
+
+/* Global Print Styles to avoid cut-off and ensure full content print */
+@media print {
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    overflow: visible !important;
+    width: 100% !important;
+    height: auto !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Unhide printable containers and remove restrictive overflow */
+  main, .min-h-screen, div {
+    overflow: visible !important;
+  }
+
+  tr, .print-avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  
+  thead {
+    display: table-header-group !important;
+  }
+  
+  tfoot {
+    display: table-footer-group !important;
+  }
+}

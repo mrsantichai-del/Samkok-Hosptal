@@ -143,7 +143,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden print:overflow-visible print:block">
         {/* Left Sidebar */}
         <aside className="w-[280px] hidden lg:flex flex-col p-2 overflow-y-auto print:hidden border-r bg-white/50">
           <nav className="space-y-1">
@@ -164,7 +164,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
+        <main className="flex-1 p-4 lg:p-6 overflow-y-auto print:p-0 print:m-0 print:overflow-visible print:w-full">
           {children}
         </main>
       </div>
