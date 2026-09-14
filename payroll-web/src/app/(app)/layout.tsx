@@ -32,6 +32,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import NotificationBell from "@/components/NotificationBell";
+import GlobalSearchModal from "@/components/GlobalSearchModal";
 
 interface NavItem {
   name: string;
@@ -51,6 +52,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [user, setUser] = useState<any>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
     const token = Cookies.get("token");
@@ -65,6 +67,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       router.push("/");
     }
   }, [router]);
+
+  // Global Keyboard Shortcut: Ctrl+K or Cmd+K to trigger search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Close mobile drawer upon navigating
   useEffect(() => {
@@ -199,18 +213,36 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
         </div>
 
-        {/* Search Input (Hidden on mobile) */}
-        <div className="relative hidden md:block">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-          <Input 
-            type="search" 
-            placeholder="ค้นหาเมนู / ฟังก์ชัน..." 
-            className="w-60 pl-8 bg-gray-100 border-none rounded-full h-9 focus-visible:ring-1 focus-visible:ring-indigo-500 text-xs"
-          />
-        </div>
+        {/* Global Smart Search Trigger (Desktop) */}
+        <button
+          type="button"
+          onClick={() => setIsSearchOpen(true)}
+          className="hidden md:flex items-center justify-between w-72 px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200/90 border border-gray-200 rounded-full text-xs text-gray-500 cursor-pointer transition-all hover:shadow-2xs group"
+          title="ค้นหาเมนูและฟังก์ชัน (Ctrl+K)"
+        >
+          <div className="flex items-center gap-2">
+            <Search className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+            <span className="font-medium text-gray-500 group-hover:text-gray-800">ค้นหาเมนู / ฟังก์ชัน...</span>
+          </div>
+          <div className="flex items-center gap-1 font-mono text-[10px] font-bold text-gray-400 bg-white px-1.5 py-0.5 rounded border border-gray-300 shadow-2xs">
+            <span>Ctrl</span>
+            <span>K</span>
+          </div>
+        </button>
 
         {/* Right User Info & Actions */}
         <div className="flex items-center gap-2">
+          {/* Mobile Search Icon Button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="md:hidden rounded-lg hover:bg-gray-100 w-9 h-9 text-gray-600 cursor-pointer"
+            onClick={() => setIsSearchOpen(true)}
+            title="ค้นหาเมนู / ฟังก์ชัน"
+          >
+            <Search className="h-5 w-5" />
+          </Button>
+
           <NotificationBell />
           
           <div className="flex items-center gap-2 ml-1 pl-2 border-l border-gray-200">
@@ -359,6 +391,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+
+      {/* Global Smart Search & Command Palette Modal */}
+      <GlobalSearchModal 
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        userRoles={userRoles}
+        isAdmin={isAdmin}
+        isHR={isHR}
+        isExecutive={isExecutive}
+      />
     </div>
   );
 }
