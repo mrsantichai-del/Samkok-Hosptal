@@ -143,12 +143,7 @@ let TaxReportsService = class TaxReportsService {
             if (emp)
                 return emp;
         }
-        const firstEmp = await this.prisma.employee.findFirst({
-            where: { deletedAt: null },
-            include: { department: true, position: true, employeeType: true },
-            orderBy: { employeeCode: 'asc' }
-        });
-        return firstEmp;
+        return null;
     }
     async get50Tawi(employeeId, year) {
         let ceYear = Number(year || new Date().getFullYear());
@@ -309,11 +304,19 @@ let TaxReportsService = class TaxReportsService {
     }
     async getMyPayslips(userId, query) {
         const employee = await this.resolveEmployee(userId, query.employeeId);
+        const hospital = this.settingsService.getHospitalSettings();
         if (!employee) {
-            throw new common_1.NotFoundException('ไม่พบข้อมูลประวัติบุคลากรที่เชื่อมโยงกับบัญชีผู้ใช้นี้');
+            return {
+                hospital,
+                hasEmployee: false,
+                isUnlinkedAdmin: true,
+                employee: null,
+                hasRecords: false,
+                availableRecords: [],
+                currentPayslip: null
+            };
         }
         const idValidation = this.validateCitizenId(employee.idCard);
-        const hospital = this.settingsService.getHospitalSettings();
         const employeeTxs = await this.prisma.payrollTransaction.findMany({
             where: { employeeId: employee.id, deletedAt: null },
             select: {

@@ -134,14 +134,7 @@ export class TaxReportsService {
       if (emp) return emp;
     }
 
-    // Fallback for Admin testing: return the first active employee
-    const firstEmp = await this.prisma.employee.findFirst({
-      where: { deletedAt: null },
-      include: { department: true, position: true, employeeType: true },
-      orderBy: { employeeCode: 'asc' }
-    });
-
-    return firstEmp;
+    return null;
   }
 
   // 1. Generate 50 Tawi (หนังสือรับรองการหักภาษี ณ ที่จ่าย) for an Employee
@@ -317,12 +310,21 @@ export class TaxReportsService {
   // 2. Get My Payslips / Employee Portal
   async getMyPayslips(userId: string, query: { year?: number; month?: number; round?: number; employeeId?: string }) {
     const employee = await this.resolveEmployee(userId, query.employeeId);
+    const hospital = this.settingsService.getHospitalSettings();
+
     if (!employee) {
-      throw new NotFoundException('ไม่พบข้อมูลประวัติบุคลากรที่เชื่อมโยงกับบัญชีผู้ใช้นี้');
+      return {
+        hospital,
+        hasEmployee: false,
+        isUnlinkedAdmin: true,
+        employee: null,
+        hasRecords: false,
+        availableRecords: [],
+        currentPayslip: null
+      };
     }
 
     const idValidation = this.validateCitizenId(employee.idCard);
-    const hospital = this.settingsService.getHospitalSettings();
 
     // Get all available payroll records where this employee has transactions
     const employeeTxs = await this.prisma.payrollTransaction.findMany({

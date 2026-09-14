@@ -4,6 +4,14 @@ export declare class TaxReportsController {
     constructor(taxReportsService: TaxReportsService);
     getMyPayslips(req: any, year?: number, month?: number, round?: number, employeeId?: string): Promise<{
         hospital: import("../settings/settings.service").HospitalSettings;
+        hasEmployee: boolean;
+        isUnlinkedAdmin: boolean;
+        employee: null;
+        hasRecords: boolean;
+        availableRecords: never[];
+        currentPayslip: null;
+    } | {
+        hospital: import("../settings/settings.service").HospitalSettings;
         employee: {
             id: string;
             employeeCode: string;
@@ -22,6 +30,8 @@ export declare class TaxReportsController {
         hasRecords: boolean;
         availableRecords: never[];
         currentPayslip: null;
+        hasEmployee?: undefined;
+        isUnlinkedAdmin?: undefined;
     } | {
         hospital: import("../settings/settings.service").HospitalSettings;
         hasRecords: boolean;
@@ -75,6 +85,8 @@ export declare class TaxReportsController {
                 gpf: number;
             };
         };
+        hasEmployee?: undefined;
+        isUnlinkedAdmin?: undefined;
     }>;
     getMy50Tawi(req: any, year?: number, employeeId?: string): Promise<{
         taxYear: number;
@@ -138,6 +150,10 @@ export declare class TaxReportsController {
         };
         monthlyBreakdown: any[];
         issuedDate: string;
+    } | {
+        hasEmployee: boolean;
+        isUnlinkedAdmin: boolean;
+        data: null;
     }>;
     get50TawiByEmployee(employeeId: string, year?: number): Promise<{
         taxYear: number;

@@ -121,6 +121,14 @@ export declare class TaxReportsService {
         employeeId?: string;
     }): Promise<{
         hospital: import("../settings/settings.service").HospitalSettings;
+        hasEmployee: boolean;
+        isUnlinkedAdmin: boolean;
+        employee: null;
+        hasRecords: boolean;
+        availableRecords: never[];
+        currentPayslip: null;
+    } | {
+        hospital: import("../settings/settings.service").HospitalSettings;
         employee: {
             id: string;
             employeeCode: string;
@@ -139,6 +147,8 @@ export declare class TaxReportsService {
         hasRecords: boolean;
         availableRecords: never[];
         currentPayslip: null;
+        hasEmployee?: undefined;
+        isUnlinkedAdmin?: undefined;
     } | {
         hospital: import("../settings/settings.service").HospitalSettings;
         hasRecords: boolean;
@@ -192,5 +202,7 @@ export declare class TaxReportsService {
                 gpf: number;
             };
         };
+        hasEmployee?: undefined;
+        isUnlinkedAdmin?: undefined;
     }>;
 }

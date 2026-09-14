@@ -29,7 +29,11 @@ let TaxReportsController = class TaxReportsController {
         const userId = req.user.userId;
         const employee = await this.taxReportsService.resolveEmployee(userId, employeeId);
         if (!employee) {
-            throw new common_1.NotFoundException('ไม่พบข้อมูลประวัติบุคลากร');
+            return {
+                hasEmployee: false,
+                isUnlinkedAdmin: true,
+                data: null
+            };
         }
         return this.taxReportsService.get50Tawi(employee.id, year || new Date().getFullYear());
     }
