@@ -12,7 +12,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'fallback-secret-key-for-dev',
-      signOptions: { expiresIn: '1d' },
+      signOptions: { expiresIn: (process.env.JWT_EXPIRES_IN as any) || '4h' },
     }),
   ],
   controllers: [AuthController],

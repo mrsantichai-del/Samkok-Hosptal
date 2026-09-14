@@ -31,7 +31,7 @@ export default function Home() {
       });
 
       const token = response.data.access_token;
-      Cookies.set("token", token, { expires: 1 }); // Save token to cookies
+      Cookies.set("token", token, { expires: 4 / 24 }); // Save token to cookies (4 hours session)
       
       // Redirect to clean /home
       router.push("/home");
