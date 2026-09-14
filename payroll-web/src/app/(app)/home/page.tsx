@@ -11,20 +11,23 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Users, 
-  Calculator, 
-  Settings, 
-  FolderKanban, 
-  Briefcase, 
+  Home,
+  ReceiptText,
   BarChart3, 
   FileSpreadsheet, 
-  FileText,
-  ChevronRight,
-  ShieldCheck,
+  Calculator,
+  Contact,
+  FolderKanban, 
   Building2,
+  Briefcase, 
+  SlidersHorizontal,
+  UserCog,
+  ShieldAlert,
+  Settings2,
+  ChevronRight,
   Sparkles,
   ArrowUpRight,
-  ShieldAlert,
+  ShieldCheck,
   Shield
 } from "lucide-react";
 
@@ -49,7 +52,9 @@ export default function DashboardHome() {
   const router = useRouter();
 
   const [user, setUser] = useState<any>(null);
-  const [employeeProfile, setEmployeeProfile] = useState<any>(null);
+  const [employee, setEmployee] = useState<any>(null);
+  const [hasEmployeeLink, setHasEmployeeLink] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const currentDateThai = useMemo(() => {
     return new Date().toLocaleDateString('th-TH', {
@@ -60,24 +65,45 @@ export default function DashboardHome() {
     });
   }, []);
 
+  const employeeProfile = useMemo(() => {
+    if (!employee) return null;
+    return {
+      fullName: `${employee.firstName || ''} ${employee.lastName || ''}`.trim(),
+      position: typeof employee.position === 'object' ? employee.position?.name : (employee.position || ''),
+      department: typeof employee.department === 'object' ? employee.department?.name : (employee.department || '')
+    };
+  }, [employee]);
+
   useEffect(() => {
     const token = Cookies.get("token");
-    if (token) {
-      try {
-        const decoded: any = jwtDecode(token);
-        setUser(decoded);
-      } catch (e) {}
+    if (!token) {
+      router.push("/");
+      return;
+    }
+    try {
+      const decoded: any = jwtDecode(token);
+      setUser(decoded);
 
-      // Fetch employee profile name if available
+      // Fetch user & employee link info
       axios.get(`${API_URL}/tax-reports/my-payslips`, {
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => {
-        if (res.data?.employee) {
-          setEmployeeProfile(res.data.employee);
+        if (res.data?.hasEmployee !== false && res.data?.employee) {
+          setEmployee(res.data.employee);
+          setHasEmployeeLink(true);
+        } else {
+          setHasEmployeeLink(false);
         }
-      }).catch(() => {});
+      }).catch(() => {
+        setHasEmployeeLink(false);
+      }).finally(() => {
+        setLoading(false);
+      });
+
+    } catch (e) {
+      router.push("/");
     }
-  }, []);
+  }, [router]);
 
   // Comprehensive Role Detection
   const userRoles: string[] = useMemo(() => {
@@ -117,7 +143,7 @@ export default function DashboardHome() {
       subTitle: "My Payslips & 50 Tawi",
       desc: "เรียกดูสลิปเงินเดือนย้อนหลังทุกงวด ตรวจสอบรายการเงินได้-เงินหัก และสั่งพิมพ์หนังสือรับรองภาษี 50 ทวิ ของตนเอง",
       href: "/my-payslips",
-      icon: FileText,
+      icon: ReceiptText,
       category: "บริการข้อมูลบุคลากรส่วนบุคคล",
       color: {
         bg: "bg-emerald-50/70",
@@ -185,7 +211,7 @@ export default function DashboardHome() {
       subTitle: "Employee Master Directory",
       desc: "จัดการข้อมูลประวัติบุคลากร บันทึกวันเริ่มงาน-ลาออก สังกัดกลุ่มงาน ตำแหน่ง อัตราเงินเดือน และผูกบัญชีผู้ใช้",
       href: "/employees",
-      icon: Users,
+      icon: Contact,
       category: "ระบบงานบุคคลและการเงิน",
       color: {
         bg: "bg-purple-50/70",
@@ -196,47 +222,15 @@ export default function DashboardHome() {
       },
       roles: ['Admin', 'HR']
     },
-    {
-      title: "จัดการบัญชีผู้ใช้งาน (Users)",
-      subTitle: "User Accounts Management",
-      desc: "บริหารจัดการบัญชีผู้ใช้งานระบบ รหัสผ่าน กำหนดบทบาท และผูกข้อมูลเข้ากับประวัติพนักงาน",
-      href: "/users",
-      icon: ShieldCheck,
-      category: "ระบบงานบุคคลและการเงิน",
-      color: {
-        bg: "bg-cyan-50/70",
-        text: "text-cyan-700",
-        border: "border-cyan-200",
-        hoverBorder: "hover:border-cyan-400 hover:shadow-cyan-50",
-        badge: "bg-cyan-100 text-cyan-800"
-      },
-      roles: ['Admin']
-    },
-    {
-      title: "กลุ่มผู้ใช้งานและกำหนดสิทธิ์ (Roles)",
-      subTitle: "User Groups & Permissions Scope",
-      desc: "กำหนดกลุ่มสิทธิ์ อธิบายขอบเขตหน้าที่ความรับผิดชอบ และคำบรรยายสิทธิ์การเข้าถึงแต่ละโมดูลกันลืม",
-      href: "/roles",
-      icon: Shield,
-      category: "ระบบงานบุคคลและการเงิน",
-      color: {
-        bg: "bg-indigo-50/70",
-        text: "text-indigo-700",
-        border: "border-indigo-200",
-        hoverBorder: "hover:border-indigo-400 hover:shadow-indigo-50",
-        badge: "bg-indigo-100 text-indigo-800"
-      },
-      roles: ['Admin']
-    },
 
-    // หมวด 4: โครงสร้างองค์กรและตั้งค่า
+    // หมวด 4: โครงสร้างองค์กรและฐานข้อมูล
     {
       title: "กลุ่มงานและแผนก (Departments)",
       subTitle: "Hospital Organization Structure",
       desc: "กำหนดโครงสร้างสายงาน กลุ่มงานทางการแพทย์ และฝ่ายสนับสนุนต่าง ๆ ภายในโรงพยาบาล",
       href: "/departments",
       icon: FolderKanban,
-      category: "โครงสร้างองค์กรและการตั้งค่าระบบ",
+      category: "โครงสร้างองค์กรและฐานข้อมูล",
       color: {
         bg: "bg-amber-50/70",
         text: "text-amber-700",
@@ -252,7 +246,7 @@ export default function DashboardHome() {
       desc: "กำหนดประเภทการจ้างงาน เช่น ข้าราชการ, ลูกจ้างประจำ, พนักงานกระทรวงสาธารณสุข, ลูกจ้างชั่วคราว",
       href: "/employee-types",
       icon: Building2,
-      category: "โครงสร้างองค์กรและการตั้งค่าระบบ",
+      category: "โครงสร้างองค์กรและฐานข้อมูล",
       color: {
         bg: "bg-rose-50/70",
         text: "text-rose-700",
@@ -268,7 +262,7 @@ export default function DashboardHome() {
       desc: "จัดการทำเนียบตำแหน่งงาน สายวิชาชีพแพทย์ พยาบาล เภสัชกร และบุคลากรทางการแพทย์ทุกสายงาน",
       href: "/positions",
       icon: Briefcase,
-      category: "โครงสร้างองค์กรและการตั้งค่าระบบ",
+      category: "โครงสร้างองค์กรและฐานข้อมูล",
       color: {
         bg: "bg-orange-50/70",
         text: "text-orange-700",
@@ -283,8 +277,8 @@ export default function DashboardHome() {
       subTitle: "Earnings, Deductions & Formula Settings",
       desc: "กำหนดประเภทเงินได้ รายการหัก ภาษี กองทุน สปส. กบข. และตั้งค่าสูตรคำนวณอัตโนมัติ",
       href: "/pay-items",
-      icon: Settings,
-      category: "โครงสร้างองค์กรและการตั้งค่าระบบ",
+      icon: SlidersHorizontal,
+      category: "โครงสร้างองค์กรและฐานข้อมูล",
       color: {
         bg: "bg-violet-50/70",
         text: "text-violet-700",
@@ -294,13 +288,47 @@ export default function DashboardHome() {
       },
       roles: ['Admin', 'HR']
     },
+
+    // หมวด 5: ผู้ดูแลระบบสูงสุด
+    {
+      title: "จัดการบัญชีผู้ใช้งาน (Users)",
+      subTitle: "User Accounts Management",
+      desc: "บริหารจัดการบัญชีผู้ใช้งานระบบ รหัสผ่าน กำหนดบทบาท และผูกข้อมูลเข้ากับประวัติพนักงาน",
+      href: "/users",
+      icon: UserCog,
+      category: "ผู้ดูแลระบบ (System Admin)",
+      color: {
+        bg: "bg-cyan-50/70",
+        text: "text-cyan-700",
+        border: "border-cyan-200",
+        hoverBorder: "hover:border-cyan-400 hover:shadow-cyan-50",
+        badge: "bg-cyan-100 text-cyan-800"
+      },
+      roles: ['Admin']
+    },
+    {
+      title: "กลุ่มผู้ใช้งานและกำหนดสิทธิ์ (Roles)",
+      subTitle: "User Groups & Permissions Scope",
+      desc: "กำหนดกลุ่มสิทธิ์ อธิบายขอบเขตหน้าที่ความรับผิดชอบ และคำบรรยายสิทธิ์การเข้าถึงแต่ละโมดูลกันลืม",
+      href: "/roles",
+      icon: ShieldAlert,
+      category: "ผู้ดูแลระบบ (System Admin)",
+      color: {
+        bg: "bg-indigo-50/70",
+        text: "text-indigo-700",
+        border: "border-indigo-200",
+        hoverBorder: "hover:border-indigo-400 hover:shadow-indigo-50",
+        badge: "bg-indigo-100 text-indigo-800"
+      },
+      roles: ['Admin']
+    },
     {
       title: "ตั้งค่าระบบ (Settings)",
       subTitle: "System General Configuration",
       desc: "ข้อมูลองค์กร ตราสัญลักษณ์โรงพยาบาลสามโคก และการกำหนดค่าพื้นฐานของระบบสารสนเทศ",
       href: "/settings",
-      icon: Settings,
-      category: "โครงสร้างองค์กรและการตั้งค่าระบบ",
+      icon: Settings2,
+      category: "ผู้ดูแลระบบ (System Admin)",
       color: {
         bg: "bg-slate-50/70",
         text: "text-slate-700",
