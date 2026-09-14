@@ -136,7 +136,7 @@ export default function PayrollTreeSelector({
   }
 
   return (
-    <div className="relative inline-block text-left" ref={dropdownRef}>
+    <div className="relative inline-block text-left z-30" ref={dropdownRef}>
       {/* Trigger Button */}
       <button
         type="button"
@@ -156,7 +156,7 @@ export default function PayrollTreeSelector({
 
       {/* Tree Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 sm:left-0 sm:right-auto mt-1.5 w-[310px] sm:w-[340px] bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute right-0 top-full mt-1.5 w-[310px] sm:w-[350px] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
           {/* Header Controls */}
           <div className="p-2.5 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-1.5">

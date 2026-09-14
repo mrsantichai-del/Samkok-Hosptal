@@ -279,8 +279,8 @@ export default function MyPayslipsPage() {
 
       {/* Employee Quick Info Card */}
       {employeeInfo ? (
-        <Card className="border shadow-xs bg-white print:hidden">
-          <CardContent className="p-4 flex flex-wrap items-center justify-between gap-4">
+        <Card className="border shadow-xs bg-white print:hidden !overflow-visible relative z-30">
+          <CardContent className="p-4 flex flex-wrap items-center justify-between gap-4 !overflow-visible">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-lg border border-emerald-200">
                 {employeeInfo.fullName.slice(0, 2)}
