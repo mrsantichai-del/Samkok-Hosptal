@@ -245,7 +245,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div key={group.groupName || gIdx} className="space-y-1">
                 {/* Group Header (Only visible when expanded) */}
                 {!isSidebarCollapsed && (
-                  <div className="px-3 pt-2 pb-1 text-[10.5px] font-bold text-gray-400 uppercase tracking-wider">
+                  <div className="px-3 pt-2.5 pb-1 text-xs font-bold text-gray-500 uppercase tracking-wider">
                     {group.groupName}
                   </div>
                 )}
@@ -254,7 +254,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 )}
 
                 {/* Group Nav Items */}
-                <div className="space-y-0.5">
+                <div className="space-y-1">
                   {group.items.map((item) => {
                     const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/home");
                     const Icon = item.icon;
@@ -265,13 +265,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         title={isSidebarCollapsed ? item.name : undefined}
                       >
                         <div 
-                          className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-all text-xs cursor-pointer ${
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all text-sm cursor-pointer ${
                             isActive 
-                              ? "bg-[#1877f2]/10 text-[#1877f2] font-bold shadow-2xs" 
+                              ? "bg-[#1877f2]/10 text-[#1877f2] font-semibold shadow-2xs" 
                               : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                           } ${isSidebarCollapsed ? "justify-center px-0 py-2.5" : ""}`}
                         >
-                          <Icon className={`h-4.5 w-4.5 shrink-0 ${isActive ? "text-[#1877f2]" : "text-gray-500"}`} />
+                          <Icon className={`h-5 w-5 shrink-0 ${isActive ? "text-[#1877f2]" : "text-gray-500"}`} />
                           {!isSidebarCollapsed && (
                             <span className="truncate">{item.name}</span>
                           )}
@@ -318,10 +318,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="p-3 space-y-4">
                 {visibleNavGroups.map((group, gIdx) => (
                   <div key={group.groupName || gIdx} className="space-y-1">
-                    <div className="px-3 pt-1 pb-1 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                    <div className="px-3 pt-2 pb-1 text-xs font-bold text-gray-500 uppercase tracking-wider">
                       {group.groupName}
                     </div>
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       {group.items.map((item) => {
                         const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/home");
                         const Icon = item.icon;
