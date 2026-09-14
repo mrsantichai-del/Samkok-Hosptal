@@ -33,6 +33,7 @@ import {
 import { toast } from "sonner";
 import PayslipTemplate from "@/components/PayslipTemplate";
 import Form50Tawi from "@/components/Form50Tawi";
+import PayrollTreeSelector from "@/components/PayrollTreeSelector";
 
 export default function MyPayslipsPage() {
   const router = useRouter();
@@ -300,22 +301,16 @@ export default function MyPayslipsPage() {
             {/* Filter controls per tab */}
             <div className="flex items-center gap-2 flex-wrap">
               {activeTab === 'payslip' ? (
-                <>
-                  <span className="text-xs font-bold text-gray-500 flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-emerald-600" /> เลือกงวดเงินเดือน:
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-gray-500 flex items-center gap-1 shrink-0">
+                    <Calendar className="w-3.5 h-3.5 text-emerald-600" /> งวดเงินเดือน:
                   </span>
-                  <select
-                    className="h-9 text-xs border rounded-md px-3 bg-gray-50 font-semibold text-gray-800 cursor-pointer min-w-[200px]"
-                    value={selectedRecordId}
-                    onChange={e => setSelectedRecordId(e.target.value)}
-                  >
-                    {availableRecords.map(r => (
-                      <option key={r.id} value={r.id}>
-                        {r.label}
-                      </option>
-                    ))}
-                  </select>
-                </>
+                  <PayrollTreeSelector
+                    records={availableRecords}
+                    selectedRecordId={selectedRecordId}
+                    onSelectRecord={setSelectedRecordId}
+                  />
+                </div>
               ) : (
                 <>
                   <span className="text-xs font-bold text-gray-500 flex items-center gap-1">
