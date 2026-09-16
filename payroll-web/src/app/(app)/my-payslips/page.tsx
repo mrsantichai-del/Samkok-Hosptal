@@ -156,20 +156,40 @@ export default function MyPayslipsPage() {
   }, [activeTab, selectedEmployeeId, selectedTaxYear]);
 
   const handlePrintPayslip = async () => {
+    const recId = selectedRecordId || currentPayslip?.recordId;
+    const empId = employeeInfo?.id;
+
+    const toastId = toast.loading("กำลังสร้างสลิปเงินเดือน (PDF)...");
     try {
       const token = Cookies.get("token");
       if (token) {
         await axios.post(`${API_URL}/audit-logs/log-event`, {
           action: 'PRINT_PAYSLIP',
           tableName: 'Payslip',
-          recordId: currentPayslip?.id || employeeInfo?.id || '',
-          description: `สั่งพิมพ์สลิปเงินเดือนของ ${employeeInfo?.fullName || 'พนักงาน'} (${currentPayslip?.periodText || 'งวดปัจจุบัน'})`
+          recordId: recId || empId || '',
+          description: `สั่งพิมพ์สลิปเงินเดือนของ ${employeeInfo?.fullName || 'พนักงาน'} (${currentPayslip?.monthName || ''} ${currentPayslip?.thaiYear || ''})`
         }, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => {});
       }
-    } catch (e) {}
-    window.print();
+
+      if (recId && empId) {
+        const res = await axios.post(
+          `${API_URL}/payroll/records/${recId}/export/pdf`,
+          { employeeIds: [empId] },
+          { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' }
+        );
+        const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+        window.open(url);
+        toast.success("สร้างสลิปเงินเดือน (PDF) สำเร็จ", { id: toastId });
+      } else {
+        toast.dismiss(toastId);
+        window.print();
+      }
+    } catch (e: any) {
+      toast.dismiss(toastId);
+      window.print();
+    }
   };
 
   const handlePrint50Tawi = async () => {

@@ -72,167 +72,166 @@ export default function PayslipTemplate({ employee, payslip, onPrint }: PayslipP
         </Button>
       </div>
 
-      {/* Official Payslip Printable Container */}
-      <div className="bg-white text-black p-6 md:p-8 rounded-lg shadow-sm border border-gray-300 font-sans text-xs max-w-[850px] mx-auto print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-none">
-        {/* Header with Hospital Branding */}
-        <div className="flex items-center justify-between border-b pb-3 mb-3">
-          <div className="flex items-center gap-3">
-            <img src="/logo.jpg" alt="Hospital Logo" className="w-12 h-12 rounded-full object-cover border border-gray-300" />
-            <div>
-              <h2 className="text-base font-bold text-gray-900">โรงพยาบาลสามโคก (Samkok Hospital)</h2>
-              <p className="text-xs text-gray-600">ใบแจ้งรายการเงินเดือนและค่าตอบแทน (Pay Slip)</p>
+      {/* Official Payslip Printable Container (Styled exactly like official format in Image 2) */}
+      <div className="bg-white text-black p-6 md:p-8 rounded-lg shadow-sm border border-gray-400 font-sans text-xs max-w-[850px] mx-auto print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-none">
+        
+        {/* Outer Official Border Box */}
+        <div className="border border-gray-800 p-5 md:p-7 rounded-sm">
+          
+          {/* Header with Hospital Logo & Title */}
+          <div className="flex items-start justify-between mb-4 relative pb-2 border-b border-gray-200">
+            <div className="flex items-center gap-3">
+              <img src="/logo.jpg" alt="Logo" className="w-14 h-14 object-contain rounded-full border border-gray-300 shadow-2xs" />
+              <div>
+                <h2 className="text-lg md:text-xl font-bold text-black tracking-tight">
+                  โรงพยาบาลสามโคก ประจำเดือน {payslip.monthName} {payslip.thaiYear}
+                </h2>
+                <h3 className="text-sm font-bold text-gray-800 mt-0.5">
+                  ใบแจ้งรายละเอียดเงินเดือน
+                </h3>
+              </div>
+            </div>
+            {payslip.roundName && (
+              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-2.5 py-1 rounded self-center">
+                {payslip.roundName}
+              </span>
+            )}
+          </div>
+
+          {/* Employee Header Info (matching Image 2 layout) */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs mb-4 text-gray-900">
+            <div className="flex items-center">
+              <span className="font-bold min-w-[70px]">ชื่อ</span>
+              <span className="font-semibold">{employee.fullName}</span>
+            </div>
+            <div className="flex items-center">
+              <span className="font-bold min-w-[90px]">รหัสพนักงาน:</span>
+              <span className="font-mono font-bold text-gray-900">{employee.employeeCode}</span>
+            </div>
+            <div className="flex items-center">
+              <span className="font-bold min-w-[70px]">ตำแหน่ง</span>
+              <span>{employee.position || 'ไม่ระบุ'}</span>
+            </div>
+            <div className="flex items-center">
+              <span className="font-bold min-w-[90px]">กลุ่มงาน:</span>
+              <span>{employee.department || 'ไม่ระบุ'}</span>
+            </div>
+            <div className="flex items-center">
+              <span className="font-bold min-w-[70px]">ประเภท:</span>
+              <span>{employee.employeeType || 'ไม่ระบุ'}</span>
+            </div>
+            <div className="flex items-center">
+              <span className="font-bold min-w-[90px]">เลขบัตร ปชช.:</span>
+              <span className="font-mono">{employee.idCard || '-'}</span>
             </div>
           </div>
-          <div className="text-right">
-            <span className="text-xs font-bold text-emerald-900 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded">
-              ประจำงวด: {payslip.monthName} {payslip.thaiYear} {payslip.roundName ? `(${payslip.roundName})` : ''}
-            </span>
-            <p className="text-[10px] text-gray-400 mt-1">
-              วันที่พิมพ์: {new Date().toLocaleDateString('th-TH')}
-            </p>
-          </div>
-        </div>
 
-        {/* Employee Info Grid */}
-        <div className="bg-gray-50/70 p-3 rounded border border-gray-200 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs mb-4">
-          <div>
-            <span className="text-gray-500 text-[11px] block">รหัสพนักงาน:</span>
-            <span className="font-bold text-gray-900 font-mono">{employee.employeeCode}</span>
-          </div>
-          <div>
-            <span className="text-gray-500 text-[11px] block">ชื่อ - นามสกุล:</span>
-            <span className="font-bold text-gray-900">{employee.fullName}</span>
-          </div>
-          <div>
-            <span className="text-gray-500 text-[11px] block">ตำแหน่ง:</span>
-            <span className="font-medium text-gray-800">{employee.position}</span>
-          </div>
-          <div>
-            <span className="text-gray-500 text-[11px] block">กลุ่มงาน / สังกัด:</span>
-            <span className="font-medium text-gray-800">{employee.department}</span>
-          </div>
-          <div>
-            <span className="text-gray-500 text-[11px] block">ประเภทการจ้าง:</span>
-            <span className="font-medium text-gray-800">{employee.employeeType}</span>
-          </div>
-          <div>
-            <span className="text-gray-500 text-[11px] block">เลขประจำตัวประชาชน:</span>
-            <span className="font-medium text-gray-800 font-mono">{employee.idCard || '-'}</span>
-          </div>
-          <div className="col-span-2">
-            <span className="text-gray-500 text-[11px] block">บัญชีรับเงิน:</span>
-            <span className="font-medium text-gray-800 font-mono">
-              {employee.bankName || 'ธนาคารกรุงไทย'} {employee.bankAccount ? `(${employee.bankAccount})` : ''}
-            </span>
-          </div>
-        </div>
-
-        {/* Two-Column Earnings & Deductions Table */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          {/* Earnings Column */}
-          <div className="border border-emerald-200 rounded overflow-hidden">
-            <div className="bg-emerald-50 px-3 py-1.5 font-bold text-emerald-900 border-b border-emerald-200 flex items-center justify-between">
-              <span>รายการได้ (Earnings)</span>
-              <span className="text-[11px]">จำนวนเงิน</span>
+          {/* Main 2-Column Table (รายรับ | รายจ่าย) matching Image 2 */}
+          <div className="border border-gray-800 rounded-xs overflow-hidden mb-3">
+            {/* Table Header */}
+            <div className="grid grid-cols-2 bg-gray-100/80 border-b border-gray-800 font-bold text-center text-xs">
+              <div className="py-1.5 border-r border-gray-800 text-gray-900">รายรับ</div>
+              <div className="py-1.5 text-gray-900">รายจ่าย</div>
             </div>
-            <div className="divide-y divide-gray-100 min-h-[160px]">
-              {payslip.incomes.length === 0 ? (
-                <div className="p-4 text-center text-gray-400 text-xs">ไม่มีรายการเงินได้</div>
-              ) : (
-                payslip.incomes.map((item, idx) => (
-                  <div key={idx} className="flex justify-between px-3 py-1.5 hover:bg-gray-50">
-                    <span className="text-gray-700">{item.name}</span>
-                    <span className="font-mono font-semibold text-gray-900">
-                      ฿{item.amount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-                    </span>
+
+            {/* Table Rows */}
+            <div className="divide-y divide-gray-200 text-xs">
+              {Array.from({ length: Math.max(payslip.incomes.length, payslip.deductions.length, 6) }).map((_, idx) => {
+                const inc = payslip.incomes[idx];
+                const ded = payslip.deductions[idx];
+
+                return (
+                  <div key={idx} className="grid grid-cols-2 min-h-[26px]">
+                    {/* Income cell */}
+                    <div className="flex items-center justify-between px-3 py-1 border-r border-gray-800">
+                      <span className="text-gray-800 truncate">{inc ? inc.name : ''}</span>
+                      <span className="font-mono font-medium text-gray-900 shrink-0 ml-2">
+                        {inc && inc.amount > 0 ? inc.amount.toLocaleString('th-TH', { minimumFractionDigits: 2 }) : (inc ? '0.00' : '-')}
+                      </span>
+                    </div>
+
+                    {/* Deduction cell */}
+                    <div className="flex items-center justify-between px-3 py-1">
+                      <span className="text-gray-800 truncate">{ded ? ded.name : ''}</span>
+                      <span className="font-mono font-medium text-rose-700 shrink-0 ml-2">
+                        {ded && ded.amount > 0 ? ded.amount.toLocaleString('th-TH', { minimumFractionDigits: 2 }) : (ded ? '0.00' : '-')}
+                      </span>
+                    </div>
                   </div>
-                ))
-              )}
+                );
+              })}
             </div>
-            <div className="bg-emerald-50/60 px-3 py-2 border-t border-emerald-200 flex justify-between font-bold text-emerald-950">
-              <span>รวมเงินได้ (Gross Income)</span>
-              <span className="font-mono text-sm">
-                ฿{payslip.grossIncome.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-              </span>
+
+            {/* Total Row (รวมรับ | รวมจ่าย) */}
+            <div className="grid grid-cols-2 bg-gray-100/70 border-t border-gray-800 font-bold text-xs">
+              <div className="flex items-center justify-between px-3 py-2 border-r border-gray-800">
+                <span className="text-gray-900 font-bold">รวมรับ</span>
+                <span className="font-mono text-emerald-800 font-bold">
+                  {payslip.grossIncome > 0 ? payslip.grossIncome.toLocaleString('th-TH', { minimumFractionDigits: 2 }) : '0.00'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="text-gray-900 font-bold">รวมจ่าย</span>
+                <span className="font-mono text-rose-800 font-bold">
+                  {payslip.totalDeductions > 0 ? payslip.totalDeductions.toLocaleString('th-TH', { minimumFractionDigits: 2 }) : '0.00'}
+                </span>
+              </div>
+            </div>
+
+            {/* Net Payout Summary (คงเหลือสุทธิ) */}
+            <div className="border-t border-gray-800 bg-emerald-50/40 p-3">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-sm text-gray-900">คงเหลือสุทธิ</span>
+                <span className="font-mono text-base font-extrabold text-emerald-900">
+                  {payslip.netPayout.toLocaleString('th-TH', { minimumFractionDigits: 2 })} บาท
+                </span>
+              </div>
+              <div className="text-center text-xs font-semibold text-gray-700 mt-1">
+                ({payslip.thaiBahtNetPayout})
+              </div>
             </div>
           </div>
 
-          {/* Deductions Column */}
-          <div className="border border-rose-200 rounded overflow-hidden">
-            <div className="bg-rose-50 px-3 py-1.5 font-bold text-rose-900 border-b border-rose-200 flex items-center justify-between">
-              <span>รายการหัก (Deductions)</span>
-              <span className="text-[11px]">จำนวนเงิน</span>
+          {/* YTD Cumulative Summary Box (if data exists) */}
+          {payslip.ytd && (payslip.ytd.grossIncome > 0 || payslip.ytd.tax > 0 || payslip.ytd.socialSecurity > 0 || payslip.ytd.gpf > 0) && (
+            <div className="border border-gray-300 rounded p-2.5 bg-gray-50/60 mt-3 text-[11px]">
+              <div className="font-bold text-gray-800 mb-1.5">
+                สรุปยอดสะสมตั้งแต่ต้นปี (Cumulative Summary / YTD พ.ศ. {payslip.thaiYear}):
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <div className="bg-white p-1.5 rounded border border-gray-200">
+                  <span className="text-gray-500 text-[10px] block">รายได้สะสม:</span>
+                  <span className="font-bold text-gray-900 font-mono text-[11px]">
+                    ฿{payslip.ytd.grossIncome.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="bg-white p-1.5 rounded border border-gray-200">
+                  <span className="text-gray-500 text-[10px] block">ภาษีสะสม:</span>
+                  <span className="font-bold text-rose-700 font-mono text-[11px]">
+                    ฿{payslip.ytd.tax.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="bg-white p-1.5 rounded border border-gray-200">
+                  <span className="text-gray-500 text-[10px] block">ประกันสังคมสะสม:</span>
+                  <span className="font-bold text-amber-800 font-mono text-[11px]">
+                    ฿{payslip.ytd.socialSecurity.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="bg-white p-1.5 rounded border border-gray-200">
+                  <span className="text-gray-500 text-[10px] block">กบข./กสจ. สะสม:</span>
+                  <span className="font-bold text-purple-800 font-mono text-[11px]">
+                    ฿{payslip.ytd.gpf.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="divide-y divide-gray-100 min-h-[160px]">
-              {payslip.deductions.length === 0 ? (
-                <div className="p-4 text-center text-gray-400 text-xs">ไม่มีรายการหัก</div>
-              ) : (
-                payslip.deductions.map((item, idx) => (
-                  <div key={idx} className="flex justify-between px-3 py-1.5 hover:bg-gray-50">
-                    <span className="text-gray-700">{item.name}</span>
-                    <span className="font-mono font-semibold text-rose-600">
-                      -฿{item.amount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-            <div className="bg-rose-50/60 px-3 py-2 border-t border-rose-200 flex justify-between font-bold text-rose-950">
-              <span>รวมเงินหัก (Total Deductions)</span>
-              <span className="font-mono text-sm text-rose-600">
-                -฿{payslip.totalDeductions.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-          </div>
-        </div>
+          )}
 
-        {/* Net Payout Banner */}
-        <div className="bg-blue-50 border-2 border-blue-600 rounded-lg p-3.5 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <span className="text-xs font-bold text-blue-900 uppercase tracking-wide">ยอดจ่ายสุทธิ (Net Payout)</span>
-            <div className="text-xs text-blue-700 font-medium">({payslip.thaiBahtNetPayout})</div>
+          {/* Footer Note */}
+          <div className="mt-3 text-center text-[10px] text-gray-400">
+            เอกสารฉบับนี้พิมพ์จากระบบสารสนเทศการเงินและเงินเดือน โรงพยาบาลสามโคก
           </div>
-          <div className="text-2xl font-black text-blue-900 font-mono">
-            ฿{payslip.netPayout.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-          </div>
-        </div>
 
-        {/* YTD Cumulative Summary Box */}
-        <div className="border border-gray-200 rounded p-3 bg-gray-50/50">
-          <div className="text-[11px] font-bold text-gray-700 mb-2">
-            ข้อมูลสะสมตั้งแต่ต้นปีภาษี พ.ศ. {payslip.thaiYear} ถึงงวดปัจจุบัน (Year-To-Date Accumulation):
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-            <div className="bg-white p-2 rounded border border-gray-200">
-              <span className="text-gray-500 text-[10px] block">รายได้สะสมทั้งปี (YTD Gross):</span>
-              <span className="font-bold text-gray-900 font-mono">
-                ฿{payslip.ytd.grossIncome.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-            <div className="bg-white p-2 rounded border border-gray-200">
-              <span className="text-gray-500 text-[10px] block">ภาษีสะสมทั้งปี (YTD Tax):</span>
-              <span className="font-bold text-rose-600 font-mono">
-                ฿{payslip.ytd.tax.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-            <div className="bg-white p-2 rounded border border-gray-200">
-              <span className="text-gray-500 text-[10px] block">ประกันสังคมสะสม (YTD SSO):</span>
-              <span className="font-bold text-amber-700 font-mono">
-                ฿{payslip.ytd.socialSecurity.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-            <div className="bg-white p-2 rounded border border-gray-200">
-              <span className="text-gray-500 text-[10px] block">กบข./กสจ. สะสม (YTD GPF):</span>
-              <span className="font-bold text-purple-700 font-mono">
-                ฿{payslip.ytd.gpf.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Note */}
-        <div className="mt-4 pt-3 border-t border-gray-200 text-center text-[10px] text-gray-400">
-          เอกสารฉบับนี้พิมพ์จากระบบสารสนเทศการเงินและเงินเดือน โรงพยาบาลสามโคก • ข้อมูลถูกต้องตามบัญชีเงินเดือนที่ได้รับอนุมัติ
         </div>
       </div>
     </div>
