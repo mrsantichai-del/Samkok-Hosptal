@@ -1395,9 +1395,9 @@ export default function PayrollDetailPage() {
 
       {/* Headcount Movement Details Modal */}
       <Dialog open={headcountModalOpen} onOpenChange={setHeadcountModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+        <DialogContent className="max-w-4xl w-full max-h-[88vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-base">
               {headcountModalTab === 'new_hires' ? (
                 <>
                   <UserPlus className="w-5 h-5 text-emerald-600" />
@@ -1410,103 +1410,148 @@ export default function PayrollDetailPage() {
                 </>
               )}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-xs">
               {headcountModalTab === 'new_hires' 
-                ? 'พนักงานที่เริ่มงานในรอบนี้ หรือไม่มีในรอบก่อนหน้า' 
-                : 'พนักงานที่มีในรอบก่อนหน้า แต่ไม่มีการคำนวณเงินเดือนในรอบนี้ (ลาออกแล้ว)'}
+                ? 'พนักงานที่มีการคำนวณเงินเดือนในรอบนี้ แต่ไม่มีในรอบก่อนหน้า' 
+                : 'พนักงานที่มีในรอบก่อนหน้า แต่ไม่มีการคำนวณเงินเดือนในรอบนี้ (พ้นสภาพ/ลาออก)'}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex gap-2 border-b pb-2 mb-2">
-            <Button 
-              size="sm" 
-              variant={headcountModalTab === 'new_hires' ? 'default' : 'outline'}
-              className={headcountModalTab === 'new_hires' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
-              onClick={() => setHeadcountModalTab('new_hires')}
-            >
-              <UserPlus className="w-4 h-4 mr-1.5" />
-              พนักงานเข้าใหม่ ({headcountSummary?.newHiresCount || 0})
-            </Button>
-            <Button 
-              size="sm" 
-              variant={headcountModalTab === 'resigned' ? 'default' : 'outline'}
-              className={headcountModalTab === 'resigned' ? 'bg-rose-600 hover:bg-rose-700' : ''}
-              onClick={() => setHeadcountModalTab('resigned')}
-            >
-              <UserMinus className="w-4 h-4 mr-1.5" />
-              พนักงานลาออก ({headcountSummary?.resignedCount || 0})
-            </Button>
-          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2 mb-2">
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant={headcountModalTab === 'new_hires' ? 'default' : 'outline'}
+                className={`text-xs h-8 cursor-pointer ${headcountModalTab === 'new_hires' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}`}
+                onClick={() => setHeadcountModalTab('new_hires')}
+              >
+                <UserPlus className="w-3.5 h-3.5 mr-1.5" />
+                พนักงานเข้าใหม่ ({headcountSummary?.newHiresCount || (headcountSummary?.newHires?.length ?? 0)})
+              </Button>
+              <Button 
+                size="sm" 
+                variant={headcountModalTab === 'resigned' ? 'default' : 'outline'}
+                className={`text-xs h-8 cursor-pointer ${headcountModalTab === 'resigned' ? 'bg-rose-600 hover:bg-rose-700 text-white' : ''}`}
+                onClick={() => setHeadcountModalTab('resigned')}
+              >
+                <UserMinus className="w-3.5 h-3.5 mr-1.5" />
+                พนักงานลาออก ({headcountSummary?.resignedCount || (headcountSummary?.resigned?.length ?? 0)})
+              </Button>
+            </div>
 
-          <div className="flex-1 overflow-y-auto border rounded-md">
-            {headcountModalTab === 'new_hires' ? (
-              (headcountSummary?.newHiresList?.length || 0) === 0 ? (
-                <div className="py-12 text-center text-gray-400 text-sm">ไม่มีข้อมูลพนักงานเข้าใหม่</div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50">
-                      <TableHead className="w-12 text-center">#</TableHead>
-                      <TableHead>รหัส</TableHead>
-                      <TableHead>ชื่อ - นามสกุล</TableHead>
-                      <TableHead>กลุ่มงาน / ตำแหน่ง</TableHead>
-                      <TableHead>วันที่เริ่มงาน</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {headcountSummary.newHiresList.map((emp: any, idx: number) => (
-                      <TableRow key={emp.id || idx}>
-                        <TableCell className="text-center text-xs text-gray-400">{idx + 1}</TableCell>
-                        <TableCell className="font-semibold text-xs text-gray-800">{emp.employeeCode}</TableCell>
-                        <TableCell className="text-xs font-medium text-gray-900">{emp.firstName} {emp.lastName}</TableCell>
-                        <TableCell className="text-xs text-gray-600">
-                          <div>{emp.department?.name || '-'}</div>
-                          <div className="text-[11px] text-gray-400">{emp.position?.name || '-'}</div>
-                        </TableCell>
-                        <TableCell className="text-xs text-emerald-700 font-medium whitespace-nowrap">
-                          {emp.startDate ? new Date(emp.startDate).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )
-            ) : (
-              (headcountSummary?.resignedList?.length || 0) === 0 ? (
-                <div className="py-12 text-center text-gray-400 text-sm">ไม่มีข้อมูลพนักงานลาออก</div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50">
-                      <TableHead className="w-12 text-center">#</TableHead>
-                      <TableHead>รหัส</TableHead>
-                      <TableHead>ชื่อ - นามสกุล</TableHead>
-                      <TableHead>กลุ่มงาน / ตำแหน่ง</TableHead>
-                      <TableHead>วันที่ลาออก</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {headcountSummary.resignedList.map((emp: any, idx: number) => (
-                      <TableRow key={emp.id || idx}>
-                        <TableCell className="text-center text-xs text-gray-400">{idx + 1}</TableCell>
-                        <TableCell className="font-semibold text-xs text-gray-800">{emp.employeeCode}</TableCell>
-                        <TableCell className="text-xs font-medium text-gray-900">{emp.firstName} {emp.lastName}</TableCell>
-                        <TableCell className="text-xs text-gray-600">
-                          <div>{emp.department?.name || '-'}</div>
-                          <div className="text-[11px] text-gray-400">{emp.position?.name || '-'}</div>
-                        </TableCell>
-                        <TableCell className="text-xs text-rose-700 font-medium whitespace-nowrap">
-                          {emp.endDate ? new Date(emp.endDate).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) : 'ลาออก'}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )
+            {headcountSummary?.previousRecord && (
+              <span className="text-xs text-gray-500 bg-gray-50 border px-2.5 py-1 rounded-md">
+                เปรียบเทียบกับงวด: <b>{monthNames[headcountSummary.previousRecord.month - 1]} {headcountSummary.previousRecord.year + 543}</b>
+              </span>
             )}
           </div>
 
-          <DialogFooter className="p-3 border-t bg-gray-50 flex-shrink-0">
+          <div className="flex-1 overflow-y-auto border rounded-lg">
+            {headcountModalTab === 'new_hires' ? (
+              (() => {
+                const list = headcountSummary?.newHiresList || headcountSummary?.newHires || [];
+                if (list.length === 0) {
+                  return <div className="py-16 text-center text-gray-400 text-sm">ไม่มีข้อมูลพนักงานเข้าใหม่ในรอบนี้</div>;
+                }
+                return (
+                  <Table className="text-xs">
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="w-12 text-center font-bold">#</TableHead>
+                        <TableHead className="w-28 font-bold">รหัสพนักงาน</TableHead>
+                        <TableHead className="font-bold">ชื่อ - นามสกุล</TableHead>
+                        <TableHead className="font-bold">ตำแหน่ง</TableHead>
+                        <TableHead className="font-bold">กลุ่มงาน / สังกัด</TableHead>
+                        <TableHead className="font-bold">ประเภทการจ้าง</TableHead>
+                        <TableHead className="font-bold text-center">วันที่เริ่มงาน</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {list.map((emp: any, idx: number) => {
+                        const fullName = emp.fullName || `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || '-';
+                        const posName = typeof emp.position === 'object' ? emp.position?.name : emp.position || '-';
+                        const deptName = typeof emp.department === 'object' ? emp.department?.name : emp.department || '-';
+                        const typeName = typeof emp.employeeType === 'object' ? emp.employeeType?.name : emp.employeeType || '-';
+
+                        return (
+                          <TableRow key={emp.id || idx} className="hover:bg-emerald-50/30">
+                            <TableCell className="text-center text-gray-400">{idx + 1}</TableCell>
+                            <TableCell className="font-mono font-bold text-gray-800">{emp.employeeCode || '-'}</TableCell>
+                            <TableCell className="font-semibold text-gray-900">{fullName}</TableCell>
+                            <TableCell className="text-gray-700">{posName}</TableCell>
+                            <TableCell className="text-gray-600">{deptName}</TableCell>
+                            <TableCell className="text-gray-600">
+                              <Badge variant="outline" className="text-[10px] bg-white font-normal">
+                                {typeName}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-center text-emerald-700 font-medium whitespace-nowrap">
+                              {emp.startDate ? new Date(emp.startDate).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                );
+              })()
+            ) : (
+              (() => {
+                const list = headcountSummary?.resignedList || headcountSummary?.resigned || [];
+                if (list.length === 0) {
+                  return <div className="py-16 text-center text-gray-400 text-sm">ไม่มีข้อมูลพนักงานลาออกในรอบนี้</div>;
+                }
+                return (
+                  <Table className="text-xs">
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="w-12 text-center font-bold">#</TableHead>
+                        <TableHead className="w-28 font-bold">รหัสพนักงาน</TableHead>
+                        <TableHead className="font-bold">ชื่อ - นามสกุล</TableHead>
+                        <TableHead className="font-bold">ตำแหน่ง</TableHead>
+                        <TableHead className="font-bold">กลุ่มงาน / สังกัด</TableHead>
+                        <TableHead className="font-bold">ประเภทการจ้าง</TableHead>
+                        <TableHead className="font-bold text-center">วันที่ลาออก / สถานะ</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {list.map((emp: any, idx: number) => {
+                        const fullName = emp.fullName || `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || '-';
+                        const posName = typeof emp.position === 'object' ? emp.position?.name : emp.position || '-';
+                        const deptName = typeof emp.department === 'object' ? emp.department?.name : emp.department || '-';
+                        const typeName = typeof emp.employeeType === 'object' ? emp.employeeType?.name : emp.employeeType || '-';
+
+                        return (
+                          <TableRow key={emp.id || idx} className="hover:bg-rose-50/30">
+                            <TableCell className="text-center text-gray-400">{idx + 1}</TableCell>
+                            <TableCell className="font-mono font-bold text-gray-800">{emp.employeeCode || '-'}</TableCell>
+                            <TableCell className="font-semibold text-gray-900">{fullName}</TableCell>
+                            <TableCell className="text-gray-700">{posName}</TableCell>
+                            <TableCell className="text-gray-600">{deptName}</TableCell>
+                            <TableCell className="text-gray-600">
+                              <Badge variant="outline" className="text-[10px] bg-white font-normal">
+                                {typeName}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-center text-rose-700 font-medium whitespace-nowrap">
+                              {emp.endDate ? new Date(emp.endDate).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) : (emp.status === 'RESIGNED' ? 'ลาออก' : 'พ้นสภาพ')}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                );
+              })()
+            )}
+          </div>
+
+          <DialogFooter className="p-3 border-t bg-gray-50 flex-shrink-0 flex items-center justify-between">
+            <span className="text-xs text-gray-500">
+              {headcountModalTab === 'new_hires' 
+                ? `แสดงพนักงานเข้าใหม่ทั้งหมด ${(headcountSummary?.newHiresList || headcountSummary?.newHires || []).length} คน` 
+                : `แสดงพนักงานลาออกทั้งหมด ${(headcountSummary?.resignedList || headcountSummary?.resigned || []).length} คน`}
+            </span>
             <Button variant="outline" size="sm" onClick={() => setHeadcountModalOpen(false)}>
               ปิดหน้าต่าง
             </Button>

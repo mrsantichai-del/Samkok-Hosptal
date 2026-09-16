@@ -130,7 +130,7 @@ let PayrollService = class PayrollService {
         const currentEmpIds = new Set(currentTx.map(t => t.employeeId));
         const currentEmployees = await this.prisma.employee.findMany({
             where: { id: { in: Array.from(currentEmpIds) } },
-            include: { position: true, department: true }
+            include: { position: true, department: true, employeeType: true }
         });
         const previousRecords = await this.prisma.payrollRecord.findMany({
             where: {
@@ -165,34 +165,46 @@ let PayrollService = class PayrollService {
             if (missingFromCurrent.length > 0) {
                 resignedEmployees = await this.prisma.employee.findMany({
                     where: { id: { in: missingFromCurrent } },
-                    include: { position: true, department: true }
+                    include: { position: true, department: true, employeeType: true }
                 });
             }
         }
+        const formattedNewHires = newHires.map(e => ({
+            id: e.id,
+            employeeCode: e.employeeCode,
+            firstName: e.firstName,
+            lastName: e.lastName,
+            fullName: `${e.firstName} ${e.lastName}`,
+            position: e.position?.name || '-',
+            department: e.department?.name || '-',
+            employeeType: e.employeeType?.name || '-',
+            baseSalary: Number(e.baseSalary) || 0,
+            startDate: e.startDate
+        }));
+        const formattedResigned = resignedEmployees.map(e => ({
+            id: e.id,
+            employeeCode: e.employeeCode,
+            firstName: e.firstName,
+            lastName: e.lastName,
+            fullName: `${e.firstName} ${e.lastName}`,
+            position: e.position?.name || '-',
+            department: e.department?.name || '-',
+            employeeType: e.employeeType?.name || '-',
+            baseSalary: Number(e.baseSalary) || 0,
+            endDate: e.endDate,
+            status: e.status
+        }));
         return {
             currentRecordId: recordId,
             payPeriodStart: currentRecord.payPeriodStart,
             payPeriodEnd: currentRecord.payPeriodEnd,
             totalCurrentCount: currentEmployees.length,
             newHiresCount: newHires.length,
-            newHires: newHires.map(e => ({
-                id: e.id,
-                employeeCode: e.employeeCode,
-                fullName: `${e.firstName} ${e.lastName}`,
-                position: e.position?.name || '-',
-                department: e.department?.name || '-',
-                startDate: e.startDate
-            })),
+            newHires: formattedNewHires,
+            newHiresList: formattedNewHires,
             resignedCount: resignedEmployees.length,
-            resigned: resignedEmployees.map(e => ({
-                id: e.id,
-                employeeCode: e.employeeCode,
-                fullName: `${e.firstName} ${e.lastName}`,
-                position: e.position?.name || '-',
-                department: e.department?.name || '-',
-                endDate: e.endDate,
-                status: e.status
-            })),
+            resigned: formattedResigned,
+            resignedList: formattedResigned,
             continuousCount,
             previousRecord: prevRecord ? {
                 id: prevRecord.id,

@@ -19,18 +19,51 @@ export declare class PayrollService {
         newHires: {
             id: string;
             employeeCode: string;
+            firstName: string;
+            lastName: string;
             fullName: string;
             position: string;
             department: string;
+            employeeType: string;
+            baseSalary: number;
+            startDate: Date | null;
+        }[];
+        newHiresList: {
+            id: string;
+            employeeCode: string;
+            firstName: string;
+            lastName: string;
+            fullName: string;
+            position: string;
+            department: string;
+            employeeType: string;
+            baseSalary: number;
             startDate: Date | null;
         }[];
         resignedCount: number;
         resigned: {
             id: any;
             employeeCode: any;
+            firstName: any;
+            lastName: any;
             fullName: string;
             position: any;
             department: any;
+            employeeType: any;
+            baseSalary: number;
+            endDate: any;
+            status: any;
+        }[];
+        resignedList: {
+            id: any;
+            employeeCode: any;
+            firstName: any;
+            lastName: any;
+            fullName: string;
+            position: any;
+            department: any;
+            employeeType: any;
+            baseSalary: number;
             endDate: any;
             status: any;
         }[];
